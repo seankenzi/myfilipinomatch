@@ -329,11 +329,11 @@ const Landing = () => {
               <span className="text-lg font-bold text-foreground" style={{ fontFamily: 'var(--font-display)' }}>Pinoy Bridge Love</span>
             </div>
             <div className="flex gap-6 text-sm text-muted-foreground">
-              <a href="#" className="hover:text-foreground transition-colors">About</a>
-              <a href="#" className="hover:text-foreground transition-colors">Safety</a>
-              <a href="#" className="hover:text-foreground transition-colors">Privacy</a>
-              <a href="#" className="hover:text-foreground transition-colors">Terms</a>
-              <a href="#" className="hover:text-foreground transition-colors">Support</a>
+              <Link to="/about" className="hover:text-foreground transition-colors">About</Link>
+              <Link to="/safety" className="hover:text-foreground transition-colors">Safety</Link>
+              <Link to="/privacy" className="hover:text-foreground transition-colors">Privacy</Link>
+              <Link to="/terms" className="hover:text-foreground transition-colors">Terms</Link>
+              <Link to="/support" className="hover:text-foreground transition-colors">Support</Link>
             </div>
             <p className="text-xs text-muted-foreground">© 2026 Pinoy Bridge Love. All rights reserved.</p>
           </div>
