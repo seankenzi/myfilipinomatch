@@ -1,5 +1,5 @@
 import Navbar from "@/components/Navbar";
-import BottomNav from "@/components/BottomNav";
+import Footer from "@/components/Footer";
 import { Mail, MessageCircle, HelpCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -7,9 +7,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 
 const Support = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
+  const [showFaq, setShowFaq] = useState(false);
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
 
@@ -33,18 +36,50 @@ const Support = () => {
           <p className="text-muted-foreground mb-8">Need help? We're here for you.</p>
 
           <div className="grid gap-4 sm:grid-cols-3 mb-10">
-            {[
-              { icon: HelpCircle, title: "FAQ", desc: "Common questions" },
-              { icon: MessageCircle, title: "Live Chat", desc: "Coming soon" },
-              { icon: Mail, title: "Email", desc: "support@pinoybridgelove.com" },
-            ].map(({ icon: Icon, title, desc }) => (
-              <div key={title} className="rounded-2xl border border-border bg-card p-5 shadow-card text-center">
-                <Icon className="h-6 w-6 text-primary mx-auto mb-2" />
-                <h3 className="font-semibold text-foreground text-sm">{title}</h3>
-                <p className="text-xs text-muted-foreground mt-1">{desc}</p>
-              </div>
-            ))}
+            <button
+              onClick={() => setShowFaq(!showFaq)}
+              className="rounded-2xl border border-border bg-card p-5 shadow-card text-center hover:shadow-card-hover transition-all"
+            >
+              <HelpCircle className="h-6 w-6 text-primary mx-auto mb-2" />
+              <h3 className="font-semibold text-foreground text-sm">FAQ</h3>
+              <p className="text-xs text-muted-foreground mt-1">Common questions</p>
+            </button>
+            <button
+              onClick={() => toast({ title: "Live Chat", description: "Live chat is coming soon! Use the contact form below for now." })}
+              className="rounded-2xl border border-border bg-card p-5 shadow-card text-center hover:shadow-card-hover transition-all"
+            >
+              <MessageCircle className="h-6 w-6 text-primary mx-auto mb-2" />
+              <h3 className="font-semibold text-foreground text-sm">Live Chat</h3>
+              <p className="text-xs text-muted-foreground mt-1">Coming soon</p>
+            </button>
+            <a
+              href="mailto:support@pinoybridgelove.com"
+              className="rounded-2xl border border-border bg-card p-5 shadow-card text-center hover:shadow-card-hover transition-all"
+            >
+              <Mail className="h-6 w-6 text-primary mx-auto mb-2" />
+              <h3 className="font-semibold text-foreground text-sm">Email</h3>
+              <p className="text-xs text-muted-foreground mt-1">support@pinoybridgelove.com</p>
+            </a>
           </div>
+
+          {/* FAQ Section */}
+          {showFaq && (
+            <div className="mb-10 rounded-2xl border border-border bg-card p-6 shadow-card space-y-4">
+              <h2 className="text-lg font-semibold">Frequently Asked Questions</h2>
+              {[
+                { q: "How do I verify my profile?", a: "Go to your Profile page and tap 'Get Verified'. Follow the instructions to upload a selfie. Our team will review it within 24 hours." },
+                { q: "How does matching work?", a: "When you and another user both like each other, it's a match! You can then start messaging each other." },
+                { q: "What is premium?", a: "Premium unlocks unlimited messaging, the ability to see who liked you, and increased profile visibility." },
+                { q: "How do I report someone?", a: "Open a chat with the user, tap the menu icon (⋮) in the top right, and select 'Report'. You can also report profiles from the Discover page." },
+                { q: "Can I delete my account?", a: "Yes. Go to Settings and select 'Delete Account'. This action is permanent." },
+              ].map(({ q, a }) => (
+                <div key={q} className="border-b border-border pb-3 last:border-0 last:pb-0">
+                  <h3 className="font-medium text-sm text-foreground">{q}</h3>
+                  <p className="text-xs text-muted-foreground mt-1">{a}</p>
+                </div>
+              ))}
+            </div>
+          )}
 
           <div className="rounded-2xl border border-border bg-card p-6 shadow-card">
             <h2 className="text-lg font-semibold mb-4">Contact Us</h2>
@@ -75,7 +110,7 @@ const Support = () => {
           </div>
         </div>
       </main>
-      <BottomNav />
+      <Footer />
     </div>
   );
 };

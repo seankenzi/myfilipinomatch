@@ -1,5 +1,5 @@
 import Navbar from "@/components/Navbar";
-import BottomNav from "@/components/BottomNav";
+import Footer from "@/components/Footer";
 
 const Privacy = () => {
   return (
@@ -43,7 +43,7 @@ const Privacy = () => {
           </div>
         </div>
       </main>
-      <BottomNav />
+      <Footer />
     </div>
   );
 };
