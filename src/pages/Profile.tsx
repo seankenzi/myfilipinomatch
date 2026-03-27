@@ -293,6 +293,22 @@ const Profile = () => {
             </div>
           )}
 
+          {/* Verification CTA */}
+          {!profile.is_verified && (
+            <div className="mb-6 rounded-2xl border border-secondary/20 bg-secondary/5 p-5">
+              <div className="flex items-center gap-2 mb-2">
+                <Shield className="h-5 w-5 text-secondary" />
+                <h2 className="font-semibold">Verify Your Profile</h2>
+              </div>
+              <p className="text-sm text-muted-foreground mb-4">
+                Verified profiles get up to 3x more matches. Show others you're real and serious.
+              </p>
+              <Button variant="outline" size="sm" onClick={() => navigate("/verification")} className="border-secondary text-secondary hover:bg-secondary/10">
+                Get Verified
+              </Button>
+            </div>
+          )}
+
           {/* Premium CTA */}
           {!profile.is_premium && (
             <div className="mb-6 rounded-2xl gradient-hero p-5 text-primary-foreground">
