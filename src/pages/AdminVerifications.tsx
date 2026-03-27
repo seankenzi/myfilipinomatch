@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import {
-  Shield, CheckCircle, XCircle, Clock, ExternalLink, ArrowLeft, Eye
+  Shield, CheckCircle, XCircle, Clock, ExternalLink, ArrowLeft, Eye, Camera
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
