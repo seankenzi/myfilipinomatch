@@ -87,7 +87,7 @@ const Onboarding = () => {
         city: userType === "philippines" ? city : null,
         full_name: fullName.trim(),
         age: parseInt(age),
-        gender,
+        gender: gender.toLowerCase(),
         bio: bio.trim(),
         interests,
         international_preference: internationalPref === "yes",
