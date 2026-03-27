@@ -19,6 +19,8 @@ import Safety from "./pages/Safety.tsx";
 import Privacy from "./pages/Privacy.tsx";
 import Terms from "./pages/Terms.tsx";
 import Support from "./pages/Support.tsx";
+import Verification from "./pages/Verification.tsx";
+import AdminVerifications from "./pages/AdminVerifications.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -40,6 +42,8 @@ const App = () => (
             <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
             <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
             <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+            <Route path="/verification" element={<ProtectedRoute><Verification /></ProtectedRoute>} />
+            <Route path="/admin/verifications" element={<ProtectedRoute><AdminVerifications /></ProtectedRoute>} />
             <Route path="/about" element={<About />} />
             <Route path="/safety" element={<Safety />} />
             <Route path="/privacy" element={<Privacy />} />
