@@ -1,8 +1,11 @@
-import { Heart, LogIn } from "lucide-react";
+import { Heart, LogIn, LogOut, User } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Navbar = () => {
+  const { user, loading, signOut } = useAuth();
+
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-card/90 backdrop-blur-md">
       <div className="container flex h-16 items-center justify-between">
@@ -26,17 +29,34 @@ const Navbar = () => {
         </nav>
 
         <div className="flex items-center gap-3">
-          <Link to="/login">
-            <Button variant="ghost" size="sm">
-              <LogIn className="mr-1 h-4 w-4" />
-              Log in
-            </Button>
-          </Link>
-          <Link to="/signup">
-            <Button variant="hero" size="sm">
-              Sign up free
-            </Button>
-          </Link>
+          {loading ? null : user ? (
+            <>
+              <Link to="/profile">
+                <Button variant="ghost" size="sm">
+                  <User className="mr-1 h-4 w-4" />
+                  Profile
+                </Button>
+              </Link>
+              <Button variant="ghost" size="sm" onClick={signOut}>
+                <LogOut className="mr-1 h-4 w-4" />
+                Log out
+              </Button>
+            </>
+          ) : (
+            <>
+              <Link to="/login">
+                <Button variant="ghost" size="sm">
+                  <LogIn className="mr-1 h-4 w-4" />
+                  Log in
+                </Button>
+              </Link>
+              <Link to="/signup">
+                <Button variant="hero" size="sm">
+                  Sign up free
+                </Button>
+              </Link>
+            </>
+          )}
         </div>
       </div>
     </header>
