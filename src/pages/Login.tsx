@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Heart, Mail, Lock, Eye, EyeOff } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,12 +20,19 @@ const Login = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    const { error } = await signIn(email, password);
+    const { error, data } = await signIn(email, password);
     if (error) {
       toast({ title: "Login failed", description: error.message, variant: "destructive" });
     } else {
       toast({ title: "Welcome back!" });
-      navigate("/discover");
+      // Check onboarding status
+      const userId = data?.user?.id;
+      if (userId) {
+        const { data: profile } = await supabase.from("profiles").select("onboarding_completed").eq("id", userId).single();
+        navigate(profile?.onboarding_completed ? "/discover" : "/onboarding");
+      } else {
+        navigate("/onboarding");
+      }
     }
     setLoading(false);
   };
@@ -35,7 +43,7 @@ const Login = () => {
         <div className="mb-8 text-center">
           <Link to="/" className="inline-flex items-center gap-2 mb-6">
             <Heart className="h-8 w-8 text-primary fill-primary" />
-            <span className="text-2xl font-display font-bold">FilipinoLove</span>
+            <span className="text-2xl font-display font-bold">Pinoy Bridge Love</span>
           </Link>
           <h1 className="text-2xl font-bold">Welcome back</h1>
           <p className="mt-2 text-muted-foreground">Sign in to continue your journey</p>

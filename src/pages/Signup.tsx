@@ -36,7 +36,7 @@ const Signup = () => {
         <div className="mb-8 text-center">
           <Link to="/" className="inline-flex items-center gap-2 mb-6">
             <Heart className="h-8 w-8 text-primary fill-primary" />
-            <span className="text-2xl font-display font-bold">FilipinoLove</span>
+            <span className="text-2xl font-display font-bold">Pinoy Bridge Love</span>
           </Link>
           <h1 className="text-2xl font-bold">Create your account</h1>
           <p className="mt-2 text-muted-foreground">Start finding your perfect match today</p>

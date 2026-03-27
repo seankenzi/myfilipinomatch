@@ -104,12 +104,15 @@ export type Database = {
           gender: string | null
           id: string
           interests: string[] | null
+          international_preference: boolean | null
           is_premium: boolean | null
           is_verified: boolean | null
+          onboarding_completed: boolean | null
           photos: string[] | null
           relationship_intent: string | null
           relocation_intent: string | null
           updated_at: string
+          user_type: string | null
         }
         Insert: {
           age?: number | null
@@ -123,12 +126,15 @@ export type Database = {
           gender?: string | null
           id: string
           interests?: string[] | null
+          international_preference?: boolean | null
           is_premium?: boolean | null
           is_verified?: boolean | null
+          onboarding_completed?: boolean | null
           photos?: string[] | null
           relationship_intent?: string | null
           relocation_intent?: string | null
           updated_at?: string
+          user_type?: string | null
         }
         Update: {
           age?: number | null
@@ -142,12 +148,15 @@ export type Database = {
           gender?: string | null
           id?: string
           interests?: string[] | null
+          international_preference?: boolean | null
           is_premium?: boolean | null
           is_verified?: boolean | null
+          onboarding_completed?: boolean | null
           photos?: string[] | null
           relationship_intent?: string | null
           relocation_intent?: string | null
           updated_at?: string
+          user_type?: string | null
         }
         Relationships: []
       }
