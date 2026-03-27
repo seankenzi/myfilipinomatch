@@ -1,13 +1,15 @@
 import { useState, useEffect, useCallback } from "react";
 import {
-  Heart, X, MapPin, Shield, Filter, ChevronDown, Star, Flag, Ban,
-  LayoutGrid, Layers, MessageCircle, Globe, Send, Sparkles, Clock, UserPlus
+  Heart, X, MapPin, Shield, Filter, ChevronDown, Star, Flag,
+  LayoutGrid, Layers, Globe, Send, Sparkles, Clock, UserPlus,
+  ChevronLeft, ChevronRight, SlidersHorizontal
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Slider } from "@/components/ui/slider";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose
 } from "@/components/ui/dialog";
@@ -65,6 +67,83 @@ const getFlagEmoji = (country: string | null) => {
   return flags[country] || "🌍";
 };
 
+// Photo gallery component for swipe cards
+const PhotoGallery = ({ photos, name }: { photos: string[]; name: string }) => {
+  const [photoIndex, setPhotoIndex] = useState(0);
+
+  if (photos.length === 0) {
+    return (
+      <div className="flex h-full w-full items-center justify-center bg-muted">
+        <span className="text-6xl opacity-40">👤</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="relative h-full w-full group">
+      <img
+        src={photos[photoIndex]}
+        alt={`${name} photo ${photoIndex + 1}`}
+        className="h-full w-full object-cover transition-opacity duration-300"
+        loading="eager"
+      />
+      {/* Photo indicator dots */}
+      {photos.length > 1 && (
+        <div className="absolute top-3 left-0 right-0 flex justify-center gap-1.5 px-4">
+          {photos.map((_, i) => (
+            <button
+              key={i}
+              onClick={(e) => { e.stopPropagation(); setPhotoIndex(i); }}
+              className={`h-1 flex-1 rounded-full transition-all duration-300 max-w-12 ${
+                i === photoIndex
+                  ? "bg-primary-foreground shadow-sm"
+                  : "bg-primary-foreground/40"
+              }`}
+            />
+          ))}
+        </div>
+      )}
+      {/* Tap zones for navigation */}
+      {photos.length > 1 && (
+        <>
+          <button
+            onClick={(e) => { e.stopPropagation(); setPhotoIndex((prev) => Math.max(0, prev - 1)); }}
+            className="absolute left-0 top-0 h-full w-1/3 z-10"
+            aria-label="Previous photo"
+          />
+          <button
+            onClick={(e) => { e.stopPropagation(); setPhotoIndex((prev) => Math.min(photos.length - 1, prev + 1)); }}
+            className="absolute right-0 top-0 h-full w-1/3 z-10"
+            aria-label="Next photo"
+          />
+          {/* Arrow hints on hover */}
+          {photoIndex > 0 && (
+            <div className="absolute left-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+              <div className="rounded-full bg-card/70 backdrop-blur-sm p-1.5">
+                <ChevronLeft className="h-4 w-4 text-foreground" />
+              </div>
+            </div>
+          )}
+          {photoIndex < photos.length - 1 && (
+            <div className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+              <div className="rounded-full bg-card/70 backdrop-blur-sm p-1.5">
+                <ChevronRight className="h-4 w-4 text-foreground" />
+              </div>
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+};
+
+const getProfilePhotos = (profile: Profile): string[] => {
+  const photos: string[] = [];
+  if (profile.photos && profile.photos.length > 0) photos.push(...profile.photos);
+  else if (profile.avatar_url) photos.push(profile.avatar_url);
+  return photos;
+};
+
 const Discover = () => {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -74,6 +153,7 @@ const Discover = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [direction, setDirection] = useState<"left" | "right" | null>(null);
   const [dragX, setDragX] = useState(0);
+  const [expandedBio, setExpandedBio] = useState(false);
 
   // View toggle
   const [viewMode, setViewMode] = useState<"swipe" | "list">("swipe");
@@ -83,6 +163,8 @@ const Discover = () => {
   const [filterCountry, setFilterCountry] = useState<string>("all");
   const [filterIntent, setFilterIntent] = useState<string>("all");
   const [filterCity, setFilterCity] = useState("");
+  const [filterGender, setFilterGender] = useState<string>("all");
+  const [filterAgeRange, setFilterAgeRange] = useState<[number, number]>([18, 65]);
 
   // Intro message dialog
   const [introDialog, setIntroDialog] = useState(false);
@@ -102,7 +184,6 @@ const Discover = () => {
     if (!user) return;
     setLoading(true);
 
-    // Fetch already liked profiles
     const { data: likesData } = await supabase
       .from("likes")
       .select("liked_id")
@@ -111,7 +192,6 @@ const Discover = () => {
     const alreadyLiked = new Set((likesData || []).map((l) => l.liked_id));
     setLikedIds(alreadyLiked);
 
-    // Build query
     let query = supabase
       .from("profiles")
       .select("*")
@@ -119,28 +199,24 @@ const Discover = () => {
       .eq("onboarding_completed", true)
       .order("created_at", { ascending: false });
 
-    if (filterCountry !== "all") {
-      query = query.eq("country", filterCountry);
-    }
-    if (filterIntent !== "all") {
-      query = query.eq("relationship_intent", filterIntent);
-    }
-    if (filterCity.trim()) {
-      query = query.ilike("city", `%${filterCity.trim()}%`);
-    }
+    if (filterCountry !== "all") query = query.eq("country", filterCountry);
+    if (filterIntent !== "all") query = query.eq("relationship_intent", filterIntent);
+    if (filterGender !== "all") query = query.eq("gender", filterGender);
+    if (filterCity.trim()) query = query.ilike("city", `%${filterCity.trim()}%`);
+    if (filterAgeRange[0] > 18) query = query.gte("age", filterAgeRange[0]);
+    if (filterAgeRange[1] < 65) query = query.lte("age", filterAgeRange[1]);
 
     const { data, error } = await query;
 
     if (error) {
       toast({ title: "Error loading profiles", description: error.message, variant: "destructive" });
     } else {
-      // Filter out already liked
       const filtered = (data || []).filter((p) => !alreadyLiked.has(p.id));
       setProfiles(filtered as Profile[]);
       setCurrentIndex(0);
     }
     setLoading(false);
-  }, [user, filterCountry, filterIntent, filterCity]);
+  }, [user, filterCountry, filterIntent, filterCity, filterGender, filterAgeRange]);
 
   useEffect(() => {
     fetchProfiles();
@@ -156,16 +232,11 @@ const Discover = () => {
       liked_id: profile.id,
     });
 
-    if (error) {
-      if (error.code === "23505") {
-        // Already liked
-      } else {
-        toast({ title: "Error", description: error.message, variant: "destructive" });
-        return;
-      }
+    if (error && error.code !== "23505") {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+      return;
     }
 
-    // Check if mutual like (match)
     const { data: mutualLike } = await supabase
       .from("likes")
       .select("id")
@@ -187,24 +258,20 @@ const Discover = () => {
     if (!currentProfile) return;
     setDirection(action === "like" ? "right" : "left");
 
-    if (action === "like") {
-      await handleLike(currentProfile);
-    }
+    if (action === "like") await handleLike(currentProfile);
 
     setTimeout(() => {
       setCurrentIndex((prev) => prev + 1);
       setDirection(null);
       setDragX(0);
+      setExpandedBio(false);
     }, 300);
   };
 
   const handleDragEnd = (_: any, info: PanInfo) => {
     const threshold = 100;
-    if (info.offset.x > threshold) {
-      handleSwipeAction("like");
-    } else if (info.offset.x < -threshold) {
-      handleSwipeAction("pass");
-    }
+    if (info.offset.x > threshold) handleSwipeAction("like");
+    else if (info.offset.x < -threshold) handleSwipeAction("pass");
     setDragX(0);
   };
 
@@ -221,19 +288,13 @@ const Discover = () => {
 
   const sendIntroMessage = async () => {
     if (!introTarget || !user) return;
-
-    // Like first
     await handleLike(introTarget);
-
-    // TODO: Store intro message when messaging before match is implemented
     toast({
       title: "Priority like sent!",
       description: `Your intro was sent to ${introTarget.full_name}. They'll see it when you match.`,
     });
-
     setIntroDialog(false);
     setIntroMessage("");
-
     if (viewMode === "swipe") {
       setCurrentIndex((prev) => prev + 1);
     } else {
@@ -250,34 +311,32 @@ const Discover = () => {
 
   const submitReport = async () => {
     if (!reportTarget || !user || !reportReason) return;
-
     const { error } = await supabase.from("reports").insert({
       reporter_id: user.id,
       reported_id: reportTarget.id,
       reason: reportReason,
       details: reportDetails || null,
     });
-
     if (error) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } else {
-      toast({ title: "Report submitted", description: "We'll review this profile. Thank you for keeping our community safe." });
+      toast({ title: "Report submitted", description: "We'll review this profile. Thank you." });
     }
     setReportDialog(false);
   };
 
-  const getProfilePhoto = (profile: Profile) => {
-    if (profile.photos && profile.photos.length > 0) return profile.photos[0];
-    if (profile.avatar_url) return profile.avatar_url;
-    return null;
-  };
-
-  // Separate new members (joined within 7 days)
   const now = new Date();
   const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
   const newMembers = profiles.filter((p) => new Date(p.created_at) > sevenDaysAgo);
-
   const noMoreProfiles = currentIndex >= profiles.length;
+
+  const activeFilterCount = [
+    filterCountry !== "all",
+    filterIntent !== "all",
+    filterGender !== "all",
+    !!filterCity,
+    filterAgeRange[0] > 18 || filterAgeRange[1] < 65,
+  ].filter(Boolean).length;
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
@@ -285,9 +344,8 @@ const Discover = () => {
       <main className="flex flex-1 flex-col items-center px-4 py-4 pb-24 md:pb-6">
         <div className="w-full max-w-lg">
 
-          {/* Top Bar: View Toggle + Filters */}
+          {/* Top Bar */}
           <div className="mb-4 flex items-center gap-2">
-            {/* View toggle */}
             <div className="flex rounded-xl border border-border bg-card p-1 shadow-card">
               <button
                 onClick={() => setViewMode("swipe")}
@@ -309,29 +367,29 @@ const Discover = () => {
                 }`}
               >
                 <LayoutGrid className="h-3.5 w-3.5" />
-                List
+                Grid
               </button>
             </div>
 
             <div className="flex-1" />
 
-            {/* Filter button */}
+            <span className="text-xs text-muted-foreground">{profiles.length} people</span>
+
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className={`flex items-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-medium shadow-card transition-all ${
-                showFilters || filterCountry !== "all" || filterIntent !== "all" || filterCity
+              className={`relative flex items-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-medium shadow-card transition-all ${
+                showFilters || activeFilterCount > 0
                   ? "border-primary bg-primary/5 text-primary"
-                  : "border-border bg-card text-muted-foreground"
+                  : "border-border bg-card text-muted-foreground hover:border-primary/30"
               }`}
             >
-              <Filter className="h-3.5 w-3.5" />
+              <SlidersHorizontal className="h-3.5 w-3.5" />
               Filters
-              {(filterCountry !== "all" || filterIntent !== "all" || filterCity) && (
-                <span className="flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] text-primary-foreground">
-                  {[filterCountry !== "all", filterIntent !== "all", !!filterCity].filter(Boolean).length}
+              {activeFilterCount > 0 && (
+                <span className="flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] text-primary-foreground font-bold">
+                  {activeFilterCount}
                 </span>
               )}
-              <ChevronDown className={`h-3 w-3 transition-transform ${showFilters ? "rotate-180" : ""}`} />
             </button>
           </div>
 
@@ -344,9 +402,52 @@ const Discover = () => {
                 exit={{ opacity: 0, height: 0 }}
                 className="overflow-hidden"
               >
-                <div className="mb-4 rounded-2xl border border-border bg-card p-4 shadow-card space-y-3">
+                <div className="mb-4 rounded-2xl border border-border bg-card p-5 shadow-card space-y-4">
+                  {/* Age Range */}
                   <div>
-                    <label className="text-xs font-medium text-muted-foreground">Location (Country)</label>
+                    <label className="text-xs font-medium text-muted-foreground flex items-center justify-between">
+                      Age Range
+                      <span className="text-foreground font-semibold">{filterAgeRange[0]} – {filterAgeRange[1]}{filterAgeRange[1] >= 65 ? "+" : ""}</span>
+                    </label>
+                    <div className="mt-2 px-1">
+                      <Slider
+                        min={18}
+                        max={65}
+                        step={1}
+                        value={filterAgeRange}
+                        onValueChange={(v) => setFilterAgeRange(v as [number, number])}
+                        className="w-full"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Gender */}
+                  <div>
+                    <label className="text-xs font-medium text-muted-foreground">Gender</label>
+                    <div className="mt-1.5 flex gap-2">
+                      {[
+                        { value: "all", label: "All" },
+                        { value: "male", label: "Men" },
+                        { value: "female", label: "Women" },
+                      ].map((opt) => (
+                        <button
+                          key={opt.value}
+                          onClick={() => setFilterGender(opt.value)}
+                          className={`flex-1 rounded-lg py-2 text-xs font-medium transition-all ${
+                            filterGender === opt.value
+                              ? "bg-primary text-primary-foreground shadow-sm"
+                              : "bg-muted text-muted-foreground hover:text-foreground"
+                          }`}
+                        >
+                          {opt.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Country */}
+                  <div>
+                    <label className="text-xs font-medium text-muted-foreground">Country</label>
                     <Select value={filterCountry} onValueChange={setFilterCountry}>
                       <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
                       <SelectContent>
@@ -357,6 +458,8 @@ const Discover = () => {
                       </SelectContent>
                     </Select>
                   </div>
+
+                  {/* City */}
                   <div>
                     <label className="text-xs font-medium text-muted-foreground">City</label>
                     <Input
@@ -366,30 +469,35 @@ const Discover = () => {
                       onChange={(e) => setFilterCity(e.target.value)}
                     />
                   </div>
+
+                  {/* Relationship Intent */}
                   <div>
-                    <label className="text-xs font-medium text-muted-foreground">Relationship Intent</label>
+                    <label className="text-xs font-medium text-muted-foreground">Looking for</label>
                     <Select value={filterIntent} onValueChange={setFilterIntent}>
                       <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="all">Any</SelectItem>
-                        <SelectItem value="long-term">Long-term</SelectItem>
+                        <SelectItem value="long-term">Long-term Relationship</SelectItem>
                         <SelectItem value="marriage">Marriage</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
-                  <div className="flex gap-2">
+
+                  <div className="flex gap-2 pt-1">
                     <Button size="sm" variant="outline" className="flex-1" onClick={() => {
                       setFilterCountry("all");
                       setFilterIntent("all");
                       setFilterCity("");
+                      setFilterGender("all");
+                      setFilterAgeRange([18, 65]);
                     }}>
-                      Clear
+                      Reset All
                     </Button>
                     <Button size="sm" className="flex-1 gradient-hero text-primary-foreground" onClick={() => {
                       setShowFilters(false);
                       fetchProfiles();
                     }}>
-                      Apply
+                      Show Results
                     </Button>
                   </div>
                 </div>
@@ -397,9 +505,9 @@ const Discover = () => {
             )}
           </AnimatePresence>
 
-          {/* Trust messaging */}
+          {/* Trust banner */}
           <div className="mb-4 flex items-center gap-2 rounded-xl bg-secondary/5 px-3 py-2">
-            <Shield className="h-4 w-4 text-secondary" />
+            <Shield className="h-4 w-4 text-secondary flex-shrink-0" />
             <p className="text-[11px] text-secondary font-medium">
               All profiles are reviewed for authenticity. Report anything suspicious.
             </p>
@@ -420,10 +528,7 @@ const Discover = () => {
                   <p className="mt-2 text-sm text-muted-foreground text-center max-w-xs">
                     Check back later or adjust your filters to discover more people.
                   </p>
-                  <Button variant="outline" className="mt-6" onClick={() => {
-                    setCurrentIndex(0);
-                    fetchProfiles();
-                  }}>
+                  <Button variant="outline" className="mt-6" onClick={() => { setCurrentIndex(0); fetchProfiles(); }}>
                     Refresh
                   </Button>
                 </div>
@@ -446,7 +551,7 @@ const Discover = () => {
                         dragElastic={0.8}
                         onDrag={(_, info) => setDragX(info.offset.x)}
                         onDragEnd={handleDragEnd}
-                        className="overflow-hidden rounded-3xl border border-border bg-card shadow-elevated cursor-grab active:cursor-grabbing"
+                        className="overflow-hidden rounded-3xl border border-border bg-card shadow-elevated cursor-grab active:cursor-grabbing select-none"
                       >
                         {/* Swipe indicators */}
                         <AnimatePresence>
@@ -472,25 +577,14 @@ const Discover = () => {
                           )}
                         </AnimatePresence>
 
-                        {/* Photo */}
-                        <div className="relative aspect-[3/4] max-h-[420px]">
-                          {getProfilePhoto(currentProfile) ? (
-                            <img
-                              src={getProfilePhoto(currentProfile)!}
-                              alt={currentProfile.full_name}
-                              className="h-full w-full object-cover"
-                              loading="eager"
-                            />
-                          ) : (
-                            <div className="flex h-full w-full items-center justify-center bg-muted">
-                              <span className="text-4xl">👤</span>
-                            </div>
-                          )}
-                          <div className="absolute inset-0 bg-gradient-to-t from-foreground/80 via-foreground/10 to-transparent" />
+                        {/* Photo Gallery */}
+                        <div className="relative aspect-[3/4] max-h-[450px]">
+                          <PhotoGallery photos={getProfilePhotos(currentProfile)} name={currentProfile.full_name} />
+                          <div className="absolute inset-0 bg-gradient-to-t from-foreground/80 via-transparent to-foreground/5 pointer-events-none" />
 
                           {/* Country flag */}
                           {currentProfile.country && (
-                            <div className="absolute top-4 right-4 rounded-full bg-card/90 backdrop-blur-sm px-2.5 py-1 text-sm shadow-card">
+                            <div className="absolute top-4 right-4 z-20 rounded-full bg-card/90 backdrop-blur-sm px-2.5 py-1 text-sm shadow-card">
                               {getFlagEmoji(currentProfile.country)}
                             </div>
                           )}
@@ -498,15 +592,15 @@ const Discover = () => {
                           {/* Report button */}
                           <button
                             onClick={() => handleReport(currentProfile)}
-                            className="absolute top-4 left-4 rounded-full bg-card/70 backdrop-blur-sm p-2 text-muted-foreground hover:text-destructive transition-colors"
+                            className="absolute top-4 left-4 z-20 rounded-full bg-card/70 backdrop-blur-sm p-2 text-muted-foreground hover:text-destructive transition-colors"
                           >
                             <Flag className="h-4 w-4" />
                           </button>
 
                           {/* Name overlay */}
-                          <div className="absolute bottom-0 left-0 right-0 p-5">
+                          <div className="absolute bottom-0 left-0 right-0 p-5 z-10 pointer-events-none">
                             <div className="flex items-center gap-2">
-                              <h2 className="text-2xl font-bold text-primary-foreground font-display">
+                              <h2 className="text-2xl font-bold text-primary-foreground" style={{ fontFamily: 'var(--font-display)' }}>
                                 {currentProfile.full_name}{currentProfile.age ? `, ${currentProfile.age}` : ""}
                               </h2>
                               {currentProfile.is_verified && (
@@ -522,7 +616,7 @@ const Discover = () => {
 
                         {/* Profile info */}
                         <div className="p-5 space-y-3">
-                          {/* Badges */}
+                          {/* Badges row */}
                           <div className="flex flex-wrap gap-1.5">
                             {currentProfile.is_verified && (
                               <Badge variant="secondary" className="gap-1 border-0 bg-secondary/10 text-secondary text-[11px]">
@@ -544,31 +638,43 @@ const Discover = () => {
                                 🌏 Open International
                               </Badge>
                             )}
+                            {currentProfile.user_type && (
+                              <Badge variant="outline" className="gap-1 text-[11px] capitalize">
+                                {currentProfile.user_type === "foreigner" ? "🌐" : "🇵🇭"} {currentProfile.user_type}
+                              </Badge>
+                            )}
                           </div>
 
                           {/* Bio */}
                           {currentProfile.bio && (
-                            <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2">
-                              {currentProfile.bio}
-                            </p>
+                            <div>
+                              <p
+                                className={`text-sm text-muted-foreground leading-relaxed ${!expandedBio ? "line-clamp-3" : ""}`}
+                              >
+                                {currentProfile.bio}
+                              </p>
+                              {currentProfile.bio.length > 120 && (
+                                <button
+                                  onClick={() => setExpandedBio(!expandedBio)}
+                                  className="text-xs text-primary font-medium mt-1 hover:underline"
+                                >
+                                  {expandedBio ? "Show less" : "Read more"}
+                                </button>
+                              )}
+                            </div>
                           )}
 
                           {/* Interests */}
                           {currentProfile.interests && currentProfile.interests.length > 0 && (
                             <div className="flex flex-wrap gap-1.5">
-                              {currentProfile.interests.slice(0, 6).map((interest) => (
+                              {currentProfile.interests.map((interest) => (
                                 <span
                                   key={interest}
-                                  className="rounded-full border border-border px-2.5 py-0.5 text-[11px] text-muted-foreground"
+                                  className="rounded-full bg-muted px-2.5 py-1 text-[11px] font-medium text-foreground/70"
                                 >
                                   {interest}
                                 </span>
                               ))}
-                              {currentProfile.interests.length > 6 && (
-                                <span className="rounded-full border border-border px-2.5 py-0.5 text-[11px] text-muted-foreground">
-                                  +{currentProfile.interests.length - 6}
-                                </span>
-                              )}
                             </div>
                           )}
                         </div>
@@ -585,7 +691,6 @@ const Discover = () => {
                       <X className="h-6 w-6 text-muted-foreground" />
                     </button>
 
-                    {/* Priority Like */}
                     <button
                       onClick={() => handlePriorityLike(currentProfile)}
                       className="flex h-12 w-12 items-center justify-center rounded-full border-2 border-accent bg-accent/10 shadow-card transition-all hover:shadow-card-hover hover:scale-105 active:scale-95"
@@ -608,9 +713,9 @@ const Discover = () => {
               )}
             </>
           ) : (
-            /* =================== LIST VIEW =================== */
+            /* =================== GRID/LIST VIEW =================== */
             <div className="space-y-6">
-              {/* New Members Section */}
+              {/* New Members */}
               {newMembers.length > 0 && (
                 <div>
                   <div className="mb-3 flex items-center gap-2">
@@ -622,13 +727,10 @@ const Discover = () => {
                   </div>
                   <div className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1 scrollbar-hide">
                     {newMembers.slice(0, 8).map((profile) => (
-                      <div
-                        key={profile.id}
-                        className="flex-shrink-0 w-24 text-center"
-                      >
+                      <div key={profile.id} className="flex-shrink-0 w-24 text-center">
                         <div className="relative mx-auto h-20 w-20 rounded-full overflow-hidden border-2 border-accent/30 shadow-card">
-                          {getProfilePhoto(profile) ? (
-                            <img src={getProfilePhoto(profile)!} alt={profile.full_name} className="h-full w-full object-cover" />
+                          {getProfilePhotos(profile).length > 0 ? (
+                            <img src={getProfilePhotos(profile)[0]} alt={profile.full_name} className="h-full w-full object-cover" />
                           ) : (
                             <div className="flex h-full w-full items-center justify-center bg-muted text-xl">👤</div>
                           )}
@@ -646,7 +748,7 @@ const Discover = () => {
                 </div>
               )}
 
-              {/* All Profiles List */}
+              {/* Grid of Profile Cards */}
               <div>
                 <div className="mb-3 flex items-center gap-2">
                   <Clock className="h-4 w-4 text-muted-foreground" />
@@ -660,99 +762,78 @@ const Discover = () => {
                     <p className="text-sm text-muted-foreground">No profiles found. Try adjusting your filters.</p>
                   </div>
                 ) : (
-                  <div className="space-y-3">
+                  <div className="grid grid-cols-2 gap-3">
                     {profiles.map((profile) => (
                       <motion.div
                         key={profile.id}
                         layout
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, x: -100 }}
-                        className="rounded-2xl border border-border bg-card shadow-card overflow-hidden transition-all hover:shadow-card-hover"
+                        exit={{ opacity: 0, scale: 0.9 }}
+                        className="group rounded-2xl border border-border bg-card shadow-card overflow-hidden transition-all hover:shadow-card-hover"
                       >
-                        <div className="flex gap-4 p-4">
-                          {/* Photo */}
-                          <div className="relative h-28 w-24 flex-shrink-0 rounded-xl overflow-hidden">
-                            {getProfilePhoto(profile) ? (
-                              <img src={getProfilePhoto(profile)!} alt={profile.full_name} className="h-full w-full object-cover" />
-                            ) : (
-                              <div className="flex h-full w-full items-center justify-center bg-muted text-2xl">👤</div>
-                            )}
-                            {profile.country && (
-                              <div className="absolute top-1 right-1 text-sm">{getFlagEmoji(profile.country)}</div>
-                            )}
-                          </div>
+                        {/* Photo */}
+                        <div className="relative aspect-[3/4]">
+                          {getProfilePhotos(profile).length > 0 ? (
+                            <img src={getProfilePhotos(profile)[0]} alt={profile.full_name} className="h-full w-full object-cover" />
+                          ) : (
+                            <div className="flex h-full w-full items-center justify-center bg-muted text-3xl">👤</div>
+                          )}
+                          <div className="absolute inset-0 bg-gradient-to-t from-foreground/70 via-transparent to-transparent" />
 
-                          {/* Details */}
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-1.5">
-                              <h4 className="font-semibold text-foreground truncate">
-                                {profile.full_name}{profile.age ? `, ${profile.age}` : ""}
-                              </h4>
-                              {profile.is_verified && (
-                                <Shield className="h-4 w-4 flex-shrink-0 text-secondary fill-secondary/30" />
-                              )}
+                          {/* Country flag */}
+                          {profile.country && (
+                            <div className="absolute top-2 right-2 text-sm">{getFlagEmoji(profile.country)}</div>
+                          )}
+
+                          {/* Verified badge */}
+                          {profile.is_verified && (
+                            <div className="absolute top-2 left-2 rounded-full bg-card/80 backdrop-blur-sm p-1">
+                              <Shield className="h-3 w-3 text-secondary fill-secondary/30" />
                             </div>
+                          )}
 
-                            <div className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground">
-                              <MapPin className="h-3 w-3" />
-                              {[profile.city, profile.country].filter(Boolean).join(", ") || "—"}
+                          {/* Name on photo */}
+                          <div className="absolute bottom-0 left-0 right-0 p-3">
+                            <h4 className="text-sm font-bold text-primary-foreground truncate">
+                              {profile.full_name.split(" ")[0]}{profile.age ? `, ${profile.age}` : ""}
+                            </h4>
+                            <div className="flex items-center gap-1 text-[10px] text-primary-foreground/70 mt-0.5">
+                              <MapPin className="h-2.5 w-2.5" />
+                              <span className="truncate">{profile.city || profile.country || "—"}</span>
                             </div>
-
-                            {/* Badges */}
-                            <div className="mt-2 flex flex-wrap gap-1">
-                              {profile.relationship_intent && (
-                                <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary">
-                                  {formatIntent(profile.relationship_intent)}
-                                </span>
-                              )}
-                              {profile.relocation_intent && profile.relocation_intent !== "not-willing" && (
-                                <span className="rounded-full bg-accent/10 px-2 py-0.5 text-[10px] font-medium text-accent">
-                                  {formatRelocation(profile.relocation_intent)}
-                                </span>
-                              )}
-                            </div>
-
-                            {profile.bio && (
-                              <p className="mt-1.5 text-xs text-muted-foreground line-clamp-2 leading-relaxed">{profile.bio}</p>
-                            )}
-
-                            {/* Interests */}
-                            {profile.interests && profile.interests.length > 0 && (
-                              <div className="mt-1.5 flex flex-wrap gap-1">
-                                {profile.interests.slice(0, 3).map((i) => (
-                                  <span key={i} className="rounded-full border border-border px-2 py-0.5 text-[10px] text-muted-foreground">{i}</span>
-                                ))}
-                                {profile.interests.length > 3 && (
-                                  <span className="text-[10px] text-muted-foreground">+{profile.interests.length - 3}</span>
-                                )}
-                              </div>
-                            )}
                           </div>
                         </div>
 
-                        {/* Actions */}
-                        <div className="flex border-t border-border">
-                          <button
-                            onClick={() => handleReport(profile)}
-                            className="flex flex-1 items-center justify-center gap-1.5 py-2.5 text-xs text-muted-foreground hover:text-destructive transition-colors"
-                          >
-                            <Flag className="h-3 w-3" /> Report
-                          </button>
-                          <div className="w-px bg-border" />
-                          <button
-                            onClick={() => handlePriorityLike(profile)}
-                            className="flex flex-1 items-center justify-center gap-1.5 py-2.5 text-xs text-accent font-medium hover:bg-accent/5 transition-colors"
-                          >
-                            <Star className="h-3 w-3 fill-accent" /> Priority
-                          </button>
-                          <div className="w-px bg-border" />
-                          <button
-                            onClick={() => handleListLike(profile)}
-                            className="flex flex-1 items-center justify-center gap-1.5 py-2.5 text-xs text-primary font-medium hover:bg-primary/5 transition-colors"
-                          >
-                            <Heart className="h-3 w-3 fill-primary" /> Like
-                          </button>
+                        {/* Quick info */}
+                        <div className="p-2.5 space-y-1.5">
+                          {profile.relationship_intent && (
+                            <span className="inline-block rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary">
+                              {formatIntent(profile.relationship_intent)}
+                            </span>
+                          )}
+
+                          {/* Action buttons */}
+                          <div className="flex gap-1.5">
+                            <button
+                              onClick={() => handleListLike(profile)}
+                              className="flex flex-1 items-center justify-center gap-1 rounded-lg bg-primary/10 py-1.5 text-[11px] font-medium text-primary hover:bg-primary/20 transition-colors"
+                            >
+                              <Heart className="h-3 w-3" /> Like
+                            </button>
+                            <button
+                              onClick={() => handlePriorityLike(profile)}
+                              className="flex items-center justify-center rounded-lg bg-accent/10 px-2.5 py-1.5 text-accent hover:bg-accent/20 transition-colors"
+                            >
+                              <Star className="h-3 w-3 fill-accent" />
+                            </button>
+                            <button
+                              onClick={() => handleReport(profile)}
+                              className="flex items-center justify-center rounded-lg bg-muted px-2.5 py-1.5 text-muted-foreground hover:text-destructive transition-colors"
+                            >
+                              <Flag className="h-3 w-3" />
+                            </button>
+                          </div>
                         </div>
                       </motion.div>
                     ))}
@@ -833,12 +914,7 @@ const Discover = () => {
             <DialogClose asChild>
               <Button variant="outline" size="sm">Cancel</Button>
             </DialogClose>
-            <Button
-              size="sm"
-              variant="destructive"
-              onClick={submitReport}
-              disabled={!reportReason}
-            >
+            <Button size="sm" variant="destructive" onClick={submitReport} disabled={!reportReason}>
               Submit Report
             </Button>
           </DialogFooter>
