@@ -1,7 +1,18 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Send, ArrowLeft, Shield, Lock, MessageCircle, Sparkles } from "lucide-react";
+import {
+  Send, ArrowLeft, Shield, Lock, MessageCircle, Sparkles,
+  Flag, Ban, AlertTriangle, MoreVertical, MapPin, Crown
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator
+} from "@/components/ui/dropdown-menu";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose
+} from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import BottomNav from "@/components/BottomNav";
 import Navbar from "@/components/Navbar";
 import { useAuth } from "@/contexts/AuthContext";
@@ -9,15 +20,23 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { format, isToday, isYesterday } from "date-fns";
 
+const FREE_MESSAGE_LIMIT = 3;
+
+interface MatchProfile {
+  id: string;
+  full_name: string;
+  avatar_url: string | null;
+  photos: string[] | null;
+  is_verified: boolean | null;
+  age: number | null;
+  city: string | null;
+  country: string | null;
+  is_premium: boolean | null;
+}
+
 interface Match {
   id: string;
-  other_user: {
-    id: string;
-    full_name: string;
-    avatar_url: string | null;
-    photos: string[] | null;
-    is_verified: boolean | null;
-  };
+  other_user: MatchProfile;
   last_message?: {
     content: string;
     created_at: string;
@@ -59,11 +78,42 @@ const Messages = () => {
   const [newMessage, setNewMessage] = useState("");
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
+  const [myProfile, setMyProfile] = useState<{ is_premium: boolean | null } | null>(null);
 
-  // Fetch matches with last message
+  // Report dialog
+  const [reportDialog, setReportDialog] = useState(false);
+  const [reportReason, setReportReason] = useState("");
+  const [reportDetails, setReportDetails] = useState("");
+
+  // My sent message count for current match
+  const mySentCount = messages.filter((m) => m.sender_id === user?.id).length;
+  const isPremium = myProfile?.is_premium === true;
+  const isLocked = !isPremium && mySentCount >= FREE_MESSAGE_LIMIT;
+  const remainingFree = Math.max(0, FREE_MESSAGE_LIMIT - mySentCount);
+
+  // Fetch own profile for premium status
+  useEffect(() => {
+    if (!user) return;
+    supabase
+      .from("profiles")
+      .select("is_premium")
+      .eq("id", user.id)
+      .single()
+      .then(({ data }) => {
+        if (data) setMyProfile(data);
+      });
+  }, [user]);
+
   const fetchMatches = useCallback(async () => {
     if (!user) return;
     setLoading(true);
+
+    // Get blocked users to exclude
+    const { data: blockedData } = await supabase
+      .from("blocked_users")
+      .select("blocked_id")
+      .eq("blocker_id", user.id);
+    const blockedIds = new Set((blockedData || []).map((b: any) => b.blocked_id));
 
     const { data: matchesData, error } = await supabase
       .from("matches")
@@ -83,22 +133,33 @@ const Messages = () => {
       return;
     }
 
-    const otherUserIds = matchesData.map((m) =>
+    // Filter out blocked users
+    const filteredMatches = matchesData.filter((m) => {
+      const otherId = m.user1_id === user.id ? m.user2_id : m.user1_id;
+      return !blockedIds.has(otherId);
+    });
+
+    const otherUserIds = filteredMatches.map((m) =>
       m.user1_id === user.id ? m.user2_id : m.user1_id
     );
 
+    if (otherUserIds.length === 0) {
+      setMatches([]);
+      setLoading(false);
+      return;
+    }
+
     const { data: profilesData } = await supabase
       .from("profiles")
-      .select("id, full_name, avatar_url, photos, is_verified")
+      .select("id, full_name, avatar_url, photos, is_verified, age, city, country, is_premium")
       .in("id", otherUserIds);
 
     const profileMap = new Map(
       (profilesData || []).map((p) => [p.id, p])
     );
 
-    // Fetch last message for each match
     const matchList: Match[] = [];
-    for (const m of matchesData) {
+    for (const m of filteredMatches) {
       const otherId = m.user1_id === user.id ? m.user2_id : m.user1_id;
       const profile = profileMap.get(otherId);
       if (!profile) continue;
@@ -120,13 +181,12 @@ const Messages = () => {
 
       matchList.push({
         id: m.id,
-        other_user: profile,
+        other_user: profile as MatchProfile,
         last_message: lastMsg || undefined,
         unread_count: count || 0,
       });
     }
 
-    // Sort: unread first, then by last message time
     matchList.sort((a, b) => {
       if (a.unread_count > 0 && b.unread_count === 0) return -1;
       if (b.unread_count > 0 && a.unread_count === 0) return 1;
@@ -143,7 +203,6 @@ const Messages = () => {
     fetchMatches();
   }, [fetchMatches]);
 
-  // Fetch messages for selected match
   const fetchMessages = useCallback(async () => {
     if (!selectedMatch || !user) return;
 
@@ -155,8 +214,6 @@ const Messages = () => {
 
     if (!error && data) {
       setMessages(data as Message[]);
-
-      // Mark unread messages as read
       await supabase
         .from("messages")
         .update({ read: true })
@@ -170,50 +227,41 @@ const Messages = () => {
     fetchMessages();
   }, [fetchMessages]);
 
-  // Scroll to bottom when messages change
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // Real-time subscription
+  // Real-time
   useEffect(() => {
     if (!selectedMatch) return;
-
     const channel = supabase
       .channel(`messages-${selectedMatch.id}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "messages",
-          filter: `match_id=eq.${selectedMatch.id}`,
-        },
-        (payload) => {
-          const newMsg = payload.new as Message;
-          setMessages((prev) => {
-            if (prev.find((m) => m.id === newMsg.id)) return prev;
-            return [...prev, newMsg];
-          });
-
-          // Mark as read if from other user
-          if (newMsg.sender_id !== user?.id) {
-            supabase
-              .from("messages")
-              .update({ read: true })
-              .eq("id", newMsg.id);
-          }
+      .on("postgres_changes", {
+        event: "INSERT",
+        schema: "public",
+        table: "messages",
+        filter: `match_id=eq.${selectedMatch.id}`,
+      }, (payload) => {
+        const newMsg = payload.new as Message;
+        setMessages((prev) => {
+          if (prev.find((m) => m.id === newMsg.id)) return prev;
+          return [...prev, newMsg];
+        });
+        if (newMsg.sender_id !== user?.id) {
+          supabase.from("messages").update({ read: true }).eq("id", newMsg.id);
         }
-      )
+      })
       .subscribe();
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
+    return () => { supabase.removeChannel(channel); };
   }, [selectedMatch, user]);
 
   const handleSend = async () => {
-    if (!newMessage.trim() || !selectedMatch || !user || sending) return;
+    if (!newMessage.trim() || !selectedMatch || !user || sending || isLocked) return;
+    if (newMessage.trim().length > 1000) {
+      toast({ title: "Message too long", description: "Max 1000 characters.", variant: "destructive" });
+      return;
+    }
     setSending(true);
     const content = newMessage.trim();
     setNewMessage("");
@@ -238,6 +286,46 @@ const Messages = () => {
     }
   };
 
+  const handleBlock = async () => {
+    if (!selectedMatch || !user) return;
+    if (!confirm(`Block ${selectedMatch.other_user.full_name}? They won't be able to contact you.`)) return;
+
+    const { error } = await supabase.from("blocked_users").insert({
+      blocker_id: user.id,
+      blocked_id: selectedMatch.other_user.id,
+    });
+
+    if (error && error.code !== "23505") {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "User blocked", description: `${selectedMatch.other_user.full_name} has been blocked.` });
+      setSelectedMatch(null);
+      fetchMatches();
+    }
+  };
+
+  const handleReport = () => {
+    setReportReason("");
+    setReportDetails("");
+    setReportDialog(true);
+  };
+
+  const submitReport = async () => {
+    if (!selectedMatch || !user || !reportReason) return;
+    const { error } = await supabase.from("reports").insert({
+      reporter_id: user.id,
+      reported_id: selectedMatch.other_user.id,
+      reason: reportReason,
+      details: reportDetails || null,
+    });
+    if (error) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Report submitted", description: "Thank you for keeping our community safe." });
+    }
+    setReportDialog(false);
+  };
+
   // Group messages by date
   const groupedMessages: { date: string; messages: Message[] }[] = [];
   messages.forEach((msg) => {
@@ -246,14 +334,14 @@ const Messages = () => {
     if (isToday(date)) label = "Today";
     else if (isYesterday(date)) label = "Yesterday";
     else label = format(date, "MMMM d, yyyy");
-
     const lastGroup = groupedMessages[groupedMessages.length - 1];
-    if (lastGroup?.date === label) {
-      lastGroup.messages.push(msg);
-    } else {
-      groupedMessages.push({ date: label, messages: [msg] });
-    }
+    if (lastGroup?.date === label) lastGroup.messages.push(msg);
+    else groupedMessages.push({ date: label, messages: [msg] });
   });
+
+  const location = selectedMatch
+    ? [selectedMatch.other_user.city, selectedMatch.other_user.country].filter(Boolean).join(", ")
+    : "";
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
@@ -268,7 +356,9 @@ const Messages = () => {
         >
           <div className="p-4 border-b border-border">
             <h1 className="text-lg font-bold" style={{ fontFamily: 'var(--font-display)' }}>Messages</h1>
-            <p className="text-xs text-muted-foreground mt-0.5">{matches.length} conversation{matches.length !== 1 ? "s" : ""}</p>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              {matches.length} conversation{matches.length !== 1 ? "s" : ""}
+            </p>
           </div>
 
           <div className="flex-1 overflow-y-auto">
@@ -317,6 +407,7 @@ const Messages = () => {
                       <div className="flex items-center gap-1.5">
                         <span className={`text-sm truncate ${match.unread_count > 0 ? "font-bold" : "font-medium"}`}>
                           {match.other_user.full_name}
+                          {match.other_user.age ? `, ${match.other_user.age}` : ""}
                         </span>
                         {match.other_user.is_verified && (
                           <Shield className="h-3.5 w-3.5 text-secondary fill-secondary/30 flex-shrink-0" />
@@ -341,11 +432,7 @@ const Messages = () => {
         </div>
 
         {/* Chat Area */}
-        <div
-          className={`flex-1 flex flex-col ${
-            selectedMatch ? "flex" : "hidden md:flex"
-          }`}
-        >
+        <div className={`flex-1 flex flex-col ${selectedMatch ? "flex" : "hidden md:flex"}`}>
           {selectedMatch ? (
             <>
               {/* Chat Header */}
@@ -365,14 +452,51 @@ const Messages = () => {
                 ) : (
                   <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center">👤</div>
                 )}
-                <div>
+                <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-1.5">
-                    <h2 className="font-semibold text-sm">{selectedMatch.other_user.full_name}</h2>
+                    <h2 className="font-semibold text-sm truncate">
+                      {selectedMatch.other_user.full_name}
+                      {selectedMatch.other_user.age ? `, ${selectedMatch.other_user.age}` : ""}
+                    </h2>
                     {selectedMatch.other_user.is_verified && (
-                      <Shield className="h-3.5 w-3.5 text-secondary fill-secondary/30" />
+                      <Shield className="h-3.5 w-3.5 text-secondary fill-secondary/30 flex-shrink-0" />
                     )}
                   </div>
+                  {location && (
+                    <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
+                      <MapPin className="h-3 w-3" />
+                      <span className="truncate">{location}</span>
+                    </div>
+                  )}
                 </div>
+
+                {/* Actions dropdown */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button className="rounded-lg p-2 hover:bg-muted transition-colors">
+                      <MoreVertical className="h-4 w-4 text-muted-foreground" />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={handleReport} className="text-destructive focus:text-destructive">
+                      <Flag className="h-4 w-4 mr-2" />
+                      Report
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={handleBlock} className="text-destructive focus:text-destructive">
+                      <Ban className="h-4 w-4 mr-2" />
+                      Block User
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+
+              {/* Anti-scam banner */}
+              <div className="flex items-center gap-2 px-4 py-2 bg-accent/10 border-b border-accent/20">
+                <AlertTriangle className="h-3.5 w-3.5 text-accent flex-shrink-0" />
+                <p className="text-[11px] text-accent font-medium">
+                  Do not send money to someone you just met online. <a href="/safety" className="underline">Stay safe</a>
+                </p>
               </div>
 
               {/* Messages */}
@@ -405,11 +529,9 @@ const Messages = () => {
                             }`}
                           >
                             <p className="text-sm whitespace-pre-wrap break-words">{msg.content}</p>
-                            <p
-                              className={`mt-1 text-[10px] ${
-                                msg.sender_id === user?.id ? "text-primary-foreground/60" : "text-muted-foreground"
-                              }`}
-                            >
+                            <p className={`mt-1 text-[10px] ${
+                              msg.sender_id === user?.id ? "text-primary-foreground/60" : "text-muted-foreground"
+                            }`}>
                               {format(new Date(msg.created_at), "h:mm a")}
                             </p>
                           </div>
@@ -421,26 +543,67 @@ const Messages = () => {
                 </div>
               </div>
 
-              {/* Input */}
-              <div className="border-t border-border bg-card p-3">
-                <div className="mx-auto max-w-2xl flex items-center gap-3">
-                  <input
-                    type="text"
-                    placeholder="Type a message..."
-                    className="flex-1 rounded-xl border border-input bg-background px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                    value={newMessage}
-                    onChange={(e) => setNewMessage(e.target.value)}
-                    onKeyDown={handleKeyDown}
-                  />
-                  <button
-                    onClick={handleSend}
-                    disabled={!newMessage.trim() || sending}
-                    className="flex h-10 w-10 items-center justify-center rounded-xl gradient-hero text-primary-foreground transition-all hover:scale-105 active:scale-95 disabled:opacity-50 disabled:hover:scale-100"
-                  >
-                    <Send className="h-4 w-4" />
-                  </button>
+              {/* Input / Locked State */}
+              {isLocked ? (
+                <div className="border-t border-border bg-card p-5">
+                  <div className="mx-auto max-w-md text-center">
+                    <Lock className="h-8 w-8 text-muted-foreground/40 mx-auto mb-3" />
+                    <h3 className="font-semibold text-foreground text-sm mb-1">
+                      You've reached your free message limit
+                    </h3>
+                    <p className="text-xs text-muted-foreground mb-4">
+                      Upgrade to Premium to continue chatting with {selectedMatch.other_user.full_name.split(" ")[0]} and unlock unlimited messaging.
+                    </p>
+                    <Button
+                      variant="hero"
+                      size="sm"
+                      className="gap-1.5"
+                      onClick={() => toast({ title: "Coming soon!", description: "Premium subscriptions will be available soon." })}
+                    >
+                      <Crown className="h-3.5 w-3.5" />
+                      Upgrade Now
+                    </Button>
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <div className="border-t border-border bg-card">
+                  {/* Remaining messages indicator */}
+                  {!isPremium && (
+                    <div className="flex items-center justify-between px-4 py-1.5 bg-muted/50 border-b border-border">
+                      <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                        <Lock className="h-3 w-3" />
+                        {remainingFree} free message{remainingFree !== 1 ? "s" : ""} remaining
+                      </div>
+                      <button
+                        onClick={() => toast({ title: "Coming soon!", description: "Premium subscriptions will be available soon." })}
+                        className="text-[11px] font-semibold text-primary hover:underline"
+                      >
+                        Go Premium
+                      </button>
+                    </div>
+                  )}
+                  <div className="p-3">
+                    <div className="mx-auto max-w-2xl flex items-center gap-3">
+                      <input
+                        type="text"
+                        placeholder="Type a message..."
+                        className="flex-1 rounded-xl border border-input bg-background px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                        value={newMessage}
+                        onChange={(e) => setNewMessage(e.target.value.slice(0, 1000))}
+                        onKeyDown={handleKeyDown}
+                        maxLength={1000}
+                      />
+                      <button
+                        onClick={handleSend}
+                        disabled={!newMessage.trim() || sending}
+                        className="flex h-10 w-10 items-center justify-center rounded-xl gradient-hero text-primary-foreground transition-all hover:scale-105 active:scale-95 disabled:opacity-50 disabled:hover:scale-100"
+                      >
+                        <Send className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </>
           ) : (
             <div className="flex-1 flex flex-col items-center justify-center text-center px-6">
@@ -451,6 +614,47 @@ const Messages = () => {
           )}
         </div>
       </div>
+
+      {/* Report Dialog */}
+      <Dialog open={reportDialog} onOpenChange={setReportDialog}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-destructive">
+              <Flag className="h-5 w-5" />
+              Report User
+            </DialogTitle>
+            <DialogDescription>
+              Why are you reporting {selectedMatch?.other_user.full_name}?
+            </DialogDescription>
+          </DialogHeader>
+          <Select value={reportReason} onValueChange={setReportReason}>
+            <SelectTrigger><SelectValue placeholder="Select a reason" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="fake-profile">Fake profile</SelectItem>
+              <SelectItem value="inappropriate-content">Inappropriate content</SelectItem>
+              <SelectItem value="harassment">Harassment</SelectItem>
+              <SelectItem value="scam">Scam / fraud</SelectItem>
+              <SelectItem value="underage">Underage user</SelectItem>
+              <SelectItem value="other">Other</SelectItem>
+            </SelectContent>
+          </Select>
+          <Textarea
+            placeholder="Additional details (optional)..."
+            value={reportDetails}
+            onChange={(e) => setReportDetails(e.target.value.slice(0, 500))}
+            rows={2}
+            maxLength={500}
+          />
+          <DialogFooter className="gap-2">
+            <DialogClose asChild>
+              <Button variant="outline" size="sm">Cancel</Button>
+            </DialogClose>
+            <Button size="sm" variant="destructive" onClick={submitReport} disabled={!reportReason}>
+              Submit Report
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <BottomNav />
     </div>
