@@ -91,7 +91,7 @@ const Onboarding = () => {
         bio: bio.trim(),
         interests,
         international_preference: internationalPref === "yes",
-        relocation_intent: internationalPref === "yes" ? "open" : "not_open",
+        relocation_intent: internationalPref === "yes" ? "open-to-discuss" : "not-willing",
         photos,
         avatar_url: photos[0] || null,
         onboarding_completed: true,
