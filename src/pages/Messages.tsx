@@ -3,6 +3,7 @@ import {
   Send, ArrowLeft, Shield, Lock, MessageCircle, Sparkles,
   Flag, Ban, AlertTriangle, MoreVertical, MapPin, Crown
 } from "lucide-react";
+import OnlineStatus from "@/components/OnlineStatus";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
