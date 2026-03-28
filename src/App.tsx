@@ -35,28 +35,32 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/signup" element={<Signup />} />
-            <Route path="/onboarding" element={<Onboarding />} />
-            <Route path="/discover" element={<ProtectedRoute><Discover /></ProtectedRoute>} />
-            <Route path="/profile/:id" element={<ProtectedRoute><ProfileDetail /></ProtectedRoute>} />
-            <Route path="/matches" element={<ProtectedRoute><Matches /></ProtectedRoute>} />
-            <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
-            <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-            <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
-            <Route path="/verification" element={<ProtectedRoute><Verification /></ProtectedRoute>} />
-            <Route path="/admin/verifications" element={<ProtectedRoute><AdminVerifications /></ProtectedRoute>} />
-            <Route path="/premium" element={<ProtectedRoute><Premium /></ProtectedRoute>} />
-            <Route path="/about" element={<About />} />
-            <Route path="/safety" element={<Safety />} />
-            <Route path="/privacy" element={<Privacy />} />
-            <Route path="/terms" element={<Terms />} />
-            <Route path="/support" element={<Support />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </AuthProvider>
+          <div className="flex min-h-screen flex-col">
+            <div className="flex-1">
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/signup" element={<Signup />} />
+                <Route path="/onboarding" element={<Onboarding />} />
+                <Route path="/discover" element={<ProtectedRoute><Discover /></ProtectedRoute>} />
+                <Route path="/profile/:id" element={<ProtectedRoute><ProfileDetail /></ProtectedRoute>} />
+                <Route path="/matches" element={<ProtectedRoute><Matches /></ProtectedRoute>} />
+                <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
+                <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+                <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+                <Route path="/verification" element={<ProtectedRoute><Verification /></ProtectedRoute>} />
+                <Route path="/admin/verifications" element={<ProtectedRoute><AdminVerifications /></ProtectedRoute>} />
+                <Route path="/premium" element={<ProtectedRoute><Premium /></ProtectedRoute>} />
+                <Route path="/about" element={<About />} />
+                <Route path="/safety" element={<Safety />} />
+                <Route path="/privacy" element={<Privacy />} />
+                <Route path="/terms" element={<Terms />} />
+                <Route path="/support" element={<Support />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </div>
+            <Footer />
+          </div>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
