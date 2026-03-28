@@ -840,6 +840,7 @@ const Discover = () => {
                                   {currentProfile.full_name}{currentProfile.age ? `, ${currentProfile.age}` : ""}
                                 </h2>
                                 {currentProfile.is_verified && <Shield className="h-5 w-5 text-secondary fill-secondary/30" />}
+                                <OnlineStatus lastSeen={currentProfile.last_seen} size="md" />
                               </div>
                               <div className="mt-1 flex items-center gap-1.5 text-sm text-primary-foreground/80">
                                 <MapPin className="h-3.5 w-3.5" />
