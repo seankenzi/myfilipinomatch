@@ -8,7 +8,7 @@ const corsHeaders = {
 };
 
 const BodySchema = z.object({
-  plan: z.enum(["monthly", "quarterly"]),
+  plan: z.enum(["monthly", "quarterly", "yearly"]),
   success_url: z.string().url(),
   cancel_url: z.string().url(),
 });
@@ -23,6 +23,11 @@ const PLANS: Record<string, { name: string; amount: number; description: string 
     name: "FiloHeart Premium — 3 Months",
     amount: 389900, // ₱3,899.00 in centavos
     description: "Best value — everything in Premium for 3 months, save 23%",
+  },
+  yearly: {
+    name: "FiloHeart Premium — 1 Year",
+    amount: 1199900, // ₱11,999.00 in centavos
+    description: "Biggest savings — only ₱1,000/month, save 41% vs monthly",
   },
 };
 
