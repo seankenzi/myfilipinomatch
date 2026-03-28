@@ -88,7 +88,7 @@ Deno.serve(async (req) => {
             description: planConfig.description,
             line_items: [
               {
-                currency: "USD",
+                currency: "PHP",
                 amount: planConfig.amount,
                 name: planConfig.name,
                 quantity: 1,

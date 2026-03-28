@@ -12,7 +12,7 @@ const plans = [
   {
     id: "monthly" as const,
     name: "Monthly",
-    price: "$29.99",
+    price: "₱1,699",
     priceSub: "per month",
     period: "/month",
     popular: false,
@@ -30,8 +30,8 @@ const plans = [
   {
     id: "quarterly" as const,
     name: "3 Months",
-    price: "$69",
-    priceSub: "$23/month — save 23%",
+    price: "₱3,899",
+    priceSub: "₱1,300/month — save 23%",
     period: "/3 months",
     popular: true,
     features: [
