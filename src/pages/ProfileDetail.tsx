@@ -173,7 +173,7 @@ const ProfileDetail = () => {
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
           {/* Photo gallery */}
           {photos.length > 0 ? (
-            <div className="relative overflow-hidden rounded-2xl aspect-[3/4] max-h-[360px] mx-auto bg-muted">
+            <div className="relative w-full max-w-sm mx-auto overflow-hidden rounded-2xl aspect-[3/4] bg-muted">
               <img
                 src={photos[activePhoto]}
                 alt={profile.full_name}
@@ -208,7 +208,7 @@ const ProfileDetail = () => {
               )}
             </div>
           ) : (
-            <div className="flex items-center justify-center rounded-2xl aspect-[3/4] bg-muted text-6xl">👤</div>
+            <div className="flex items-center justify-center rounded-2xl aspect-[3/4] max-w-sm mx-auto bg-muted text-6xl">👤</div>
           )}
 
           {/* Name & basic info */}
