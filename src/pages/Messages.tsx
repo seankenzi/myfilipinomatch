@@ -21,6 +21,7 @@ import { useToast } from "@/hooks/use-toast";
 import { format, isToday, isYesterday } from "date-fns";
 
 const FREE_MESSAGE_LIMIT = 3; // Only applies to premium direct-message matches (non-mutual)
+const FREE_DAILY_MESSAGE_LIMIT = 10; // Daily limit for free users on mutual matches
 
 interface MatchProfile {
   id: string;
