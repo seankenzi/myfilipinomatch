@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import logo from "@/assets/filoheart-logo.png";
 
 const Footer = () => (
-  <footer className="border-t border-border bg-card py-12">
+  <footer className="hidden md:block border-t border-border bg-card py-12">
     <div className="container">
       <div className="flex flex-col items-center gap-6 md:flex-row md:justify-between">
         <div className="flex items-center gap-2">
