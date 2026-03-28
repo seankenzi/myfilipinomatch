@@ -1,8 +1,11 @@
+import { useState, useEffect } from "react";
 import { Heart, Shield, Globe, MessageSquare, Star, CheckCircle, ArrowRight, UserPlus, Search, MessagesSquare } from "lucide-react";
 import { Link } from "react-router-dom";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import heroCouple from "@/assets/hero-couple.jpg";
+import heroCouple2 from "@/assets/hero-couple-2.jpg";
+import heroCouple3 from "@/assets/hero-couple-3.jpg";
 import coupleCafe from "@/assets/couple-cafe.jpg";
 import coupleGarden from "@/assets/couple-garden.jpg";
 import mariaPhoto from "@/assets/test-profiles/maria.jpg";
@@ -12,19 +15,35 @@ import davidPhoto from "@/assets/test-profiles/david.jpg";
 import sofiaPhoto from "@/assets/test-profiles/sofia.jpg";
 import kenjiPhoto from "@/assets/test-profiles/kenji.jpg";
 
+const heroImages = [heroCouple, heroCouple2, heroCouple3];
+
 const Landing = () => {
+  const [currentImage, setCurrentImage] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentImage((prev) => (prev + 1) % heroImages.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <div className="flex flex-col">
       {/* Hero Section */}
       <section className="relative min-h-[90vh] flex items-center overflow-hidden">
-        {/* Background image */}
-        <img
-          src={heroCouple}
-          alt="Couple walking on a Philippine beach at sunset"
-          className="absolute inset-0 h-full w-full object-cover"
-          width={1920}
-          height={1080}
-        />
+        {/* Rotating background images */}
+        {heroImages.map((img, i) => (
+          <img
+            key={i}
+            src={img}
+            alt={`Hero image ${i + 1}`}
+            className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-1000 ${
+              i === currentImage ? "opacity-100" : "opacity-0"
+            }`}
+            width={1920}
+            height={1080}
+          />
+        ))}
         <div className="absolute inset-0 bg-gradient-to-r from-foreground/70 via-foreground/50 to-foreground/30" />
         <div className="absolute inset-0 bg-gradient-to-t from-foreground/60 via-transparent to-foreground/20" />
 
@@ -79,7 +98,7 @@ const Landing = () => {
       <section className="py-20 bg-card">
         <div className="container">
           <h2 className="mb-12 text-center text-3xl font-bold md:text-4xl" style={{ fontFamily: 'var(--font-display)' }}>
-            Why Choose <span className="text-gradient">Why Choose <span className="text-gradient">FiloHeart</span>?</span>?
+            Why Choose <span className="text-gradient">FiloHeart</span>?
           </h2>
           <div className="mx-auto max-w-5xl grid gap-6 md:grid-cols-2">
             {/* Left: image */}
