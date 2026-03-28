@@ -218,6 +218,9 @@ const ProfileDetail = () => {
             {profile.international_preference && (
               <Badge variant="outline" className="text-xs">🌍 Open to international</Badge>
             )}
+            {profile.relocation_intent && (
+              <Badge variant="outline" className="text-xs">✈️ Relocation: {profile.relocation_intent.replace(/-/g, " ")}</Badge>
+            )}
           </div>
 
           {/* Bio */}
