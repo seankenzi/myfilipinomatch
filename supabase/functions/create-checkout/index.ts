@@ -16,12 +16,12 @@ const BodySchema = z.object({
 const PLANS: Record<string, { name: string; amount: number; description: string }> = {
   monthly: {
     name: "FiloHeart Premium — Monthly",
-    amount: 2999, // $29.99 in cents (USD)
+    amount: 169900, // ₱1,699.00 in centavos
     description: "Unlimited messaging, see who liked you, profile boost",
   },
   quarterly: {
     name: "FiloHeart Premium — 3 Months",
-    amount: 6900, // $69.00 in cents (USD)
+    amount: 389900, // ₱3,899.00 in centavos
     description: "Best value — everything in Premium for 3 months, save 23%",
   },
 };
@@ -88,13 +88,13 @@ Deno.serve(async (req) => {
             description: planConfig.description,
             line_items: [
               {
-                currency: "USD",
+                currency: "PHP",
                 amount: planConfig.amount,
                 name: planConfig.name,
                 quantity: 1,
               },
             ],
-            payment_method_types: ["card"],
+            payment_method_types: ["card", "gcash", "paymaya"],
             success_url,
             cancel_url,
             metadata: {
