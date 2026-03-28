@@ -3,6 +3,7 @@ import {
   Send, ArrowLeft, Shield, Lock, MessageCircle, Sparkles,
   Flag, Ban, AlertTriangle, MoreVertical, MapPin, Crown
 } from "lucide-react";
+import OnlineStatus from "@/components/OnlineStatus";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -33,6 +34,7 @@ interface MatchProfile {
   city: string | null;
   country: string | null;
   is_premium: boolean | null;
+  last_seen: string | null;
 }
 
 interface Match {
@@ -185,7 +187,7 @@ const Messages = () => {
 
     const { data: profilesData } = await supabase
       .from("profiles")
-      .select("id, full_name, avatar_url, photos, is_verified, age, city, country, is_premium")
+      .select("id, full_name, avatar_url, photos, is_verified, age, city, country, is_premium, last_seen")
       .in("id", otherUserIds);
 
     const profileMap = new Map(
@@ -435,6 +437,7 @@ const Messages = () => {
                         {match.unread_count}
                       </span>
                     )}
+                    <OnlineStatus lastSeen={match.other_user.last_seen} size="sm" className="absolute -bottom-0.5 -right-0.5" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">

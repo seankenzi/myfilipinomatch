@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, MapPin, Shield, Heart, Star, Flag, MessageCircle } from "lucide-react";
+import OnlineStatus, { isUserOnline } from "@/components/OnlineStatus";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
@@ -33,6 +34,7 @@ interface Profile {
   weight_kg: number | null;
   relationship_status: string | null;
   created_at: string;
+  last_seen: string | null;
 }
 
 const getFlagEmoji = (country: string) => {
@@ -220,11 +222,15 @@ const ProfileDetail = () => {
                   <Shield className="h-3 w-3" /> Verified
                 </Badge>
               )}
+              <OnlineStatus lastSeen={profile.last_seen} size="md" />
             </div>
             <div className="flex items-center gap-1 text-sm text-muted-foreground">
               <MapPin className="h-4 w-4" />
               {[profile.city, profile.country].filter(Boolean).join(", ") || "Location not set"}
               {profile.country && <span className="ml-1">{getFlagEmoji(profile.country)}</span>}
+              {isUserOnline(profile.last_seen) && (
+                <span className="ml-2 text-xs text-green-500 font-medium">Online now</span>
+              )}
             </div>
           </div>
 

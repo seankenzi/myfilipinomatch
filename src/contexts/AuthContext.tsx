@@ -2,6 +2,8 @@ import { createContext, useContext, useEffect, useState, ReactNode } from "react
 import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 
+const HEARTBEAT_INTERVAL = 60_000; // 1 minute
+
 interface AuthContextType {
   session: Session | null;
   user: User | null;
@@ -46,6 +48,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       subscription.unsubscribe();
     };
   }, []);
+
+  // Online heartbeat - update last_seen every minute
+  useEffect(() => {
+    if (!user) return;
+    const updateLastSeen = () => {
+      supabase.from("profiles").update({ last_seen: new Date().toISOString() }).eq("id", user.id).then();
+    };
+    updateLastSeen();
+    const interval = setInterval(updateLastSeen, HEARTBEAT_INTERVAL);
+    return () => clearInterval(interval);
+  }, [user]);
 
   const signUp = async (email: string, password: string, fullName: string) => {
     const { error } = await supabase.auth.signUp({

@@ -5,6 +5,7 @@ import {
   LayoutGrid, Layers, Globe, Send, Sparkles, Clock, UserPlus,
   ChevronLeft, ChevronRight, SlidersHorizontal, Undo2, Zap, Lock, Crown
 } from "lucide-react";
+import OnlineStatus from "@/components/OnlineStatus";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -38,6 +39,7 @@ interface Profile {
   user_type: string | null;
   international_preference: boolean | null;
   created_at: string;
+  last_seen: string | null;
 }
 
 const COUNTRIES = [
@@ -838,6 +840,7 @@ const Discover = () => {
                                   {currentProfile.full_name}{currentProfile.age ? `, ${currentProfile.age}` : ""}
                                 </h2>
                                 {currentProfile.is_verified && <Shield className="h-5 w-5 text-secondary fill-secondary/30" />}
+                                <OnlineStatus lastSeen={currentProfile.last_seen} size="md" />
                               </div>
                               <div className="mt-1 flex items-center gap-1.5 text-sm text-primary-foreground/80">
                                 <MapPin className="h-3.5 w-3.5" />
@@ -1066,9 +1069,12 @@ const Discover = () => {
 
                           {/* Name on photo */}
                           <div className="absolute bottom-0 left-0 right-0 p-3">
-                            <h4 className="text-sm font-bold text-primary-foreground truncate">
-                              {profile.full_name.split(" ")[0]}{profile.age ? `, ${profile.age}` : ""}
-                            </h4>
+                            <div className="flex items-center gap-1">
+                              <h4 className="text-sm font-bold text-primary-foreground truncate">
+                                {profile.full_name.split(" ")[0]}{profile.age ? `, ${profile.age}` : ""}
+                              </h4>
+                              <OnlineStatus lastSeen={profile.last_seen} size="sm" />
+                            </div>
                             <div className="flex items-center gap-1 text-[10px] text-primary-foreground/70 mt-0.5">
                               <MapPin className="h-2.5 w-2.5" />
                               <span className="truncate">{profile.city || profile.country || "—"}</span>

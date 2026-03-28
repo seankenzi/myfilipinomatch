@@ -152,6 +152,7 @@ export type Database = {
           is_premium: boolean | null
           is_verified: boolean | null
           language: string | null
+          last_seen: string | null
           onboarding_completed: boolean | null
           photos: string[] | null
           relationship_intent: string | null
@@ -180,6 +181,7 @@ export type Database = {
           is_premium?: boolean | null
           is_verified?: boolean | null
           language?: string | null
+          last_seen?: string | null
           onboarding_completed?: boolean | null
           photos?: string[] | null
           relationship_intent?: string | null
@@ -208,6 +210,7 @@ export type Database = {
           is_premium?: boolean | null
           is_verified?: boolean | null
           language?: string | null
+          last_seen?: string | null
           onboarding_completed?: boolean | null
           photos?: string[] | null
           relationship_intent?: string | null
