@@ -21,6 +21,7 @@ import { useToast } from "@/hooks/use-toast";
 import { format, isToday, isYesterday } from "date-fns";
 
 const FREE_MESSAGE_LIMIT = 3; // Only applies to premium direct-message matches (non-mutual)
+const FREE_DAILY_MESSAGE_LIMIT = 10; // Daily limit for free users on mutual matches
 
 interface MatchProfile {
   id: string;
@@ -85,12 +86,18 @@ const Messages = () => {
   const [reportReason, setReportReason] = useState("");
   const [reportDetails, setReportDetails] = useState("");
 
-  // My sent message count for current match
+  // My sent message count for current match (total)
   const mySentCount = messages.filter((m) => m.sender_id === user?.id).length;
+  // My sent message count for today
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
+  const mySentTodayCount = messages.filter(
+    (m) => m.sender_id === user?.id && new Date(m.created_at) >= todayStart
+  ).length;
   const isPremium = myProfile?.is_premium === true;
   const [isMutualMatch, setIsMutualMatch] = useState(true);
 
-  // Check if this is a mutual match (both users liked each other) — unlimited messaging
+  // Check if this is a mutual match (both users liked each other)
   useEffect(() => {
     if (!selectedMatch || !user) return;
     const checkMutual = async () => {
@@ -106,9 +113,17 @@ const Messages = () => {
     checkMutual();
   }, [selectedMatch, user]);
 
-  // Mutual matches get unlimited messaging; free limit only for premium direct-message matches
-  const isLocked = !isPremium && !isMutualMatch && mySentCount >= FREE_MESSAGE_LIMIT;
-  const remainingFree = isMutualMatch ? Infinity : Math.max(0, FREE_MESSAGE_LIMIT - mySentCount);
+  // Non-mutual: total message limit; Mutual free: 10/day limit
+  const isLocked = !isPremium && (
+    isMutualMatch
+      ? mySentTodayCount >= FREE_DAILY_MESSAGE_LIMIT
+      : mySentCount >= FREE_MESSAGE_LIMIT
+  );
+  const remainingFree = isPremium
+    ? Infinity
+    : isMutualMatch
+      ? Math.max(0, FREE_DAILY_MESSAGE_LIMIT - mySentTodayCount)
+      : Math.max(0, FREE_MESSAGE_LIMIT - mySentCount);
 
   // Fetch own profile for premium status
   useEffect(() => {
@@ -568,10 +583,12 @@ const Messages = () => {
                   <div className="mx-auto max-w-md text-center">
                     <Lock className="h-8 w-8 text-muted-foreground/40 mx-auto mb-3" />
                     <h3 className="font-semibold text-foreground text-sm mb-1">
-                      You've reached your free message limit
+                      {isMutualMatch ? "Daily message limit reached" : "You've reached your free message limit"}
                     </h3>
                     <p className="text-xs text-muted-foreground mb-4">
-                      Upgrade to Premium to continue chatting with {selectedMatch.other_user.full_name.split(" ")[0]} and unlock unlimited messaging.
+                      {isMutualMatch
+                        ? `You've sent ${FREE_DAILY_MESSAGE_LIMIT} messages today. Upgrade to Premium for unlimited messaging, or come back tomorrow!`
+                        : `Upgrade to Premium to continue chatting with ${selectedMatch.other_user.full_name.split(" ")[0]} and unlock unlimited messaging.`}
                     </p>
                     <Button
                       variant="hero"
@@ -587,11 +604,11 @@ const Messages = () => {
               ) : (
                 <div className="border-t border-border bg-card">
                   {/* Remaining messages indicator */}
-                  {!isPremium && !isMutualMatch && (
+                  {!isPremium && remainingFree !== Infinity && (
                     <div className="flex items-center justify-between px-4 py-1.5 bg-muted/50 border-b border-border">
                       <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
                         <Lock className="h-3 w-3" />
-                        {remainingFree} free message{remainingFree !== 1 ? "s" : ""} remaining
+                        {remainingFree} {isMutualMatch ? "daily " : "free "}message{remainingFree !== 1 ? "s" : ""} remaining
                       </div>
                       <button
                         onClick={() => navigate("/premium")}
