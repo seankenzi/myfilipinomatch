@@ -211,8 +211,7 @@ const Discover = () => {
     if (error) {
       toast({ title: "Error loading profiles", description: error.message, variant: "destructive" });
     } else {
-      const filtered = (data || []).filter((p) => !alreadyLiked.has(p.id));
-      setProfiles(filtered as Profile[]);
+      setProfiles((data || []) as Profile[]);
       setCurrentIndex(0);
     }
     setLoading(false);
@@ -222,7 +221,9 @@ const Discover = () => {
     fetchProfiles();
   }, [fetchProfiles]);
 
-  const currentProfile = profiles[currentIndex];
+  // For swipe view, filter out already liked profiles
+  const swipeProfiles = profiles.filter((p) => !likedIds.has(p.id));
+  const currentProfile = swipeProfiles[currentIndex];
 
   const handleLike = async (profile: Profile) => {
     if (!user) return;
@@ -328,7 +329,7 @@ const Discover = () => {
   const now = new Date();
   const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
   const newMembers = profiles.filter((p) => new Date(p.created_at) > sevenDaysAgo);
-  const noMoreProfiles = currentIndex >= profiles.length;
+  const noMoreProfiles = currentIndex >= swipeProfiles.length;
 
   const activeFilterCount = [
     filterCountry !== "all",
