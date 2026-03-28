@@ -64,6 +64,7 @@ const ProfileDetail = () => {
   const [liked, setLiked] = useState(false);
   const [activePhoto, setActivePhoto] = useState(0);
   const [matchId, setMatchId] = useState<string | null>(null);
+  const [isPremium, setIsPremium] = useState(false);
 
   useEffect(() => {
     if (!id) return;
