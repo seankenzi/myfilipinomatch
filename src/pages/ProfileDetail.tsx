@@ -242,7 +242,32 @@ const ProfileDetail = () => {
             </div>
           )}
 
-          {/* Action buttons */}
+          {/* Details */}
+          {(profile.education || profile.language || profile.height_cm || profile.weight_kg || profile.want_children || profile.relationship_status) && (
+            <div className="rounded-xl border border-border bg-card p-4">
+              <h3 className="text-sm font-semibold text-foreground mb-2">Details</h3>
+              <div className="grid grid-cols-2 gap-2 text-sm">
+                {profile.relationship_status && (
+                  <div><span className="text-muted-foreground">Status:</span> <span className="capitalize">{profile.relationship_status}</span></div>
+                )}
+                {profile.education && (
+                  <div><span className="text-muted-foreground">Education:</span> {profile.education}</div>
+                )}
+                {profile.language && (
+                  <div><span className="text-muted-foreground">Language:</span> {profile.language}</div>
+                )}
+                {profile.height_cm && (
+                  <div><span className="text-muted-foreground">Height:</span> {profile.height_cm} cm</div>
+                )}
+                {profile.weight_kg && (
+                  <div><span className="text-muted-foreground">Weight:</span> {profile.weight_kg} kg</div>
+                )}
+                {profile.want_children && (
+                  <div className="col-span-2"><span className="text-muted-foreground">Children:</span> <span className="capitalize">{profile.want_children.replace(/-/g, " ")}</span></div>
+                )}
+              </div>
+            </div>
+          )}
           {user && user.id !== profile.id && (
             <div className="flex gap-3 pt-2">
               <Button
