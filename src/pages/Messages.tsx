@@ -604,11 +604,11 @@ const Messages = () => {
               ) : (
                 <div className="border-t border-border bg-card">
                   {/* Remaining messages indicator */}
-                  {!isPremium && !isMutualMatch && (
+                  {!isPremium && remainingFree !== Infinity && (
                     <div className="flex items-center justify-between px-4 py-1.5 bg-muted/50 border-b border-border">
                       <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
                         <Lock className="h-3 w-3" />
-                        {remainingFree} free message{remainingFree !== 1 ? "s" : ""} remaining
+                        {remainingFree} {isMutualMatch ? "daily " : "free "}message{remainingFree !== 1 ? "s" : ""} remaining
                       </div>
                       <button
                         onClick={() => navigate("/premium")}
