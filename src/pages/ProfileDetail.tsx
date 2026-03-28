@@ -292,6 +292,20 @@ const ProfileDetail = () => {
                 <Heart className={`h-4 w-4 ${liked ? "fill-primary text-primary" : ""}`} />
                 {liked ? "Liked" : "Like"}
               </Button>
+              <Button
+                onClick={() => {
+                  if (matchId) {
+                    navigate(`/messages?match=${matchId}`);
+                  } else {
+                    toast({ title: "No match yet", description: `Like ${profile.full_name.split(" ")[0]} first — if they like you back, you can message each other!` });
+                  }
+                }}
+                variant="outline"
+                className="flex-1 gap-2"
+              >
+                <MessageCircle className="h-4 w-4" />
+                Message
+              </Button>
             </div>
           )}
         </motion.div>
