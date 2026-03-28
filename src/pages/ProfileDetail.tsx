@@ -173,7 +173,7 @@ const ProfileDetail = () => {
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
           {/* Photo gallery */}
           {photos.length > 0 ? (
-            <div className="relative overflow-hidden rounded-2xl aspect-[3/4] bg-muted">
+            <div className="relative overflow-hidden rounded-2xl aspect-[4/3] max-h-[400px] bg-muted">
               <img
                 src={photos[activePhoto]}
                 alt={profile.full_name}
