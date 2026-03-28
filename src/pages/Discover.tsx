@@ -329,7 +329,7 @@ const Discover = () => {
   const now = new Date();
   const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
   const newMembers = profiles.filter((p) => new Date(p.created_at) > sevenDaysAgo);
-  const noMoreProfiles = currentIndex >= profiles.length;
+  const noMoreProfiles = currentIndex >= swipeProfiles.length;
 
   const activeFilterCount = [
     filterCountry !== "all",
