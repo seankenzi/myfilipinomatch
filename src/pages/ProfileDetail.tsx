@@ -216,7 +216,7 @@ const ProfileDetail = () => {
               <Badge variant="outline" className="text-xs capitalize">{profile.user_type}</Badge>
             )}
             {profile.international_preference && (
-              <Badge variant="outline" className="text-xs">🌍 Open to international</Badge>
+              <Badge variant="outline" className="text-xs">🌍 Open to long-distance dating</Badge>
             )}
             {profile.relocation_intent && (
               <Badge variant="outline" className="text-xs">✈️ Relocation: {profile.relocation_intent.replace(/-/g, " ")}</Badge>
