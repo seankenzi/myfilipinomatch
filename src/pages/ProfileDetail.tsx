@@ -85,8 +85,17 @@ const ProfileDetail = () => {
         .eq("liked_id", id);
       setLiked((data || []).length > 0);
     };
+    const checkMatch = async () => {
+      if (!user) return;
+      const { data } = await supabase
+        .from("matches")
+        .select("id")
+        .or(`and(user1_id.eq.${user.id},user2_id.eq.${id}),and(user1_id.eq.${id},user2_id.eq.${user.id})`);
+      if (data && data.length > 0) setMatchId(data[0].id);
+    };
     fetchProfile();
     checkLiked();
+    checkMatch();
   }, [id, user]);
 
   const photos = profile
