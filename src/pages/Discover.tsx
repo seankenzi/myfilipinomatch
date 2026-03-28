@@ -632,6 +632,85 @@ const Discover = () => {
                     </Select>
                   </div>
 
+                  {/* Advanced Filters - Premium Only */}
+                  <div className={`space-y-4 ${!isPremium ? "relative" : ""}`}>
+                    {!isPremium && (
+                      <div className="absolute inset-0 z-10 flex items-center justify-center rounded-xl bg-card/80 backdrop-blur-[2px]">
+                        <button onClick={() => navigate("/premium")} className="flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground shadow-elevated hover:bg-primary/90 transition-all">
+                          <Crown className="h-4 w-4" /> Unlock Advanced Filters
+                        </button>
+                      </div>
+                    )}
+                    <div className="pt-2 border-t border-border">
+                      <p className="text-[10px] font-semibold text-accent uppercase tracking-wider mb-3 flex items-center gap-1">
+                        <Crown className="h-3 w-3" /> Premium Filters
+                      </p>
+                    </div>
+                    {/* Education */}
+                    <div>
+                      <label className="text-xs font-medium text-muted-foreground">Education</label>
+                      <Select value={filterEducation} onValueChange={setFilterEducation}>
+                        <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">Any</SelectItem>
+                          <SelectItem value="High School">High School</SelectItem>
+                          <SelectItem value="Bachelor's">Bachelor's</SelectItem>
+                          <SelectItem value="Master's">Master's</SelectItem>
+                          <SelectItem value="Doctorate">Doctorate</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    {/* Language */}
+                    <div>
+                      <label className="text-xs font-medium text-muted-foreground">Language</label>
+                      <Select value={filterLanguage} onValueChange={setFilterLanguage}>
+                        <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">Any</SelectItem>
+                          <SelectItem value="English">English</SelectItem>
+                          <SelectItem value="Tagalog">Tagalog</SelectItem>
+                          <SelectItem value="Japanese">Japanese</SelectItem>
+                          <SelectItem value="Korean">Korean</SelectItem>
+                          <SelectItem value="German">German</SelectItem>
+                          <SelectItem value="French">French</SelectItem>
+                          <SelectItem value="Spanish">Spanish</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    {/* Children */}
+                    <div>
+                      <label className="text-xs font-medium text-muted-foreground">Children</label>
+                      <Select value={filterChildren} onValueChange={setFilterChildren}>
+                        <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">Any</SelectItem>
+                          <SelectItem value="want">Wants children</SelectItem>
+                          <SelectItem value="dont-want">Doesn't want</SelectItem>
+                          <SelectItem value="have-want-more">Has & wants more</SelectItem>
+                          <SelectItem value="have-dont-want-more">Has & doesn't want more</SelectItem>
+                          <SelectItem value="not-sure">Not sure yet</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    {/* Height Range */}
+                    <div>
+                      <label className="text-xs font-medium text-muted-foreground flex items-center justify-between">
+                        Height Range
+                        <span className="text-foreground font-semibold">{filterHeightRange[0]} – {filterHeightRange[1]} cm</span>
+                      </label>
+                      <div className="mt-2 px-1">
+                        <Slider
+                          min={140}
+                          max={210}
+                          step={1}
+                          value={filterHeightRange}
+                          onValueChange={(v) => setFilterHeightRange(v as [number, number])}
+                          className="w-full"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
                   <div className="flex gap-2 pt-1">
                     <Button size="sm" variant="outline" className="flex-1" onClick={() => {
                       setFilterCountry("all");
@@ -639,6 +718,10 @@ const Discover = () => {
                       setFilterCity("");
                       setFilterGender("all");
                       setFilterAgeRange([18, 65]);
+                      setFilterEducation("all");
+                      setFilterLanguage("all");
+                      setFilterChildren("all");
+                      setFilterHeightRange([140, 210]);
                     }}>
                       Reset All
                     </Button>
