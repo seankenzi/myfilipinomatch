@@ -12,6 +12,7 @@ import Discover from "./pages/Discover.tsx";
 import Matches from "./pages/Matches.tsx";
 import Messages from "./pages/Messages.tsx";
 import Profile from "./pages/Profile.tsx";
+import ProfileDetail from "./pages/ProfileDetail.tsx";
 import Onboarding from "./pages/Onboarding.tsx";
 import Settings from "./pages/Settings.tsx";
 import About from "./pages/About.tsx";
@@ -39,6 +40,7 @@ const App = () => (
             <Route path="/signup" element={<Signup />} />
             <Route path="/onboarding" element={<Onboarding />} />
             <Route path="/discover" element={<ProtectedRoute><Discover /></ProtectedRoute>} />
+            <Route path="/profile/:id" element={<ProtectedRoute><ProfileDetail /></ProtectedRoute>} />
             <Route path="/matches" element={<ProtectedRoute><Matches /></ProtectedRoute>} />
             <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
             <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />

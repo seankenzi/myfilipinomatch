@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Heart, X, MapPin, Shield, Filter, ChevronDown, Star, Flag,
   LayoutGrid, Layers, Globe, Send, Sparkles, Clock, UserPlus,
@@ -147,6 +148,7 @@ const getProfilePhotos = (profile: Profile): string[] => {
 const Discover = () => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
@@ -774,7 +776,7 @@ const Discover = () => {
                         className="group rounded-2xl border border-border bg-card shadow-card overflow-hidden transition-all hover:shadow-card-hover"
                       >
                         {/* Photo */}
-                        <div className="relative aspect-[3/4]">
+                        <div className="relative aspect-[3/4] cursor-pointer" onClick={() => navigate(`/profile/${profile.id}`)}>
                           {getProfilePhotos(profile).length > 0 ? (
                             <img src={getProfilePhotos(profile)[0]} alt={profile.full_name} className="h-full w-full object-cover" />
                           ) : (

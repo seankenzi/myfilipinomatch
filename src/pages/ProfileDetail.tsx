@@ -1,0 +1,260 @@
+import { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { ArrowLeft, MapPin, Shield, Heart, Star, Flag, MessageCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { motion } from "framer-motion";
+import BottomNav from "@/components/BottomNav";
+import Navbar from "@/components/Navbar";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+
+interface Profile {
+  id: string;
+  full_name: string;
+  age: number | null;
+  gender: string | null;
+  country: string | null;
+  city: string | null;
+  bio: string | null;
+  interests: string[] | null;
+  relationship_intent: string | null;
+  relocation_intent: string | null;
+  photos: string[] | null;
+  avatar_url: string | null;
+  is_verified: boolean | null;
+  user_type: string | null;
+  international_preference: boolean | null;
+  created_at: string;
+}
+
+const getFlagEmoji = (country: string) => {
+  const flags: Record<string, string> = {
+    Philippines: "🇵🇭", "United States": "🇺🇸", Canada: "🇨🇦", "United Kingdom": "🇬🇧",
+    Australia: "🇦🇺", Japan: "🇯🇵", "South Korea": "🇰🇷", Germany: "🇩🇪",
+    France: "🇫🇷", Italy: "🇮🇹", Spain: "🇪🇸", Netherlands: "🇳🇱",
+    Sweden: "🇸🇪", Norway: "🇳🇴", Denmark: "🇩🇰", Singapore: "🇸🇬",
+  };
+  return flags[country] || "🌍";
+};
+
+const formatIntent = (intent: string) => {
+  const map: Record<string, string> = {
+    serious: "Serious Relationship", casual: "Casual Dating",
+    marriage: "Marriage", friendship: "Friendship",
+    long_term: "Long-term Relationship",
+  };
+  return map[intent] || intent;
+};
+
+const ProfileDetail = () => {
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [liked, setLiked] = useState(false);
+  const [activePhoto, setActivePhoto] = useState(0);
+
+  useEffect(() => {
+    if (!id) return;
+    const fetchProfile = async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", id)
+        .single();
+      setProfile(data as Profile | null);
+      setLoading(false);
+    };
+    const checkLiked = async () => {
+      if (!user) return;
+      const { data } = await supabase
+        .from("likes")
+        .select("id")
+        .eq("liker_id", user.id)
+        .eq("liked_id", id);
+      setLiked((data || []).length > 0);
+    };
+    fetchProfile();
+    checkLiked();
+  }, [id, user]);
+
+  const photos = profile
+    ? [
+        ...(profile.photos || []),
+        ...(profile.avatar_url && !(profile.photos || []).includes(profile.avatar_url)
+          ? [profile.avatar_url]
+          : []),
+      ].filter(Boolean)
+    : [];
+
+  const handleLike = async () => {
+    if (!user || !profile) return;
+    if (liked) return;
+    const { error } = await supabase.from("likes").insert({ liker_id: user.id, liked_id: profile.id });
+    if (!error) {
+      setLiked(true);
+      toast({ title: "Liked!", description: `You liked ${profile.full_name.split(" ")[0]}` });
+      // Check for mutual match
+      const { data: mutual } = await supabase
+        .from("likes")
+        .select("id")
+        .eq("liker_id", profile.id)
+        .eq("liked_id", user.id);
+      if (mutual && mutual.length > 0) {
+        const ids = [user.id, profile.id].sort();
+        await supabase.from("matches").insert({ user1_id: ids[0], user2_id: ids[1] });
+        toast({ title: "It's a Match! 🎉", description: `You and ${profile.full_name.split(" ")[0]} liked each other!` });
+      }
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+      </div>
+    );
+  }
+
+  if (!profile) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center bg-background gap-4">
+        <p className="text-muted-foreground">Profile not found.</p>
+        <Button variant="outline" onClick={() => navigate(-1)}>Go Back</Button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-background">
+      <Navbar />
+      <main className="mx-auto max-w-2xl px-4 pb-24 pt-4">
+        {/* Back button */}
+        <button
+          onClick={() => navigate(-1)}
+          className="mb-4 flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
+        >
+          <ArrowLeft className="h-4 w-4" /> Back
+        </button>
+
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
+          {/* Photo gallery */}
+          {photos.length > 0 ? (
+            <div className="relative overflow-hidden rounded-2xl aspect-[3/4] bg-muted">
+              <img
+                src={photos[activePhoto]}
+                alt={profile.full_name}
+                className="h-full w-full object-cover"
+              />
+              {photos.length > 1 && (
+                <>
+                  <div className="absolute top-3 left-0 right-0 flex justify-center gap-1.5">
+                    {photos.map((_, i) => (
+                      <button
+                        key={i}
+                        onClick={() => setActivePhoto(i)}
+                        className={`h-1 rounded-full transition-all ${
+                          i === activePhoto ? "w-6 bg-primary-foreground" : "w-3 bg-primary-foreground/40"
+                        }`}
+                      />
+                    ))}
+                  </div>
+                  <button
+                    onClick={() => setActivePhoto((p) => (p > 0 ? p - 1 : photos.length - 1))}
+                    className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-card/60 backdrop-blur-sm p-2 hover:bg-card/80 transition-colors"
+                  >
+                    <ArrowLeft className="h-4 w-4 text-foreground" />
+                  </button>
+                  <button
+                    onClick={() => setActivePhoto((p) => (p < photos.length - 1 ? p + 1 : 0))}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-card/60 backdrop-blur-sm p-2 hover:bg-card/80 transition-colors rotate-180"
+                  >
+                    <ArrowLeft className="h-4 w-4 text-foreground" />
+                  </button>
+                </>
+              )}
+            </div>
+          ) : (
+            <div className="flex items-center justify-center rounded-2xl aspect-[3/4] bg-muted text-6xl">👤</div>
+          )}
+
+          {/* Name & basic info */}
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <h1 className="text-2xl font-bold font-display text-foreground">
+                {profile.full_name}{profile.age ? `, ${profile.age}` : ""}
+              </h1>
+              {profile.is_verified && (
+                <Badge variant="secondary" className="gap-1">
+                  <Shield className="h-3 w-3" /> Verified
+                </Badge>
+              )}
+            </div>
+            <div className="flex items-center gap-1 text-sm text-muted-foreground">
+              <MapPin className="h-4 w-4" />
+              {[profile.city, profile.country].filter(Boolean).join(", ") || "Location not set"}
+              {profile.country && <span className="ml-1">{getFlagEmoji(profile.country)}</span>}
+            </div>
+          </div>
+
+          {/* Tags */}
+          <div className="flex flex-wrap gap-2">
+            {profile.relationship_intent && (
+              <Badge variant="outline" className="text-xs">{formatIntent(profile.relationship_intent)}</Badge>
+            )}
+            {profile.user_type && (
+              <Badge variant="outline" className="text-xs capitalize">{profile.user_type}</Badge>
+            )}
+            {profile.international_preference && (
+              <Badge variant="outline" className="text-xs">🌍 Open to international</Badge>
+            )}
+          </div>
+
+          {/* Bio */}
+          {profile.bio && (
+            <div className="rounded-xl border border-border bg-card p-4">
+              <h3 className="text-sm font-semibold text-foreground mb-1">About</h3>
+              <p className="text-sm text-muted-foreground whitespace-pre-line">{profile.bio}</p>
+            </div>
+          )}
+
+          {/* Interests */}
+          {profile.interests && profile.interests.length > 0 && (
+            <div className="rounded-xl border border-border bg-card p-4">
+              <h3 className="text-sm font-semibold text-foreground mb-2">Interests</h3>
+              <div className="flex flex-wrap gap-1.5">
+                {profile.interests.map((interest) => (
+                  <Badge key={interest} variant="secondary" className="text-xs">
+                    {interest}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Action buttons */}
+          {user && user.id !== profile.id && (
+            <div className="flex gap-3 pt-2">
+              <Button
+                onClick={handleLike}
+                disabled={liked}
+                className="flex-1 gap-2"
+                variant={liked ? "secondary" : "default"}
+              >
+                <Heart className={`h-4 w-4 ${liked ? "fill-primary text-primary" : ""}`} />
+                {liked ? "Liked" : "Like"}
+              </Button>
+            </div>
+          )}
+        </motion.div>
+      </main>
+      <BottomNav />
+    </div>
+  );
+};
+
+export default ProfileDetail;
