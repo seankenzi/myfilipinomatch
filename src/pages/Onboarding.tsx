@@ -32,7 +32,7 @@ const GENDER_OPTIONS = ["Male", "Female"];
 const Onboarding = () => {
   const [step, setStep] = useState(1);
   const [saving, setSaving] = useState(false);
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -55,11 +55,26 @@ const Onboarding = () => {
   const [photos, setPhotos] = useState<string[]>([]);
 
   useEffect(() => {
-    if (!user) return;
-    // Pre-fill name from signup
-    const meta = user.user_metadata;
-    if (meta?.full_name) setFullName(meta.full_name);
-  }, [user]);
+    if (loading || !user) return;
+
+    const syncOnboardingStatus = async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("onboarding_completed")
+        .eq("id", user.id)
+        .single();
+
+      if (data?.onboarding_completed) {
+        navigate("/discover", { replace: true });
+        return;
+      }
+
+      const meta = user.user_metadata;
+      if (meta?.full_name) setFullName(meta.full_name);
+    };
+
+    void syncOnboardingStatus();
+  }, [user, loading, navigate]);
 
   const progress = Math.round((step / TOTAL_STEPS) * 100);
 
