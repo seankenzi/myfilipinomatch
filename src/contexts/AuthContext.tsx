@@ -49,6 +49,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     };
   }, []);
 
+  // Online heartbeat - update last_seen every minute
+  useEffect(() => {
+    if (!user) return;
+    const updateLastSeen = () => {
+      supabase.from("profiles").update({ last_seen: new Date().toISOString() }).eq("id", user.id).then();
+    };
+    updateLastSeen();
+    const interval = setInterval(updateLastSeen, HEARTBEAT_INTERVAL);
+    return () => clearInterval(interval);
+  }, [user]);
+
   const signUp = async (email: string, password: string, fullName: string) => {
     const { error } = await supabase.auth.signUp({
       email,
