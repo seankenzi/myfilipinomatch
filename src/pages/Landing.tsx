@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Heart, Shield, Globe, MessageSquare, Star, CheckCircle, ArrowRight, UserPlus, Search, MessagesSquare } from "lucide-react";
 import { Link } from "react-router-dom";
-import Footer from "@/components/Footer";
+
 import { Button } from "@/components/ui/button";
 import heroCouple from "@/assets/hero-couple.jpg";
 import heroCouple2 from "@/assets/hero-couple-2.jpg";
@@ -340,7 +340,7 @@ const Landing = () => {
         </div>
       </section>
 
-      <Footer />
+      
     </div>
   );
 };
