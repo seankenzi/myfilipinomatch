@@ -499,12 +499,7 @@ const Messages = () => {
                       <Shield className="h-3.5 w-3.5 text-secondary fill-secondary/30 flex-shrink-0" />
                     )}
                   </div>
-                  {location && (
-                    <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
-                      <MapPin className="h-3 w-3" />
-                      <span className="truncate">{location}</span>
-                    </div>
-                  )}
+                  <OnlineStatus lastSeen={selectedMatch.other_user.last_seen} size="sm" showText />
                 </div>
 
                 {/* Actions dropdown */}
