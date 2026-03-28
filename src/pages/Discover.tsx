@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import {
   Heart, X, MapPin, Shield, Filter, ChevronDown, Star, Flag,
   LayoutGrid, Layers, Globe, Send, Sparkles, Clock, UserPlus,
-  ChevronLeft, ChevronRight, SlidersHorizontal
+  ChevronLeft, ChevronRight, SlidersHorizontal, Undo2, Zap, Lock, Crown
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -145,6 +145,8 @@ const getProfilePhotos = (profile: Profile): string[] => {
   return photos;
 };
 
+const DAILY_LIKE_LIMIT = 10;
+
 const Discover = () => {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -169,6 +171,12 @@ const Discover = () => {
   const [filterGender, setFilterGender] = useState<string>("all");
   const [filterAgeRange, setFilterAgeRange] = useState<[number, number]>([18, 65]);
 
+  // Advanced filters (premium-only)
+  const [filterEducation, setFilterEducation] = useState<string>("all");
+  const [filterLanguage, setFilterLanguage] = useState<string>("all");
+  const [filterChildren, setFilterChildren] = useState<string>("all");
+  const [filterHeightRange, setFilterHeightRange] = useState<[number, number]>([140, 210]);
+
   // Intro message dialog
   const [introDialog, setIntroDialog] = useState(false);
   const [introMessage, setIntroMessage] = useState("");
@@ -183,6 +191,56 @@ const Discover = () => {
   // Already liked/passed IDs
   const [likedIds, setLikedIds] = useState<Set<string>>(new Set());
 
+  // Premium & limits
+  const [isPremium, setIsPremium] = useState(false);
+  const [dailyLikesUsed, setDailyLikesUsed] = useState(0);
+
+  // Undo pass
+  const [lastPassedProfile, setLastPassedProfile] = useState<Profile | null>(null);
+  const [lastPassedIndex, setLastPassedIndex] = useState<number | null>(null);
+
+  // Boost
+  const [isBoosted, setIsBoosted] = useState(false);
+  const [boostExpiresAt, setBoostExpiresAt] = useState<string | null>(null);
+
+  // Fetch premium status, daily likes, and boost status
+  useEffect(() => {
+    if (!user) return;
+    const fetchUserStatus = async () => {
+      // Check premium
+      const { data: profileData } = await supabase
+        .from("profiles")
+        .select("is_premium")
+        .eq("id", user.id)
+        .single();
+      setIsPremium(profileData?.is_premium === true);
+
+      // Count today's likes
+      const todayStart = new Date();
+      todayStart.setHours(0, 0, 0, 0);
+      const { count } = await supabase
+        .from("likes")
+        .select("id", { count: "exact", head: true })
+        .eq("liker_id", user.id)
+        .gte("created_at", todayStart.toISOString());
+      setDailyLikesUsed(count || 0);
+
+      // Check active boost
+      const { data: boostData } = await supabase
+        .from("profile_boosts")
+        .select("expires_at")
+        .eq("user_id", user.id)
+        .gt("expires_at", new Date().toISOString())
+        .order("expires_at", { ascending: false })
+        .limit(1);
+      if (boostData && boostData.length > 0) {
+        setIsBoosted(true);
+        setBoostExpiresAt(boostData[0].expires_at);
+      }
+    };
+    fetchUserStatus();
+  }, [user]);
+
   const fetchProfiles = useCallback(async () => {
     if (!user) return;
     setLoading(true);
@@ -194,6 +252,13 @@ const Discover = () => {
 
     const alreadyLiked = new Set((likesData || []).map((l) => l.liked_id));
     setLikedIds(alreadyLiked);
+
+    // Fetch active boosts for sorting
+    const { data: boostsData } = await supabase
+      .from("profile_boosts")
+      .select("user_id")
+      .gt("expires_at", new Date().toISOString());
+    const boostedUserIds = new Set((boostsData || []).map((b) => b.user_id));
 
     let query = supabase
       .from("profiles")
@@ -209,16 +274,29 @@ const Discover = () => {
     if (filterAgeRange[0] > 18) query = query.gte("age", filterAgeRange[0]);
     if (filterAgeRange[1] < 65) query = query.lte("age", filterAgeRange[1]);
 
+    // Advanced filters (premium only - applied regardless, but UI is gated)
+    if (isPremium) {
+      if (filterEducation !== "all") query = query.eq("education", filterEducation);
+      if (filterLanguage !== "all") query = query.eq("language", filterLanguage);
+      if (filterChildren !== "all") query = query.eq("want_children", filterChildren);
+      if (filterHeightRange[0] > 140) query = query.gte("height_cm", filterHeightRange[0]);
+      if (filterHeightRange[1] < 210) query = query.lte("height_cm", filterHeightRange[1]);
+    }
+
     const { data, error } = await query;
 
     if (error) {
       toast({ title: "Error loading profiles", description: error.message, variant: "destructive" });
     } else {
-      setProfiles((data || []) as Profile[]);
+      // Sort boosted profiles to the top
+      const allProfiles = (data || []) as Profile[];
+      const boosted = allProfiles.filter((p) => boostedUserIds.has(p.id));
+      const nonBoosted = allProfiles.filter((p) => !boostedUserIds.has(p.id));
+      setProfiles([...boosted, ...nonBoosted]);
       setCurrentIndex(0);
     }
     setLoading(false);
-  }, [user, filterCountry, filterIntent, filterCity, filterGender, filterAgeRange]);
+  }, [user, filterCountry, filterIntent, filterCity, filterGender, filterAgeRange, isPremium, filterEducation, filterLanguage, filterChildren, filterHeightRange]);
 
   useEffect(() => {
     fetchProfiles();
@@ -228,8 +306,20 @@ const Discover = () => {
   const swipeProfiles = profiles;
   const currentProfile = swipeProfiles[currentIndex];
 
+  const dailyLikesRemaining = Math.max(0, DAILY_LIKE_LIMIT - dailyLikesUsed);
+  const canLike = isPremium || dailyLikesRemaining > 0;
+
   const handleLike = async (profile: Profile) => {
     if (!user) return;
+
+    if (!canLike) {
+      toast({
+        title: "Daily like limit reached",
+        description: "Upgrade to Premium for unlimited likes!",
+      });
+      navigate("/premium");
+      return;
+    }
 
     const { error } = await supabase.from("likes").insert({
       liker_id: user.id,
@@ -240,6 +330,8 @@ const Discover = () => {
       toast({ title: "Error", description: error.message, variant: "destructive" });
       return;
     }
+
+    setDailyLikesUsed((prev) => prev + 1);
 
     const { data: mutualLike } = await supabase
       .from("likes")
@@ -260,6 +352,13 @@ const Discover = () => {
 
   const handleSwipeAction = async (action: "like" | "pass") => {
     if (!currentProfile) return;
+
+    // Track passed profile for undo
+    if (action === "pass") {
+      setLastPassedProfile(currentProfile);
+      setLastPassedIndex(currentIndex);
+    }
+
     setSwiped(true);
     setDirection(action === "like" ? "right" : "left");
 
@@ -272,6 +371,42 @@ const Discover = () => {
       setSwiped(false);
       setExpandedBio(false);
     }, 300);
+  };
+
+  const handleUndoPass = () => {
+    if (!isPremium) {
+      toast({ title: "Premium feature", description: "Upgrade to Premium to undo passes!" });
+      navigate("/premium");
+      return;
+    }
+    if (lastPassedProfile && lastPassedIndex !== null) {
+      setCurrentIndex(lastPassedIndex);
+      setLastPassedProfile(null);
+      setLastPassedIndex(null);
+      toast({ title: "Undo!", description: `${lastPassedProfile.full_name.split(" ")[0]} is back.` });
+    }
+  };
+
+  const handleBoostProfile = async () => {
+    if (!user) return;
+    if (!isPremium) {
+      toast({ title: "Premium feature", description: "Upgrade to Premium to boost your profile!" });
+      navigate("/premium");
+      return;
+    }
+    if (isBoosted) {
+      toast({ title: "Already boosted", description: "Your profile is already boosted!" });
+      return;
+    }
+    const { error } = await supabase.from("profile_boosts").insert({ user_id: user.id });
+    if (error) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } else {
+      setIsBoosted(true);
+      setBoostExpiresAt(new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString());
+      toast({ title: "🚀 Profile Boosted!", description: "You'll appear at the top of Discover for 24 hours!" });
+    }
+  };
   };
 
   const handleDragEnd = (_: any, info: PanInfo) => {
@@ -346,6 +481,10 @@ const Discover = () => {
     filterGender !== "all",
     !!filterCity,
     filterAgeRange[0] > 18 || filterAgeRange[1] < 65,
+    isPremium && filterEducation !== "all",
+    isPremium && filterLanguage !== "all",
+    isPremium && filterChildren !== "all",
+    isPremium && (filterHeightRange[0] > 140 || filterHeightRange[1] < 210),
   ].filter(Boolean).length;
 
   return (
@@ -493,6 +632,85 @@ const Discover = () => {
                     </Select>
                   </div>
 
+                  {/* Advanced Filters - Premium Only */}
+                  <div className={`space-y-4 ${!isPremium ? "relative" : ""}`}>
+                    {!isPremium && (
+                      <div className="absolute inset-0 z-10 flex items-center justify-center rounded-xl bg-card/80 backdrop-blur-[2px]">
+                        <button onClick={() => navigate("/premium")} className="flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground shadow-elevated hover:bg-primary/90 transition-all">
+                          <Crown className="h-4 w-4" /> Unlock Advanced Filters
+                        </button>
+                      </div>
+                    )}
+                    <div className="pt-2 border-t border-border">
+                      <p className="text-[10px] font-semibold text-accent uppercase tracking-wider mb-3 flex items-center gap-1">
+                        <Crown className="h-3 w-3" /> Premium Filters
+                      </p>
+                    </div>
+                    {/* Education */}
+                    <div>
+                      <label className="text-xs font-medium text-muted-foreground">Education</label>
+                      <Select value={filterEducation} onValueChange={setFilterEducation}>
+                        <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">Any</SelectItem>
+                          <SelectItem value="High School">High School</SelectItem>
+                          <SelectItem value="Bachelor's">Bachelor's</SelectItem>
+                          <SelectItem value="Master's">Master's</SelectItem>
+                          <SelectItem value="Doctorate">Doctorate</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    {/* Language */}
+                    <div>
+                      <label className="text-xs font-medium text-muted-foreground">Language</label>
+                      <Select value={filterLanguage} onValueChange={setFilterLanguage}>
+                        <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">Any</SelectItem>
+                          <SelectItem value="English">English</SelectItem>
+                          <SelectItem value="Tagalog">Tagalog</SelectItem>
+                          <SelectItem value="Japanese">Japanese</SelectItem>
+                          <SelectItem value="Korean">Korean</SelectItem>
+                          <SelectItem value="German">German</SelectItem>
+                          <SelectItem value="French">French</SelectItem>
+                          <SelectItem value="Spanish">Spanish</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    {/* Children */}
+                    <div>
+                      <label className="text-xs font-medium text-muted-foreground">Children</label>
+                      <Select value={filterChildren} onValueChange={setFilterChildren}>
+                        <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">Any</SelectItem>
+                          <SelectItem value="want">Wants children</SelectItem>
+                          <SelectItem value="dont-want">Doesn't want</SelectItem>
+                          <SelectItem value="have-want-more">Has & wants more</SelectItem>
+                          <SelectItem value="have-dont-want-more">Has & doesn't want more</SelectItem>
+                          <SelectItem value="not-sure">Not sure yet</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    {/* Height Range */}
+                    <div>
+                      <label className="text-xs font-medium text-muted-foreground flex items-center justify-between">
+                        Height Range
+                        <span className="text-foreground font-semibold">{filterHeightRange[0]} – {filterHeightRange[1]} cm</span>
+                      </label>
+                      <div className="mt-2 px-1">
+                        <Slider
+                          min={140}
+                          max={210}
+                          step={1}
+                          value={filterHeightRange}
+                          onValueChange={(v) => setFilterHeightRange(v as [number, number])}
+                          className="w-full"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
                   <div className="flex gap-2 pt-1">
                     <Button size="sm" variant="outline" className="flex-1" onClick={() => {
                       setFilterCountry("all");
@@ -500,6 +718,10 @@ const Discover = () => {
                       setFilterCity("");
                       setFilterGender("all");
                       setFilterAgeRange([18, 65]);
+                      setFilterEducation("all");
+                      setFilterLanguage("all");
+                      setFilterChildren("all");
+                      setFilterHeightRange([140, 210]);
                     }}>
                       Reset All
                     </Button>
@@ -515,12 +737,33 @@ const Discover = () => {
             )}
           </AnimatePresence>
 
-          {/* Trust banner */}
-          <div className="mb-4 flex items-center gap-2 rounded-xl bg-secondary/5 px-3 py-2">
-            <Shield className="h-4 w-4 text-secondary flex-shrink-0" />
-            <p className="text-[11px] text-secondary font-medium">
-              All profiles are reviewed for authenticity. Report anything suspicious.
-            </p>
+          {/* Status bar: daily likes + boost */}
+          <div className="mb-4 flex items-center gap-2 flex-wrap">
+            <div className="flex items-center gap-2 rounded-xl bg-secondary/5 px-3 py-2 flex-1 min-w-0">
+              <Shield className="h-4 w-4 text-secondary flex-shrink-0" />
+              <p className="text-[11px] text-secondary font-medium truncate">
+                All profiles are reviewed for authenticity.
+              </p>
+            </div>
+            {!isPremium && (
+              <div className="flex items-center gap-1.5 rounded-xl border border-border bg-card px-3 py-2 text-xs shadow-card">
+                <Heart className="h-3.5 w-3.5 text-primary" />
+                <span className="font-semibold text-foreground">{dailyLikesRemaining}</span>
+                <span className="text-muted-foreground">likes left</span>
+              </div>
+            )}
+            <button
+              onClick={handleBoostProfile}
+              className={`flex items-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-medium shadow-card transition-all ${
+                isBoosted
+                  ? "border-accent bg-accent/10 text-accent"
+                  : "border-border bg-card text-muted-foreground hover:border-accent/30 hover:text-accent"
+              }`}
+            >
+              <Zap className={`h-3.5 w-3.5 ${isBoosted ? "fill-accent" : ""}`} />
+              {isBoosted ? "Boosted" : "Boost"}
+              {!isPremium && <Crown className="h-3 w-3 text-accent" />}
+            </button>
           </div>
 
           {loading ? (
@@ -641,17 +884,26 @@ const Discover = () => {
                     </div>
 
                     <div className="mt-5 flex items-center justify-center gap-4">
+                      {lastPassedProfile && (
+                        <button onClick={handleUndoPass} className="flex h-11 w-11 items-center justify-center rounded-full border-2 border-accent/40 bg-card shadow-card transition-all hover:shadow-card-hover hover:scale-105 active:scale-95" title="Undo last pass">
+                          <Undo2 className="h-4 w-4 text-accent" />
+                        </button>
+                      )}
                       <button onClick={() => handleSwipeAction("pass")} className="flex h-14 w-14 items-center justify-center rounded-full border-2 border-border bg-card shadow-card transition-all hover:shadow-card-hover hover:scale-105 active:scale-95">
                         <X className="h-6 w-6 text-muted-foreground" />
                       </button>
                       <button onClick={() => handlePriorityLike(currentProfile)} className="flex h-12 w-12 items-center justify-center rounded-full border-2 border-accent bg-accent/10 shadow-card transition-all hover:shadow-card-hover hover:scale-105 active:scale-95">
                         <Star className="h-5 w-5 text-accent fill-accent" />
                       </button>
-                      <button onClick={() => handleSwipeAction("like")} className="flex h-16 w-16 items-center justify-center rounded-full gradient-hero shadow-elevated transition-all hover:shadow-card-hover hover:scale-105 active:scale-95">
+                      <button onClick={() => handleSwipeAction("like")} className={`flex h-16 w-16 items-center justify-center rounded-full gradient-hero shadow-elevated transition-all hover:shadow-card-hover hover:scale-105 active:scale-95 ${!canLike ? "opacity-50" : ""}`}>
                         <Heart className="h-7 w-7 text-primary-foreground fill-primary-foreground" />
                       </button>
                     </div>
-                    <p className="mt-3 text-center text-[11px] text-muted-foreground">Swipe or tap • ⭐ sends a priority like with intro</p>
+                    <p className="mt-3 text-center text-[11px] text-muted-foreground">
+                      Swipe or tap • ⭐ priority like
+                      {lastPassedProfile && " • ↩ undo pass"}
+                      {!isPremium && ` • ${dailyLikesRemaining} likes left today`}
+                    </p>
                   </div>
 
                   {/* Right: Desktop Side Panel */}
