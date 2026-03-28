@@ -8,21 +8,21 @@ const corsHeaders = {
 };
 
 const BodySchema = z.object({
-  plan: z.enum(["basic", "boost"]),
+  plan: z.enum(["monthly", "quarterly"]),
   success_url: z.string().url(),
   cancel_url: z.string().url(),
 });
 
 const PLANS: Record<string, { name: string; amount: number; description: string }> = {
-  basic: {
-    name: "FiloHeart Basic",
-    amount: 49900, // ₱499.00 in centavos (~$9.99)
-    description: "Unlimited messaging + see who liked you",
+  monthly: {
+    name: "FiloHeart Premium — Monthly",
+    amount: 299900, // $29.99 in centavos (PHP equivalent)
+    description: "Unlimited messaging, see who liked you, profile boost",
   },
-  boost: {
-    name: "FiloHeart Boost",
-    amount: 99900, // ₱999.00 in centavos (~$19.99)
-    description: "Everything in Basic + profile boost + priority visibility",
+  quarterly: {
+    name: "FiloHeart Premium — 3 Months",
+    amount: 690000, // $69.00 in centavos (PHP equivalent)
+    description: "Best value — everything in Premium for 3 months, save 23%",
   },
 };
 

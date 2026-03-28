@@ -10,29 +10,30 @@ import { useToast } from "@/hooks/use-toast";
 
 const plans = [
   {
-    id: "basic" as const,
-    name: "Basic",
-    price: "₱499",
-    priceUsd: "~$9.99",
+    id: "monthly" as const,
+    name: "Monthly",
+    price: "$29.99",
+    priceSub: "per month",
     period: "/month",
-    popular: true,
+    popular: false,
     features: [
       "Unlimited messaging",
       "See who liked you",
       "Read receipts",
       "Advanced filters",
+      "Profile boost",
     ],
   },
   {
-    id: "boost" as const,
-    name: "Boost",
-    price: "₱999",
-    priceUsd: "~$19.99",
-    period: "/month",
-    popular: false,
+    id: "quarterly" as const,
+    name: "3 Months",
+    price: "$69",
+    priceSub: "$23/month — save 23%",
+    period: "/3 months",
+    popular: true,
     features: [
-      "Everything in Basic",
-      "Profile boost (5x visibility)",
+      "Everything in Monthly",
+      "Best value",
       "Priority in Discover",
       "Exclusive badge",
       "Priority support",
@@ -69,7 +70,7 @@ const Premium = () => {
       });
   }, [user]);
 
-  const handleSubscribe = async (plan: "basic" | "boost") => {
+  const handleSubscribe = async (plan: "monthly" | "quarterly") => {
     if (!user) {
       toast({ title: "Please log in first", variant: "destructive" });
       return;
@@ -179,7 +180,7 @@ const Premium = () => {
                   <span className="text-3xl font-bold text-foreground">{plan.price}</span>
                   <span className="text-sm text-muted-foreground">{plan.period}</span>
                 </div>
-                <p className="text-xs text-muted-foreground mb-5">{plan.priceUsd}/month</p>
+                <p className="text-xs text-muted-foreground mb-5">{plan.priceSub}</p>
 
                 <ul className="space-y-2.5 mb-6">
                   {plan.features.map((f) => (

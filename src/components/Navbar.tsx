@@ -1,7 +1,8 @@
-import { Heart, LogIn, LogOut, User } from "lucide-react";
+import { LogIn, LogOut, User } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
+import logo from "@/assets/filoheart-logo.png";
 
 const Navbar = () => {
   const { user, loading, signOut } = useAuth();
@@ -10,7 +11,7 @@ const Navbar = () => {
     <header className="sticky top-0 z-50 border-b border-border bg-card/90 backdrop-blur-md">
       <div className="container flex h-16 items-center justify-between">
         <Link to="/" className="flex items-center gap-2">
-          <Heart className="h-7 w-7 text-primary fill-primary" />
+          <img src={logo} alt="FiloHeart" className="h-8 w-8" />
           <span className="text-xl font-display font-bold text-foreground">
             FiloHeart
           </span>
