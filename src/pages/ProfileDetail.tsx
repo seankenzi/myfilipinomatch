@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, MapPin, Shield, Heart, Star, Flag, MessageCircle } from "lucide-react";
+import OnlineStatus, { isUserOnline } from "@/components/OnlineStatus";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";

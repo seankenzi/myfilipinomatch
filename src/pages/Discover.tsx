@@ -5,6 +5,7 @@ import {
   LayoutGrid, Layers, Globe, Send, Sparkles, Clock, UserPlus,
   ChevronLeft, ChevronRight, SlidersHorizontal, Undo2, Zap, Lock, Crown
 } from "lucide-react";
+import OnlineStatus from "@/components/OnlineStatus";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
