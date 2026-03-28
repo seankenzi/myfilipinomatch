@@ -884,17 +884,26 @@ const Discover = () => {
                     </div>
 
                     <div className="mt-5 flex items-center justify-center gap-4">
+                      {lastPassedProfile && (
+                        <button onClick={handleUndoPass} className="flex h-11 w-11 items-center justify-center rounded-full border-2 border-accent/40 bg-card shadow-card transition-all hover:shadow-card-hover hover:scale-105 active:scale-95" title="Undo last pass">
+                          <Undo2 className="h-4 w-4 text-accent" />
+                        </button>
+                      )}
                       <button onClick={() => handleSwipeAction("pass")} className="flex h-14 w-14 items-center justify-center rounded-full border-2 border-border bg-card shadow-card transition-all hover:shadow-card-hover hover:scale-105 active:scale-95">
                         <X className="h-6 w-6 text-muted-foreground" />
                       </button>
                       <button onClick={() => handlePriorityLike(currentProfile)} className="flex h-12 w-12 items-center justify-center rounded-full border-2 border-accent bg-accent/10 shadow-card transition-all hover:shadow-card-hover hover:scale-105 active:scale-95">
                         <Star className="h-5 w-5 text-accent fill-accent" />
                       </button>
-                      <button onClick={() => handleSwipeAction("like")} className="flex h-16 w-16 items-center justify-center rounded-full gradient-hero shadow-elevated transition-all hover:shadow-card-hover hover:scale-105 active:scale-95">
+                      <button onClick={() => handleSwipeAction("like")} className={`flex h-16 w-16 items-center justify-center rounded-full gradient-hero shadow-elevated transition-all hover:shadow-card-hover hover:scale-105 active:scale-95 ${!canLike ? "opacity-50" : ""}`}>
                         <Heart className="h-7 w-7 text-primary-foreground fill-primary-foreground" />
                       </button>
                     </div>
-                    <p className="mt-3 text-center text-[11px] text-muted-foreground">Swipe or tap • ⭐ sends a priority like with intro</p>
+                    <p className="mt-3 text-center text-[11px] text-muted-foreground">
+                      Swipe or tap • ⭐ priority like
+                      {lastPassedProfile && " • ↩ undo pass"}
+                      {!isPremium && ` • ${dailyLikesRemaining} likes left today`}
+                    </p>
                   </div>
 
                   {/* Right: Desktop Side Panel */}
