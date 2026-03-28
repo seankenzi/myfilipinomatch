@@ -607,7 +607,7 @@ const Discover = () => {
                                 <Badge variant="outline" className="gap-1 bg-accent/10 text-accent border-accent/20 text-[11px]"><Globe className="h-3 w-3" /> {formatRelocation(currentProfile.relocation_intent)}</Badge>
                               )}
                               {currentProfile.international_preference && (
-                                <Badge variant="outline" className="gap-1 text-[11px]">🌏 Open International</Badge>
+                                <Badge variant="outline" className="gap-1 text-[11px]">🌏 Open to long-distance dating</Badge>
                               )}
                               {currentProfile.user_type && (
                                 <Badge variant="outline" className="gap-1 text-[11px] capitalize">{currentProfile.user_type === "foreigner" ? "🌐" : "🇵🇭"} {currentProfile.user_type}</Badge>
@@ -681,7 +681,7 @@ const Discover = () => {
                           <Badge variant="outline" className="gap-1 bg-accent/10 text-accent border-accent/20 text-xs"><Globe className="h-3 w-3" /> {formatRelocation(currentProfile.relocation_intent)}</Badge>
                         )}
                         {currentProfile.international_preference && (
-                          <Badge variant="outline" className="gap-1 text-xs">🌏 Open International</Badge>
+                          <Badge variant="outline" className="gap-1 text-xs">🌏 Open to long-distance dating</Badge>
                         )}
                         {currentProfile.user_type && (
                           <Badge variant="outline" className="gap-1 text-xs capitalize">{currentProfile.user_type === "foreigner" ? "🌐" : "🇵🇭"} {currentProfile.user_type}</Badge>
