@@ -94,7 +94,7 @@ Deno.serve(async (req) => {
                 quantity: 1,
               },
             ],
-            payment_method_types: ["card"],
+            payment_method_types: ["card", "gcash", "paymaya"],
             success_url,
             cancel_url,
             metadata: {

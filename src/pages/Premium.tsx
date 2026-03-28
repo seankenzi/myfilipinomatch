@@ -223,8 +223,8 @@ const Premium = () => {
             <p className="text-xs text-muted-foreground mb-2">Accepted payment methods</p>
             <div className="flex items-center justify-center gap-4 text-sm font-medium text-muted-foreground">
               <span className="rounded-lg border border-border px-3 py-1.5">💳 Card</span>
-              <span className="rounded-lg border border-border px-3 py-1.5">Visa</span>
-              <span className="rounded-lg border border-border px-3 py-1.5">Mastercard</span>
+              <span className="rounded-lg border border-border px-3 py-1.5">GCash</span>
+              <span className="rounded-lg border border-border px-3 py-1.5">Maya</span>
             </div>
           </div>
 
