@@ -560,7 +560,6 @@ const Messages = () => {
                       className="gap-1.5"
                       onClick={() => navigate("/premium")}
                     >
-                    >
                       <Crown className="h-3.5 w-3.5" />
                       Upgrade Now
                     </Button>
@@ -578,7 +577,6 @@ const Messages = () => {
                       <button
                         onClick={() => navigate("/premium")}
                         className="text-[11px] font-semibold text-primary hover:underline"
-                      >
                       >
                         Go Premium
                       </button>
