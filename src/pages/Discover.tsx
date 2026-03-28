@@ -211,8 +211,7 @@ const Discover = () => {
     if (error) {
       toast({ title: "Error loading profiles", description: error.message, variant: "destructive" });
     } else {
-      const filtered = (data || []).filter((p) => !alreadyLiked.has(p.id));
-      setProfiles(filtered as Profile[]);
+      setProfiles((data || []) as Profile[]);
       setCurrentIndex(0);
     }
     setLoading(false);
