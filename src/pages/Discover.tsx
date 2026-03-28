@@ -341,6 +341,9 @@ const Discover = () => {
       .maybeSingle();
 
     if (mutualLike) {
+      // Create match record
+      const ids = [user.id, profile.id].sort();
+      await supabase.from("matches").insert({ user1_id: ids[0], user2_id: ids[1] });
       toast({
         title: "🎉 It's a Match!",
         description: `You and ${profile.full_name} liked each other!`,
