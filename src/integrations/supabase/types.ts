@@ -120,20 +120,26 @@ export type Database = {
           city: string | null
           country: string | null
           created_at: string
+          education: string | null
           email: string | null
           full_name: string
           gender: string | null
+          height_cm: number | null
           id: string
           interests: string[] | null
           international_preference: boolean | null
           is_premium: boolean | null
           is_verified: boolean | null
+          language: string | null
           onboarding_completed: boolean | null
           photos: string[] | null
           relationship_intent: string | null
+          relationship_status: string | null
           relocation_intent: string | null
           updated_at: string
           user_type: string | null
+          want_children: string | null
+          weight_kg: number | null
         }
         Insert: {
           age?: number | null
@@ -142,20 +148,26 @@ export type Database = {
           city?: string | null
           country?: string | null
           created_at?: string
+          education?: string | null
           email?: string | null
           full_name?: string
           gender?: string | null
+          height_cm?: number | null
           id: string
           interests?: string[] | null
           international_preference?: boolean | null
           is_premium?: boolean | null
           is_verified?: boolean | null
+          language?: string | null
           onboarding_completed?: boolean | null
           photos?: string[] | null
           relationship_intent?: string | null
+          relationship_status?: string | null
           relocation_intent?: string | null
           updated_at?: string
           user_type?: string | null
+          want_children?: string | null
+          weight_kg?: number | null
         }
         Update: {
           age?: number | null
@@ -164,20 +176,26 @@ export type Database = {
           city?: string | null
           country?: string | null
           created_at?: string
+          education?: string | null
           email?: string | null
           full_name?: string
           gender?: string | null
+          height_cm?: number | null
           id?: string
           interests?: string[] | null
           international_preference?: boolean | null
           is_premium?: boolean | null
           is_verified?: boolean | null
+          language?: string | null
           onboarding_completed?: boolean | null
           photos?: string[] | null
           relationship_intent?: string | null
+          relationship_status?: string | null
           relocation_intent?: string | null
           updated_at?: string
           user_type?: string | null
+          want_children?: string | null
+          weight_kg?: number | null
         }
         Relationships: []
       }
