@@ -525,7 +525,7 @@ const Discover = () => {
             /* =================== SWIPE VIEW =================== */
             <>
               {noMoreProfiles ? (
-                <div className="flex flex-col items-center justify-center rounded-3xl border border-border bg-card py-20 shadow-card">
+                <div className="flex flex-col items-center justify-center rounded-3xl border border-border bg-card py-20 shadow-card max-w-lg mx-auto">
                   <Sparkles className="h-12 w-12 text-muted-foreground/40 mb-4" />
                   <h3 className="text-lg font-semibold text-foreground">You've seen everyone!</h3>
                   <p className="mt-2 text-sm text-muted-foreground text-center max-w-xs">
@@ -536,183 +536,182 @@ const Discover = () => {
                   </Button>
                 </div>
               ) : currentProfile && (
-                <>
-                  <div className="relative w-full">
-                    <AnimatePresence mode="wait">
-                      <motion.div
-                        key={currentProfile.id}
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1, x: 0 }}
-                        exit={{
-                          opacity: 0,
-                          x: direction === "left" ? -300 : direction === "right" ? 300 : 0,
-                          rotate: direction === "left" ? -15 : direction === "right" ? 15 : 0,
-                        }}
-                        transition={{ duration: 0.3 }}
-                        drag="x"
-                        dragConstraints={{ left: 0, right: 0 }}
-                        dragElastic={0.8}
-                        onDrag={(_, info) => setDragX(info.offset.x)}
-                        onDragEnd={handleDragEnd}
-                        className="overflow-hidden rounded-3xl border border-border bg-card shadow-elevated cursor-grab active:cursor-grabbing select-none"
-                      >
-                        {/* Swipe indicators */}
-                        <AnimatePresence>
-                          {dragX > 50 && (
-                            <motion.div
-                              initial={{ opacity: 0 }}
-                              animate={{ opacity: Math.min(dragX / 150, 1) }}
-                              exit={{ opacity: 0 }}
-                              className="absolute top-8 left-6 z-20 rotate-[-15deg] rounded-xl border-4 border-secondary px-4 py-2"
-                            >
-                              <span className="text-2xl font-bold text-secondary">LIKE</span>
-                            </motion.div>
-                          )}
-                          {dragX < -50 && (
-                            <motion.div
-                              initial={{ opacity: 0 }}
-                              animate={{ opacity: Math.min(Math.abs(dragX) / 150, 1) }}
-                              exit={{ opacity: 0 }}
-                              className="absolute top-8 right-6 z-20 rotate-[15deg] rounded-xl border-4 border-destructive px-4 py-2"
-                            >
-                              <span className="text-2xl font-bold text-destructive">PASS</span>
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
+                <div className="flex flex-col lg:flex-row gap-6 lg:items-start lg:justify-center">
+                  {/* Left: Swipe Card */}
+                  <div className="w-full max-w-lg mx-auto lg:mx-0 lg:flex-shrink-0">
+                    <div className="relative w-full">
+                      <AnimatePresence mode="wait">
+                        <motion.div
+                          key={currentProfile.id}
+                          initial={{ opacity: 0, scale: 0.95 }}
+                          animate={{ opacity: 1, scale: 1, x: 0 }}
+                          exit={{
+                            opacity: 0,
+                            x: direction === "left" ? -300 : direction === "right" ? 300 : 0,
+                            rotate: direction === "left" ? -15 : direction === "right" ? 15 : 0,
+                          }}
+                          transition={{ duration: 0.3 }}
+                          drag="x"
+                          dragConstraints={{ left: 0, right: 0 }}
+                          dragElastic={0.8}
+                          onDrag={(_, info) => setDragX(info.offset.x)}
+                          onDragEnd={handleDragEnd}
+                          className="overflow-hidden rounded-3xl border border-border bg-card shadow-elevated cursor-grab active:cursor-grabbing select-none"
+                        >
+                          <AnimatePresence>
+                            {dragX > 50 && (
+                              <motion.div initial={{ opacity: 0 }} animate={{ opacity: Math.min(dragX / 150, 1) }} exit={{ opacity: 0 }} className="absolute top-8 left-6 z-20 rotate-[-15deg] rounded-xl border-4 border-secondary px-4 py-2">
+                                <span className="text-2xl font-bold text-secondary">LIKE</span>
+                              </motion.div>
+                            )}
+                            {dragX < -50 && (
+                              <motion.div initial={{ opacity: 0 }} animate={{ opacity: Math.min(Math.abs(dragX) / 150, 1) }} exit={{ opacity: 0 }} className="absolute top-8 right-6 z-20 rotate-[15deg] rounded-xl border-4 border-destructive px-4 py-2">
+                                <span className="text-2xl font-bold text-destructive">PASS</span>
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
 
-                        {/* Photo Gallery */}
-                        <div className="relative aspect-[3/4] max-h-[450px]">
-                          <PhotoGallery photos={getProfilePhotos(currentProfile)} name={currentProfile.full_name} />
-                          <div className="absolute inset-0 bg-gradient-to-t from-foreground/80 via-transparent to-foreground/5 pointer-events-none" />
-
-                          {/* Country flag */}
-                          {currentProfile.country && (
-                            <div className="absolute top-4 right-4 z-20 rounded-full bg-card/90 backdrop-blur-sm px-2.5 py-1 text-sm shadow-card">
-                              {getFlagEmoji(currentProfile.country)}
-                            </div>
-                          )}
-
-                          {/* Report button */}
-                          <button
-                            onClick={() => handleReport(currentProfile)}
-                            className="absolute top-4 left-4 z-20 rounded-full bg-card/70 backdrop-blur-sm p-2 text-muted-foreground hover:text-destructive transition-colors"
-                          >
-                            <Flag className="h-4 w-4" />
-                          </button>
-
-                          {/* Name overlay */}
-                          <div className="absolute bottom-0 left-0 right-0 p-5 z-10 pointer-events-none">
-                            <div className="flex items-center gap-2">
-                              <h2 className="text-2xl font-bold text-primary-foreground" style={{ fontFamily: 'var(--font-display)' }}>
-                                {currentProfile.full_name}{currentProfile.age ? `, ${currentProfile.age}` : ""}
-                              </h2>
-                              {currentProfile.is_verified && (
-                                <Shield className="h-5 w-5 text-secondary fill-secondary/30" />
-                              )}
-                            </div>
-                            <div className="mt-1 flex items-center gap-1.5 text-sm text-primary-foreground/80">
-                              <MapPin className="h-3.5 w-3.5" />
-                              {[currentProfile.city, currentProfile.country].filter(Boolean).join(", ") || "Location not set"}
+                          <div className="relative aspect-[3/4] max-h-[500px]">
+                            <PhotoGallery photos={getProfilePhotos(currentProfile)} name={currentProfile.full_name} />
+                            <div className="absolute inset-0 bg-gradient-to-t from-foreground/80 via-transparent to-foreground/5 pointer-events-none" />
+                            {currentProfile.country && (
+                              <div className="absolute top-4 right-4 z-20 rounded-full bg-card/90 backdrop-blur-sm px-2.5 py-1 text-sm shadow-card">{getFlagEmoji(currentProfile.country)}</div>
+                            )}
+                            <button onClick={() => handleReport(currentProfile)} className="absolute top-4 left-4 z-20 rounded-full bg-card/70 backdrop-blur-sm p-2 text-muted-foreground hover:text-destructive transition-colors">
+                              <Flag className="h-4 w-4" />
+                            </button>
+                            <div className="absolute bottom-0 left-0 right-0 p-5 z-10 pointer-events-none">
+                              <div className="flex items-center gap-2">
+                                <h2 className="text-2xl font-bold text-primary-foreground" style={{ fontFamily: 'var(--font-display)' }}>
+                                  {currentProfile.full_name}{currentProfile.age ? `, ${currentProfile.age}` : ""}
+                                </h2>
+                                {currentProfile.is_verified && <Shield className="h-5 w-5 text-secondary fill-secondary/30" />}
+                              </div>
+                              <div className="mt-1 flex items-center gap-1.5 text-sm text-primary-foreground/80">
+                                <MapPin className="h-3.5 w-3.5" />
+                                {[currentProfile.city, currentProfile.country].filter(Boolean).join(", ") || "Location not set"}
+                              </div>
                             </div>
                           </div>
-                        </div>
 
-                        {/* Profile info */}
-                        <div className="p-5 space-y-3">
-                          {/* Badges row */}
-                          <div className="flex flex-wrap gap-1.5">
-                            {currentProfile.is_verified && (
-                              <Badge variant="secondary" className="gap-1 border-0 bg-secondary/10 text-secondary text-[11px]">
-                                <Shield className="h-3 w-3" /> Verified
-                              </Badge>
-                            )}
-                            {currentProfile.relationship_intent && (
-                              <Badge variant="default" className="gap-1 border-0 bg-primary/10 text-primary text-[11px]">
-                                <Heart className="h-3 w-3" /> {formatIntent(currentProfile.relationship_intent)}
-                              </Badge>
-                            )}
-                            {currentProfile.relocation_intent && currentProfile.relocation_intent !== "not-willing" && (
-                              <Badge variant="outline" className="gap-1 bg-accent/10 text-accent border-accent/20 text-[11px]">
-                                <Globe className="h-3 w-3" /> {formatRelocation(currentProfile.relocation_intent)}
-                              </Badge>
-                            )}
-                            {currentProfile.international_preference && (
-                              <Badge variant="outline" className="gap-1 text-[11px]">
-                                🌏 Open International
-                              </Badge>
-                            )}
-                            {currentProfile.user_type && (
-                              <Badge variant="outline" className="gap-1 text-[11px] capitalize">
-                                {currentProfile.user_type === "foreigner" ? "🌐" : "🇵🇭"} {currentProfile.user_type}
-                              </Badge>
-                            )}
-                          </div>
-
-                          {/* Bio */}
-                          {currentProfile.bio && (
-                            <div>
-                              <p
-                                className={`text-sm text-muted-foreground leading-relaxed ${!expandedBio ? "line-clamp-3" : ""}`}
-                              >
-                                {currentProfile.bio}
-                              </p>
-                              {currentProfile.bio.length > 120 && (
-                                <button
-                                  onClick={() => setExpandedBio(!expandedBio)}
-                                  className="text-xs text-primary font-medium mt-1 hover:underline"
-                                >
-                                  {expandedBio ? "Show less" : "Read more"}
-                                </button>
-                              )}
-                            </div>
-                          )}
-
-                          {/* Interests */}
-                          {currentProfile.interests && currentProfile.interests.length > 0 && (
+                          {/* Profile info - mobile only */}
+                          <div className="p-5 space-y-3 lg:hidden">
                             <div className="flex flex-wrap gap-1.5">
-                              {currentProfile.interests.map((interest) => (
-                                <span
-                                  key={interest}
-                                  className="rounded-full bg-muted px-2.5 py-1 text-[11px] font-medium text-foreground/70"
-                                >
-                                  {interest}
-                                </span>
-                              ))}
+                              {currentProfile.is_verified && (
+                                <Badge variant="secondary" className="gap-1 border-0 bg-secondary/10 text-secondary text-[11px]"><Shield className="h-3 w-3" /> Verified</Badge>
+                              )}
+                              {currentProfile.relationship_intent && (
+                                <Badge variant="default" className="gap-1 border-0 bg-primary/10 text-primary text-[11px]"><Heart className="h-3 w-3" /> {formatIntent(currentProfile.relationship_intent)}</Badge>
+                              )}
+                              {currentProfile.relocation_intent && currentProfile.relocation_intent !== "not-willing" && (
+                                <Badge variant="outline" className="gap-1 bg-accent/10 text-accent border-accent/20 text-[11px]"><Globe className="h-3 w-3" /> {formatRelocation(currentProfile.relocation_intent)}</Badge>
+                              )}
+                              {currentProfile.international_preference && (
+                                <Badge variant="outline" className="gap-1 text-[11px]">🌏 Open International</Badge>
+                              )}
+                              {currentProfile.user_type && (
+                                <Badge variant="outline" className="gap-1 text-[11px] capitalize">{currentProfile.user_type === "foreigner" ? "🌐" : "🇵🇭"} {currentProfile.user_type}</Badge>
+                              )}
                             </div>
-                          )}
+                            {currentProfile.bio && (
+                              <div>
+                                <p className={`text-sm text-muted-foreground leading-relaxed ${!expandedBio ? "line-clamp-3" : ""}`}>{currentProfile.bio}</p>
+                                {currentProfile.bio.length > 120 && (
+                                  <button onClick={() => setExpandedBio(!expandedBio)} className="text-xs text-primary font-medium mt-1 hover:underline">{expandedBio ? "Show less" : "Read more"}</button>
+                                )}
+                              </div>
+                            )}
+                            {currentProfile.interests && currentProfile.interests.length > 0 && (
+                              <div className="flex flex-wrap gap-1.5">
+                                {currentProfile.interests.map((interest) => (
+                                  <span key={interest} className="rounded-full bg-muted px-2.5 py-1 text-[11px] font-medium text-foreground/70">{interest}</span>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        </motion.div>
+                      </AnimatePresence>
+                    </div>
+
+                    <div className="mt-5 flex items-center justify-center gap-4">
+                      <button onClick={() => handleSwipeAction("pass")} className="flex h-14 w-14 items-center justify-center rounded-full border-2 border-border bg-card shadow-card transition-all hover:shadow-card-hover hover:scale-105 active:scale-95">
+                        <X className="h-6 w-6 text-muted-foreground" />
+                      </button>
+                      <button onClick={() => handlePriorityLike(currentProfile)} className="flex h-12 w-12 items-center justify-center rounded-full border-2 border-accent bg-accent/10 shadow-card transition-all hover:shadow-card-hover hover:scale-105 active:scale-95">
+                        <Star className="h-5 w-5 text-accent fill-accent" />
+                      </button>
+                      <button onClick={() => handleSwipeAction("like")} className="flex h-16 w-16 items-center justify-center rounded-full gradient-hero shadow-elevated transition-all hover:shadow-card-hover hover:scale-105 active:scale-95">
+                        <Heart className="h-7 w-7 text-primary-foreground fill-primary-foreground" />
+                      </button>
+                    </div>
+                    <p className="mt-3 text-center text-[11px] text-muted-foreground">Swipe or tap • ⭐ sends a priority like with intro</p>
+                  </div>
+
+                  {/* Right: Desktop Side Panel */}
+                  <div className="hidden lg:block lg:flex-1 lg:max-w-md lg:sticky lg:top-24">
+                    <motion.div
+                      key={currentProfile.id}
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.3, delay: 0.1 }}
+                      className="rounded-2xl border border-border bg-card p-6 shadow-card space-y-5"
+                    >
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <h2 className="text-xl font-bold font-display text-foreground">
+                            {currentProfile.full_name}{currentProfile.age ? `, ${currentProfile.age}` : ""}
+                          </h2>
+                          {currentProfile.is_verified && <Shield className="h-4 w-4 text-secondary fill-secondary/30" />}
                         </div>
-                      </motion.div>
-                    </AnimatePresence>
+                        <div className="mt-1 flex items-center gap-1 text-sm text-muted-foreground">
+                          <MapPin className="h-3.5 w-3.5" />
+                          {[currentProfile.city, currentProfile.country].filter(Boolean).join(", ") || "Location not set"}
+                          {currentProfile.country && <span className="ml-1">{getFlagEmoji(currentProfile.country)}</span>}
+                        </div>
+                      </div>
+
+                      <div className="flex flex-wrap gap-1.5">
+                        {currentProfile.is_verified && (
+                          <Badge variant="secondary" className="gap-1 border-0 bg-secondary/10 text-secondary text-xs"><Shield className="h-3 w-3" /> Verified</Badge>
+                        )}
+                        {currentProfile.relationship_intent && (
+                          <Badge variant="default" className="gap-1 border-0 bg-primary/10 text-primary text-xs"><Heart className="h-3 w-3" /> {formatIntent(currentProfile.relationship_intent)}</Badge>
+                        )}
+                        {currentProfile.relocation_intent && currentProfile.relocation_intent !== "not-willing" && (
+                          <Badge variant="outline" className="gap-1 bg-accent/10 text-accent border-accent/20 text-xs"><Globe className="h-3 w-3" /> {formatRelocation(currentProfile.relocation_intent)}</Badge>
+                        )}
+                        {currentProfile.international_preference && (
+                          <Badge variant="outline" className="gap-1 text-xs">🌏 Open International</Badge>
+                        )}
+                        {currentProfile.user_type && (
+                          <Badge variant="outline" className="gap-1 text-xs capitalize">{currentProfile.user_type === "foreigner" ? "🌐" : "🇵🇭"} {currentProfile.user_type}</Badge>
+                        )}
+                      </div>
+
+                      {currentProfile.bio && (
+                        <div>
+                          <h3 className="text-sm font-semibold text-foreground mb-1.5">About</h3>
+                          <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line">{currentProfile.bio}</p>
+                        </div>
+                      )}
+
+                      {currentProfile.interests && currentProfile.interests.length > 0 && (
+                        <div>
+                          <h3 className="text-sm font-semibold text-foreground mb-2">Interests</h3>
+                          <div className="flex flex-wrap gap-1.5">
+                            {currentProfile.interests.map((interest) => (
+                              <span key={interest} className="rounded-full bg-muted px-3 py-1 text-xs font-medium text-foreground/70">{interest}</span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      <Button variant="outline" size="sm" className="w-full" onClick={() => navigate(`/profile/${currentProfile.id}`)}>
+                        View Full Profile
+                      </Button>
+                    </motion.div>
                   </div>
-
-                  {/* Action Buttons */}
-                  <div className="mt-5 flex items-center justify-center gap-4">
-                    <button
-                      onClick={() => handleSwipeAction("pass")}
-                      className="flex h-14 w-14 items-center justify-center rounded-full border-2 border-border bg-card shadow-card transition-all hover:shadow-card-hover hover:scale-105 active:scale-95"
-                    >
-                      <X className="h-6 w-6 text-muted-foreground" />
-                    </button>
-
-                    <button
-                      onClick={() => handlePriorityLike(currentProfile)}
-                      className="flex h-12 w-12 items-center justify-center rounded-full border-2 border-accent bg-accent/10 shadow-card transition-all hover:shadow-card-hover hover:scale-105 active:scale-95"
-                    >
-                      <Star className="h-5 w-5 text-accent fill-accent" />
-                    </button>
-
-                    <button
-                      onClick={() => handleSwipeAction("like")}
-                      className="flex h-16 w-16 items-center justify-center rounded-full gradient-hero shadow-elevated transition-all hover:shadow-card-hover hover:scale-105 active:scale-95"
-                    >
-                      <Heart className="h-7 w-7 text-primary-foreground fill-primary-foreground" />
-                    </button>
-                  </div>
-
-                  <p className="mt-3 text-center text-[11px] text-muted-foreground">
-                    Swipe or tap • ⭐ sends a priority like with intro
-                  </p>
-                </>
+                </div>
               )}
             </>
           ) : (
