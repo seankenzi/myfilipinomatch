@@ -256,7 +256,6 @@ const Premium = () => {
           </div>
         </div>
       </main>
-      <Footer />
       <BottomNav />
     </div>
   );
