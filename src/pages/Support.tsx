@@ -1,5 +1,5 @@
 import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
+
 import { Mail, MessageCircle, HelpCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -110,7 +110,7 @@ const Support = () => {
           </div>
         </div>
       </main>
-      <Footer />
+      
     </div>
   );
 };

@@ -1,5 +1,5 @@
 import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
+
 import { Heart, Users, Award, Globe } from "lucide-react";
 
 const About = () => {
@@ -34,7 +34,7 @@ const About = () => {
           </div>
         </div>
       </main>
-      <Footer />
+      
     </div>
   );
 };
