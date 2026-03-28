@@ -63,6 +63,7 @@ const ProfileDetail = () => {
   const [loading, setLoading] = useState(true);
   const [liked, setLiked] = useState(false);
   const [activePhoto, setActivePhoto] = useState(0);
+  const [matchId, setMatchId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!id) return;
