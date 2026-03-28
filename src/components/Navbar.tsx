@@ -2,6 +2,7 @@ import { LogIn, LogOut, User } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
+import NotificationBell from "@/components/NotificationBell";
 import logo from "@/assets/filoheart-logo.png";
 
 const Navbar = () => {
@@ -32,6 +33,7 @@ const Navbar = () => {
         <div className="flex items-center gap-3">
           {loading ? null : user ? (
             <>
+              <NotificationBell />
               <Link to="/profile">
                 <Button variant="ghost" size="sm">
                   <User className="mr-1 h-4 w-4" />
