@@ -737,12 +737,33 @@ const Discover = () => {
             )}
           </AnimatePresence>
 
-          {/* Trust banner */}
-          <div className="mb-4 flex items-center gap-2 rounded-xl bg-secondary/5 px-3 py-2">
-            <Shield className="h-4 w-4 text-secondary flex-shrink-0" />
-            <p className="text-[11px] text-secondary font-medium">
-              All profiles are reviewed for authenticity. Report anything suspicious.
-            </p>
+          {/* Status bar: daily likes + boost */}
+          <div className="mb-4 flex items-center gap-2 flex-wrap">
+            <div className="flex items-center gap-2 rounded-xl bg-secondary/5 px-3 py-2 flex-1 min-w-0">
+              <Shield className="h-4 w-4 text-secondary flex-shrink-0" />
+              <p className="text-[11px] text-secondary font-medium truncate">
+                All profiles are reviewed for authenticity.
+              </p>
+            </div>
+            {!isPremium && (
+              <div className="flex items-center gap-1.5 rounded-xl border border-border bg-card px-3 py-2 text-xs shadow-card">
+                <Heart className="h-3.5 w-3.5 text-primary" />
+                <span className="font-semibold text-foreground">{dailyLikesRemaining}</span>
+                <span className="text-muted-foreground">likes left</span>
+              </div>
+            )}
+            <button
+              onClick={handleBoostProfile}
+              className={`flex items-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-medium shadow-card transition-all ${
+                isBoosted
+                  ? "border-accent bg-accent/10 text-accent"
+                  : "border-border bg-card text-muted-foreground hover:border-accent/30 hover:text-accent"
+              }`}
+            >
+              <Zap className={`h-3.5 w-3.5 ${isBoosted ? "fill-accent" : ""}`} />
+              {isBoosted ? "Boosted" : "Boost"}
+              {!isPremium && <Crown className="h-3 w-3 text-accent" />}
+            </button>
           </div>
 
           {loading ? (
