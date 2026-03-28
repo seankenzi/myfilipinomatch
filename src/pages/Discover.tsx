@@ -156,6 +156,7 @@ const Discover = () => {
   const [direction, setDirection] = useState<"left" | "right" | null>(null);
   const [dragX, setDragX] = useState(0);
   const [expandedBio, setExpandedBio] = useState(false);
+  const [swiped, setSwiped] = useState(false);
 
   // View toggle
   const [viewMode, setViewMode] = useState<"swipe" | "list">("swipe");
