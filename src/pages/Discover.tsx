@@ -145,6 +145,8 @@ const getProfilePhotos = (profile: Profile): string[] => {
   return photos;
 };
 
+const DAILY_LIKE_LIMIT = 10;
+
 const Discover = () => {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -169,6 +171,12 @@ const Discover = () => {
   const [filterGender, setFilterGender] = useState<string>("all");
   const [filterAgeRange, setFilterAgeRange] = useState<[number, number]>([18, 65]);
 
+  // Advanced filters (premium-only)
+  const [filterEducation, setFilterEducation] = useState<string>("all");
+  const [filterLanguage, setFilterLanguage] = useState<string>("all");
+  const [filterChildren, setFilterChildren] = useState<string>("all");
+  const [filterHeightRange, setFilterHeightRange] = useState<[number, number]>([140, 210]);
+
   // Intro message dialog
   const [introDialog, setIntroDialog] = useState(false);
   const [introMessage, setIntroMessage] = useState("");
@@ -182,6 +190,56 @@ const Discover = () => {
 
   // Already liked/passed IDs
   const [likedIds, setLikedIds] = useState<Set<string>>(new Set());
+
+  // Premium & limits
+  const [isPremium, setIsPremium] = useState(false);
+  const [dailyLikesUsed, setDailyLikesUsed] = useState(0);
+
+  // Undo pass
+  const [lastPassedProfile, setLastPassedProfile] = useState<Profile | null>(null);
+  const [lastPassedIndex, setLastPassedIndex] = useState<number | null>(null);
+
+  // Boost
+  const [isBoosted, setIsBoosted] = useState(false);
+  const [boostExpiresAt, setBoostExpiresAt] = useState<string | null>(null);
+
+  // Fetch premium status, daily likes, and boost status
+  useEffect(() => {
+    if (!user) return;
+    const fetchUserStatus = async () => {
+      // Check premium
+      const { data: profileData } = await supabase
+        .from("profiles")
+        .select("is_premium")
+        .eq("id", user.id)
+        .single();
+      setIsPremium(profileData?.is_premium === true);
+
+      // Count today's likes
+      const todayStart = new Date();
+      todayStart.setHours(0, 0, 0, 0);
+      const { count } = await supabase
+        .from("likes")
+        .select("id", { count: "exact", head: true })
+        .eq("liker_id", user.id)
+        .gte("created_at", todayStart.toISOString());
+      setDailyLikesUsed(count || 0);
+
+      // Check active boost
+      const { data: boostData } = await supabase
+        .from("profile_boosts")
+        .select("expires_at")
+        .eq("user_id", user.id)
+        .gt("expires_at", new Date().toISOString())
+        .order("expires_at", { ascending: false })
+        .limit(1);
+      if (boostData && boostData.length > 0) {
+        setIsBoosted(true);
+        setBoostExpiresAt(boostData[0].expires_at);
+      }
+    };
+    fetchUserStatus();
+  }, [user]);
 
   const fetchProfiles = useCallback(async () => {
     if (!user) return;
