@@ -38,6 +38,7 @@ interface Profile {
   user_type: string | null;
   international_preference: boolean | null;
   created_at: string;
+  last_seen: string | null;
 }
 
 const COUNTRIES = [

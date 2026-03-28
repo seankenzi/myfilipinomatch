@@ -33,6 +33,7 @@ interface Profile {
   weight_kg: number | null;
   relationship_status: string | null;
   created_at: string;
+  last_seen: string | null;
 }
 
 const getFlagEmoji = (country: string) => {
