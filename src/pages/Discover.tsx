@@ -407,7 +407,6 @@ const Discover = () => {
       toast({ title: "🚀 Profile Boosted!", description: "You'll appear at the top of Discover for 24 hours!" });
     }
   };
-  };
 
   const handleDragEnd = (_: any, info: PanInfo) => {
     const swipeThreshold = 60;
