@@ -437,6 +437,7 @@ const Messages = () => {
                         {match.unread_count}
                       </span>
                     )}
+                    <OnlineStatus lastSeen={match.other_user.last_seen} size="sm" className="absolute -bottom-0.5 -right-0.5" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
