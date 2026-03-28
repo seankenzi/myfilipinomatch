@@ -43,7 +43,7 @@ const Login = () => {
         <div className="mb-8 text-center">
           <Link to="/" className="inline-flex items-center gap-2 mb-6">
             <Heart className="h-8 w-8 text-primary fill-primary" />
-            <span className="text-2xl font-display font-bold">Pinoy Bridge Love</span>
+            <span className="text-2xl font-display font-bold"><span className="text-2xl font-display font-bold">FiloHeart</span></span>
           </Link>
           <h1 className="text-2xl font-bold">Welcome back</h1>
           <p className="mt-2 text-muted-foreground">Sign in to continue your journey</p>
