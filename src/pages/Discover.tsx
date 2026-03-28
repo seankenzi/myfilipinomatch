@@ -345,7 +345,7 @@ const Discover = () => {
     <div className="flex min-h-screen flex-col bg-background">
       <Navbar />
       <main className="flex flex-1 flex-col items-center px-4 py-4 pb-24 md:pb-6">
-        <div className={`w-full ${viewMode === "swipe" ? "max-w-lg" : "max-w-6xl"}`}>
+        <div className="w-full max-w-6xl">
 
           {/* Top Bar */}
           <div className="mb-4 flex items-center gap-2">
