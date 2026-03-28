@@ -49,7 +49,7 @@ const plans = [
     period: "/year",
     popular: true,
     features: [
-      "Everything in 3 Months",
+      "All Premium features included",
       "Best value — biggest savings",
       "VIP badge on your profile",
       "Priority support & early access to new features",
