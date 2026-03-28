@@ -763,7 +763,7 @@ const Discover = () => {
                     <p className="text-sm text-muted-foreground">No profiles found. Try adjusting your filters.</p>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
                     {profiles.map((profile) => (
                       <motion.div
                         key={profile.id}
