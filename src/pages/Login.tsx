@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Heart, Mail, Lock, Eye, EyeOff } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
+import logo from "@/assets/filoheart-logo.png";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -42,8 +43,8 @@ const Login = () => {
       <div className="w-full max-w-md animate-scale-in">
         <div className="mb-8 text-center">
           <Link to="/" className="inline-flex items-center gap-2 mb-6">
-            <Heart className="h-8 w-8 text-primary fill-primary" />
-            <span className="text-2xl font-display font-bold"><span className="text-2xl font-display font-bold">FiloHeart</span></span>
+            <img src={logo} alt="FiloHeart" className="h-10 w-10" />
+            <span className="text-2xl font-display font-bold">FiloHeart</span>
           </Link>
           <h1 className="text-2xl font-bold">Welcome back</h1>
           <p className="mt-2 text-muted-foreground">Sign in to continue your journey</p>
