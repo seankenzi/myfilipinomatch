@@ -34,6 +34,7 @@ interface MatchProfile {
   city: string | null;
   country: string | null;
   is_premium: boolean | null;
+  last_seen: string | null;
 }
 
 interface Match {
