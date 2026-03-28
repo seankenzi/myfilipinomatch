@@ -4,25 +4,49 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { user, loading } = useAuth();
+  const { user, session, loading } = useAuth();
   const [checkingOnboarding, setCheckingOnboarding] = useState(true);
-  const [onboardingComplete, setOnboardingComplete] = useState(false);
+  const [onboardingComplete, setOnboardingComplete] = useState<boolean | null>(null);
 
   useEffect(() => {
-    if (!user) {
+    let cancelled = false;
+
+    const checkOnboardingStatus = async () => {
+      if (loading) return;
+
+      if (!user || !session) {
+        if (!cancelled) {
+          setOnboardingComplete(null);
+          setCheckingOnboarding(false);
+        }
+        return;
+      }
+
+      setCheckingOnboarding(true);
+
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("onboarding_completed")
+        .eq("id", user.id)
+        .single();
+
+      if (cancelled) return;
+
+      if (error) {
+        setCheckingOnboarding(true);
+        return;
+      }
+
+      setOnboardingComplete(!!data?.onboarding_completed);
       setCheckingOnboarding(false);
-      return;
-    }
-    supabase
-      .from("profiles")
-      .select("onboarding_completed")
-      .eq("id", user.id)
-      .single()
-      .then(({ data }) => {
-        setOnboardingComplete(!!data?.onboarding_completed);
-        setCheckingOnboarding(false);
-      });
-  }, [user]);
+    };
+
+    checkOnboardingStatus();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [user, session, loading]);
 
   if (loading || checkingOnboarding) {
     return (
@@ -32,8 +56,8 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     );
   }
 
-  if (!user) return <Navigate to="/login" replace />;
-  if (!onboardingComplete) return <Navigate to="/onboarding" replace />;
+  if (!user || !session) return <Navigate to="/login" replace />;
+  if (onboardingComplete === false) return <Navigate to="/onboarding" replace />;
 
   return <>{children}</>;
 };
