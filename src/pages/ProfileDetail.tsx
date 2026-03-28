@@ -304,18 +304,31 @@ const ProfileDetail = () => {
                 {liked ? "Liked" : "Like"}
               </Button>
               <Button
-                onClick={() => {
+                onClick={async () => {
                   if (matchId) {
                     navigate(`/messages?match=${matchId}`);
+                  } else if (isPremium) {
+                    // Premium user: create a match so they can message directly
+                    const ids = [user!.id, profile.id].sort();
+                    const { data: newMatch, error } = await supabase
+                      .from("matches")
+                      .insert({ user1_id: ids[0], user2_id: ids[1] })
+                      .select("id")
+                      .single();
+                    if (!error && newMatch) {
+                      setMatchId(newMatch.id);
+                      navigate(`/messages?match=${newMatch.id}`);
+                    }
                   } else {
-                    toast({ title: "No match yet", description: `Like ${profile.full_name.split(" ")[0]} first — if they like you back, you can message each other!` });
+                    toast({ title: "Match required", description: "Upgrade to Premium to message anyone directly, or wait for a mutual match!" });
+                    navigate("/premium");
                   }
                 }}
                 variant="outline"
                 className="flex-1 gap-2"
               >
                 <MessageCircle className="h-4 w-4" />
-                Message
+                {isPremium && !matchId ? "Direct Message ✨" : "Message"}
               </Button>
             </div>
           )}
