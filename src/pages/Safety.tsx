@@ -1,5 +1,5 @@
 import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
+
 import { Shield, Eye, Lock, AlertTriangle, CheckCircle } from "lucide-react";
 
 const Safety = () => {
@@ -48,7 +48,7 @@ const Safety = () => {
           </div>
         </div>
       </main>
-      <Footer />
+      
     </div>
   );
 };
