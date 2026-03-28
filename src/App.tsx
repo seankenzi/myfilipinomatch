@@ -25,6 +25,8 @@ import Verification from "./pages/Verification.tsx";
 import AdminVerifications from "./pages/AdminVerifications.tsx";
 import Premium from "./pages/Premium.tsx";
 import Notifications from "./pages/Notifications.tsx";
+import ForgotPassword from "./pages/ForgotPassword.tsx";
+import ResetPassword from "./pages/ResetPassword.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
