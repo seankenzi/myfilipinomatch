@@ -173,7 +173,7 @@ const ProfileDetail = () => {
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
           {/* Photo gallery */}
           {photos.length > 0 ? (
-            <div className="relative w-full max-w-sm mx-auto overflow-hidden rounded-2xl aspect-[3/4] bg-muted">
+            <div className="relative w-full max-w-xs mx-auto overflow-hidden rounded-2xl aspect-[3/4] bg-muted">
               <img
                 src={photos[activePhoto]}
                 alt={profile.full_name}
@@ -212,8 +212,8 @@ const ProfileDetail = () => {
           )}
 
           {/* Name & basic info */}
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
+          <div className="space-y-2 text-center">
+            <div className="flex items-center justify-center gap-2">
               <h1 className="text-2xl font-bold font-display text-foreground">
                 {profile.full_name}{profile.age ? `, ${profile.age}` : ""}
               </h1>
@@ -223,8 +223,10 @@ const ProfileDetail = () => {
                 </Badge>
               )}
             </div>
-            <OnlineStatus lastSeen={profile.last_seen} size="md" showText />
-            <div className="flex items-center gap-1 text-sm text-muted-foreground">
+            <div className="flex justify-center">
+              <OnlineStatus lastSeen={profile.last_seen} size="md" showText />
+            </div>
+            <div className="flex items-center justify-center gap-1 text-sm text-muted-foreground">
               <MapPin className="h-4 w-4" />
               {[profile.city, profile.country].filter(Boolean).join(", ") || "Location not set"}
               {profile.country && <span className="ml-1">{getFlagEmoji(profile.country)}</span>}
@@ -232,7 +234,7 @@ const ProfileDetail = () => {
           </div>
 
           {/* Tags */}
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap justify-center gap-2">
             {profile.relationship_intent && (
               <Badge variant="outline" className="text-xs">{formatIntent(profile.relationship_intent)}</Badge>
             )}
