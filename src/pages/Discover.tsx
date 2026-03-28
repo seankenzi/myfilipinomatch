@@ -481,6 +481,10 @@ const Discover = () => {
     filterGender !== "all",
     !!filterCity,
     filterAgeRange[0] > 18 || filterAgeRange[1] < 65,
+    isPremium && filterEducation !== "all",
+    isPremium && filterLanguage !== "all",
+    isPremium && filterChildren !== "all",
+    isPremium && (filterHeightRange[0] > 140 || filterHeightRange[1] < 210),
   ].filter(Boolean).length;
 
   return (
