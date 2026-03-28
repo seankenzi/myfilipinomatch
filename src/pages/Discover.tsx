@@ -1069,9 +1069,12 @@ const Discover = () => {
 
                           {/* Name on photo */}
                           <div className="absolute bottom-0 left-0 right-0 p-3">
-                            <h4 className="text-sm font-bold text-primary-foreground truncate">
-                              {profile.full_name.split(" ")[0]}{profile.age ? `, ${profile.age}` : ""}
-                            </h4>
+                            <div className="flex items-center gap-1">
+                              <h4 className="text-sm font-bold text-primary-foreground truncate">
+                                {profile.full_name.split(" ")[0]}{profile.age ? `, ${profile.age}` : ""}
+                              </h4>
+                              <OnlineStatus lastSeen={profile.last_seen} size="sm" />
+                            </div>
                             <div className="flex items-center gap-1 text-[10px] text-primary-foreground/70 mt-0.5">
                               <MapPin className="h-2.5 w-2.5" />
                               <span className="truncate">{profile.city || profile.country || "—"}</span>
