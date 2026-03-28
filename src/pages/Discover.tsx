@@ -794,6 +794,14 @@ const Discover = () => {
                             </div>
                           )}
 
+                          {/* Already liked indicator */}
+                          {likedIds.has(profile.id) && (
+                            <div className="absolute top-2 left-1/2 -translate-x-1/2 rounded-full bg-primary/90 backdrop-blur-sm px-2.5 py-1 flex items-center gap-1 shadow-sm">
+                              <Heart className="h-3 w-3 text-primary-foreground fill-primary-foreground" />
+                              <span className="text-[10px] font-semibold text-primary-foreground">Liked</span>
+                            </div>
+                          )}
+
                           {/* Name on photo */}
                           <div className="absolute bottom-0 left-0 right-0 p-3">
                             <h4 className="text-sm font-bold text-primary-foreground truncate">
@@ -816,12 +824,18 @@ const Discover = () => {
 
                           {/* Action buttons */}
                           <div className="flex gap-1.5">
-                            <button
-                              onClick={() => handleListLike(profile)}
-                              className="flex flex-1 items-center justify-center gap-1 rounded-lg bg-primary/10 py-1.5 text-[11px] font-medium text-primary hover:bg-primary/20 transition-colors"
-                            >
-                              <Heart className="h-3 w-3" /> Like
-                            </button>
+                            {likedIds.has(profile.id) ? (
+                              <div className="flex flex-1 items-center justify-center gap-1 rounded-lg bg-primary/20 py-1.5 text-[11px] font-medium text-primary">
+                                <Heart className="h-3 w-3 fill-primary" /> Liked
+                              </div>
+                            ) : (
+                              <button
+                                onClick={() => handleListLike(profile)}
+                                className="flex flex-1 items-center justify-center gap-1 rounded-lg bg-primary/10 py-1.5 text-[11px] font-medium text-primary hover:bg-primary/20 transition-colors"
+                              >
+                                <Heart className="h-3 w-3" /> Like
+                              </button>
+                            )}
                             <button
                               onClick={() => handlePriorityLike(profile)}
                               className="flex items-center justify-center rounded-lg bg-accent/10 px-2.5 py-1.5 text-accent hover:bg-accent/20 transition-colors"
