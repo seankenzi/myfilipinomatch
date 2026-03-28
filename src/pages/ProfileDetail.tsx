@@ -234,7 +234,7 @@ const ProfileDetail = () => {
           </div>
 
           {/* Tags */}
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap justify-center gap-2">
             {profile.relationship_intent && (
               <Badge variant="outline" className="text-xs">{formatIntent(profile.relationship_intent)}</Badge>
             )}
