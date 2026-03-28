@@ -50,16 +50,27 @@ const Landing = () => {
         <div className="container relative z-10 py-20">
           <div className="max-w-2xl animate-slide-up">
             <h1 className="mb-6 text-4xl font-bold leading-tight text-primary-foreground md:text-6xl lg:text-7xl" style={{ fontFamily: 'var(--font-display)' }}>
-              Find Genuine Love
-              <span className="block mt-2 text-primary-foreground/90">in the Philippines</span>
+              Meet Genuine Filipinas
+              <span className="block mt-2 text-primary-foreground/90">Open to Serious Relationships</span>
             </h1>
-            <p className="mb-10 max-w-lg text-lg text-primary-foreground/85 md:text-xl leading-relaxed">
-              Connect with verified Filipinos who are serious about long-term relationships and meaningful connections.
+            <p className="mb-6 max-w-lg text-lg text-primary-foreground/85 md:text-xl leading-relaxed">
+              Connect with verified profiles in the Philippines who are looking for real, meaningful connections.
             </p>
+            <p className="mb-6 max-w-lg text-sm text-primary-foreground/70 italic">
+              No games. No fake accounts. Just honest relationships.
+            </p>
+            <div className="mb-10 flex flex-col gap-1.5">
+              {["Verified members", "Safe and respectful community", "Built for serious relationships"].map((item) => (
+                <div key={item} className="flex items-center gap-2">
+                  <CheckCircle className="h-4 w-4 text-secondary flex-shrink-0" />
+                  <span className="text-sm text-primary-foreground/90">{item}</span>
+                </div>
+              ))}
+            </div>
             <div className="flex flex-wrap gap-4">
               <Link to="/signup">
                 <Button variant="hero" size="xl">
-                  Create Your Free Account
+                  Join Early — Start Connecting
                   <ArrowRight className="ml-1 h-5 w-5" />
                 </Button>
               </Link>
