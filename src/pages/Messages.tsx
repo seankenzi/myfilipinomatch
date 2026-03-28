@@ -86,12 +86,18 @@ const Messages = () => {
   const [reportReason, setReportReason] = useState("");
   const [reportDetails, setReportDetails] = useState("");
 
-  // My sent message count for current match
+  // My sent message count for current match (total)
   const mySentCount = messages.filter((m) => m.sender_id === user?.id).length;
+  // My sent message count for today
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
+  const mySentTodayCount = messages.filter(
+    (m) => m.sender_id === user?.id && new Date(m.created_at) >= todayStart
+  ).length;
   const isPremium = myProfile?.is_premium === true;
   const [isMutualMatch, setIsMutualMatch] = useState(true);
 
-  // Check if this is a mutual match (both users liked each other) — unlimited messaging
+  // Check if this is a mutual match (both users liked each other)
   useEffect(() => {
     if (!selectedMatch || !user) return;
     const checkMutual = async () => {
@@ -107,9 +113,17 @@ const Messages = () => {
     checkMutual();
   }, [selectedMatch, user]);
 
-  // Mutual matches get unlimited messaging; free limit only for premium direct-message matches
-  const isLocked = !isPremium && !isMutualMatch && mySentCount >= FREE_MESSAGE_LIMIT;
-  const remainingFree = isMutualMatch ? Infinity : Math.max(0, FREE_MESSAGE_LIMIT - mySentCount);
+  // Non-mutual: total message limit; Mutual free: 10/day limit
+  const isLocked = !isPremium && (
+    isMutualMatch
+      ? mySentTodayCount >= FREE_DAILY_MESSAGE_LIMIT
+      : mySentCount >= FREE_MESSAGE_LIMIT
+  );
+  const remainingFree = isPremium
+    ? Infinity
+    : isMutualMatch
+      ? Math.max(0, FREE_DAILY_MESSAGE_LIMIT - mySentTodayCount)
+      : Math.max(0, FREE_MESSAGE_LIMIT - mySentCount);
 
   // Fetch own profile for premium status
   useEffect(() => {
