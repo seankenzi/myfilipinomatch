@@ -776,7 +776,7 @@ const Discover = () => {
                         className="group rounded-2xl border border-border bg-card shadow-card overflow-hidden transition-all hover:shadow-card-hover"
                       >
                         {/* Photo */}
-                        <div className="relative aspect-[3/4]">
+                        <div className="relative aspect-[3/4] cursor-pointer" onClick={() => navigate(`/profile/${profile.id}`)}>
                           {getProfilePhotos(profile).length > 0 ? (
                             <img src={getProfilePhotos(profile)[0]} alt={profile.full_name} className="h-full w-full object-cover" />
                           ) : (
