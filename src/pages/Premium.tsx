@@ -17,11 +17,14 @@ const plans = [
     period: "/month",
     popular: false,
     features: [
+      "Unlimited likes (free users get 10/day)",
       "Unlimited messaging",
       "See who liked you",
+      "Undo accidental passes",
+      "Profile boost (24h top placement)",
+      "Advanced filters (education, height, language & more)",
+      "Direct message anyone",
       "Read receipts",
-      "Advanced filters",
-      "Profile boost",
     ],
   },
   {
