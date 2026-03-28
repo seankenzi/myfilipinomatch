@@ -3,7 +3,7 @@ import logo from "@/assets/filoheart-logo.png";
 
 const Footer = () => (
   <footer className="hidden md:block border-t border-border bg-card">
-    <div className="container py-12">
+    <div className="container py-6">
       <div className="flex flex-col items-center gap-6 md:flex-row md:justify-between">
         <div className="flex items-center gap-2">
           <img src={logo} alt="FiloHeart" className="h-7 w-7" />
