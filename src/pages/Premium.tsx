@@ -33,13 +33,26 @@ const plans = [
     price: "₱3,899",
     priceSub: "₱1,300/month — save 23%",
     period: "/3 months",
-    popular: true,
+    popular: false,
     features: [
       "Everything in Monthly",
-      "Best value",
       "Priority in Discover",
       "Exclusive badge",
       "Priority support",
+    ],
+  },
+  {
+    id: "yearly" as const,
+    name: "1 Year",
+    price: "₱11,999",
+    priceSub: "Only ₱1,000/month — save 41%",
+    period: "/year",
+    popular: true,
+    features: [
+      "Everything in 3 Months",
+      "Best value — biggest savings",
+      "VIP badge on your profile",
+      "Priority support & early access to new features",
     ],
   },
 ];
@@ -73,7 +86,7 @@ const Premium = () => {
       });
   }, [user]);
 
-  const handleSubscribe = async (plan: "monthly" | "quarterly") => {
+  const handleSubscribe = async (plan: "monthly" | "quarterly" | "yearly") => {
     if (!user) {
       toast({ title: "Please log in first", variant: "destructive" });
       return;
@@ -164,7 +177,7 @@ const Premium = () => {
           )}
 
           {/* Plans */}
-          <div className="grid gap-6 md:grid-cols-2 max-w-2xl mx-auto">
+          <div className="grid gap-6 md:grid-cols-3 max-w-4xl mx-auto">
             {plans.map((plan) => (
               <div
                 key={plan.id}

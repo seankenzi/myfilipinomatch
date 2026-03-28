@@ -109,7 +109,8 @@ Deno.serve(async (req) => {
     const supabase = createClient(supabaseUrl, serviceRoleKey);
 
     const periodEnd = new Date();
-    periodEnd.setDate(periodEnd.getDate() + 30);
+    const daysMap: Record<string, number> = { monthly: 30, quarterly: 90, yearly: 365 };
+    periodEnd.setDate(periodEnd.getDate() + (daysMap[plan] || 30));
 
     const { error: subError } = await supabase.from("subscriptions").upsert(
       {
