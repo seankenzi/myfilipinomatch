@@ -25,6 +25,8 @@ import Verification from "./pages/Verification.tsx";
 import AdminVerifications from "./pages/AdminVerifications.tsx";
 import Premium from "./pages/Premium.tsx";
 import Notifications from "./pages/Notifications.tsx";
+import ForgotPassword from "./pages/ForgotPassword.tsx";
+import ResetPassword from "./pages/ResetPassword.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -42,6 +44,8 @@ const App = () => (
                 <Route path="/" element={<Index />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/signup" element={<Signup />} />
+                <Route path="/forgot-password" element={<ForgotPassword />} />
+                <Route path="/reset-password" element={<ResetPassword />} />
                 <Route path="/onboarding" element={<Onboarding />} />
                 <Route path="/discover" element={<ProtectedRoute><Discover /></ProtectedRoute>} />
                 <Route path="/profile/:id" element={<ProtectedRoute><ProfileDetail /></ProtectedRoute>} />
