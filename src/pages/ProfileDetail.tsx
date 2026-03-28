@@ -26,6 +26,12 @@ interface Profile {
   is_verified: boolean | null;
   user_type: string | null;
   international_preference: boolean | null;
+  education: string | null;
+  language: string | null;
+  want_children: string | null;
+  height_cm: number | null;
+  weight_kg: number | null;
+  relationship_status: string | null;
   created_at: string;
 }
 
