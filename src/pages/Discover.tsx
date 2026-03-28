@@ -345,7 +345,7 @@ const Discover = () => {
     <div className="flex min-h-screen flex-col bg-background">
       <Navbar />
       <main className="flex flex-1 flex-col items-center px-4 py-4 pb-24 md:pb-6">
-        <div className="w-full max-w-lg">
+        <div className={`w-full ${viewMode === "swipe" ? "max-w-lg" : "max-w-6xl"}`}>
 
           {/* Top Bar */}
           <div className="mb-4 flex items-center gap-2">
@@ -765,7 +765,7 @@ const Discover = () => {
                     <p className="text-sm text-muted-foreground">No profiles found. Try adjusting your filters.</p>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
                     {profiles.map((profile) => (
                       <motion.div
                         key={profile.id}
