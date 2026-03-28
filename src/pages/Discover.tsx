@@ -306,8 +306,20 @@ const Discover = () => {
   const swipeProfiles = profiles;
   const currentProfile = swipeProfiles[currentIndex];
 
+  const dailyLikesRemaining = Math.max(0, DAILY_LIKE_LIMIT - dailyLikesUsed);
+  const canLike = isPremium || dailyLikesRemaining > 0;
+
   const handleLike = async (profile: Profile) => {
     if (!user) return;
+
+    if (!canLike) {
+      toast({
+        title: "Daily like limit reached",
+        description: "Upgrade to Premium for unlimited likes!",
+      });
+      navigate("/premium");
+      return;
+    }
 
     const { error } = await supabase.from("likes").insert({
       liker_id: user.id,
@@ -318,6 +330,8 @@ const Discover = () => {
       toast({ title: "Error", description: error.message, variant: "destructive" });
       return;
     }
+
+    setDailyLikesUsed((prev) => prev + 1);
 
     const { data: mutualLike } = await supabase
       .from("likes")
@@ -338,6 +352,13 @@ const Discover = () => {
 
   const handleSwipeAction = async (action: "like" | "pass") => {
     if (!currentProfile) return;
+
+    // Track passed profile for undo
+    if (action === "pass") {
+      setLastPassedProfile(currentProfile);
+      setLastPassedIndex(currentIndex);
+    }
+
     setSwiped(true);
     setDirection(action === "like" ? "right" : "left");
 
@@ -350,6 +371,42 @@ const Discover = () => {
       setSwiped(false);
       setExpandedBio(false);
     }, 300);
+  };
+
+  const handleUndoPass = () => {
+    if (!isPremium) {
+      toast({ title: "Premium feature", description: "Upgrade to Premium to undo passes!" });
+      navigate("/premium");
+      return;
+    }
+    if (lastPassedProfile && lastPassedIndex !== null) {
+      setCurrentIndex(lastPassedIndex);
+      setLastPassedProfile(null);
+      setLastPassedIndex(null);
+      toast({ title: "Undo!", description: `${lastPassedProfile.full_name.split(" ")[0]} is back.` });
+    }
+  };
+
+  const handleBoostProfile = async () => {
+    if (!user) return;
+    if (!isPremium) {
+      toast({ title: "Premium feature", description: "Upgrade to Premium to boost your profile!" });
+      navigate("/premium");
+      return;
+    }
+    if (isBoosted) {
+      toast({ title: "Already boosted", description: "Your profile is already boosted!" });
+      return;
+    }
+    const { error } = await supabase.from("profile_boosts").insert({ user_id: user.id });
+    if (error) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } else {
+      setIsBoosted(true);
+      setBoostExpiresAt(new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString());
+      toast({ title: "🚀 Profile Boosted!", description: "You'll appear at the top of Discover for 24 hours!" });
+    }
+  };
   };
 
   const handleDragEnd = (_: any, info: PanInfo) => {
