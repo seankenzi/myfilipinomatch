@@ -88,8 +88,27 @@ const Messages = () => {
   // My sent message count for current match
   const mySentCount = messages.filter((m) => m.sender_id === user?.id).length;
   const isPremium = myProfile?.is_premium === true;
-  const isLocked = !isPremium && mySentCount >= FREE_MESSAGE_LIMIT;
-  const remainingFree = Math.max(0, FREE_MESSAGE_LIMIT - mySentCount);
+  const [isMutualMatch, setIsMutualMatch] = useState(true);
+
+  // Check if this is a mutual match (both users liked each other) — unlimited messaging
+  useEffect(() => {
+    if (!selectedMatch || !user) return;
+    const checkMutual = async () => {
+      const otherId = selectedMatch.other_user.id;
+      const { data } = await supabase
+        .from("likes")
+        .select("id")
+        .eq("liker_id", otherId)
+        .eq("liked_id", user.id)
+        .limit(1);
+      setIsMutualMatch(!!(data && data.length > 0));
+    };
+    checkMutual();
+  }, [selectedMatch, user]);
+
+  // Mutual matches get unlimited messaging; free limit only for premium direct-message matches
+  const isLocked = !isPremium && !isMutualMatch && mySentCount >= FREE_MESSAGE_LIMIT;
+  const remainingFree = isMutualMatch ? Infinity : Math.max(0, FREE_MESSAGE_LIMIT - mySentCount);
 
   // Fetch own profile for premium status
   useEffect(() => {
