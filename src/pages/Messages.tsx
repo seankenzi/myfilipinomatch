@@ -583,10 +583,12 @@ const Messages = () => {
                   <div className="mx-auto max-w-md text-center">
                     <Lock className="h-8 w-8 text-muted-foreground/40 mx-auto mb-3" />
                     <h3 className="font-semibold text-foreground text-sm mb-1">
-                      You've reached your free message limit
+                      {isMutualMatch ? "Daily message limit reached" : "You've reached your free message limit"}
                     </h3>
                     <p className="text-xs text-muted-foreground mb-4">
-                      Upgrade to Premium to continue chatting with {selectedMatch.other_user.full_name.split(" ")[0]} and unlock unlimited messaging.
+                      {isMutualMatch
+                        ? `You've sent ${FREE_DAILY_MESSAGE_LIMIT} messages today. Upgrade to Premium for unlimited messaging, or come back tomorrow!`
+                        : `Upgrade to Premium to continue chatting with ${selectedMatch.other_user.full_name.split(" ")[0]} and unlock unlimited messaging.`}
                     </p>
                     <Button
                       variant="hero"
