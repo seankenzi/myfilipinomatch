@@ -253,6 +253,13 @@ const Discover = () => {
     const alreadyLiked = new Set((likesData || []).map((l) => l.liked_id));
     setLikedIds(alreadyLiked);
 
+    // Fetch active boosts for sorting
+    const { data: boostsData } = await supabase
+      .from("profile_boosts")
+      .select("user_id")
+      .gt("expires_at", new Date().toISOString());
+    const boostedUserIds = new Set((boostsData || []).map((b) => b.user_id));
+
     let query = supabase
       .from("profiles")
       .select("*")
@@ -267,16 +274,29 @@ const Discover = () => {
     if (filterAgeRange[0] > 18) query = query.gte("age", filterAgeRange[0]);
     if (filterAgeRange[1] < 65) query = query.lte("age", filterAgeRange[1]);
 
+    // Advanced filters (premium only - applied regardless, but UI is gated)
+    if (isPremium) {
+      if (filterEducation !== "all") query = query.eq("education", filterEducation);
+      if (filterLanguage !== "all") query = query.eq("language", filterLanguage);
+      if (filterChildren !== "all") query = query.eq("want_children", filterChildren);
+      if (filterHeightRange[0] > 140) query = query.gte("height_cm", filterHeightRange[0]);
+      if (filterHeightRange[1] < 210) query = query.lte("height_cm", filterHeightRange[1]);
+    }
+
     const { data, error } = await query;
 
     if (error) {
       toast({ title: "Error loading profiles", description: error.message, variant: "destructive" });
     } else {
-      setProfiles((data || []) as Profile[]);
+      // Sort boosted profiles to the top
+      const allProfiles = (data || []) as Profile[];
+      const boosted = allProfiles.filter((p) => boostedUserIds.has(p.id));
+      const nonBoosted = allProfiles.filter((p) => !boostedUserIds.has(p.id));
+      setProfiles([...boosted, ...nonBoosted]);
       setCurrentIndex(0);
     }
     setLoading(false);
-  }, [user, filterCountry, filterIntent, filterCity, filterGender, filterAgeRange]);
+  }, [user, filterCountry, filterIntent, filterCity, filterGender, filterAgeRange, isPremium, filterEducation, filterLanguage, filterChildren, filterHeightRange]);
 
   useEffect(() => {
     fetchProfiles();
