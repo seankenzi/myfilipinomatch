@@ -825,7 +825,7 @@ const Discover = () => {
                             )}
                           </AnimatePresence>
 
-                          <div className="relative aspect-[3/4] max-h-[500px]">
+                          <div className="relative aspect-[3/4]">
                             <PhotoGallery photos={getProfilePhotos(currentProfile)} name={currentProfile.full_name} />
                             <div className="absolute inset-0 bg-gradient-to-t from-foreground/80 via-transparent to-foreground/5 pointer-events-none" />
                             {currentProfile.country && (
