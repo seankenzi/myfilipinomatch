@@ -148,6 +148,7 @@ const getProfilePhotos = (profile: Profile): string[] => {
 const Discover = () => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
