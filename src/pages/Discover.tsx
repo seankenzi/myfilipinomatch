@@ -221,7 +221,9 @@ const Discover = () => {
     fetchProfiles();
   }, [fetchProfiles]);
 
-  const currentProfile = profiles[currentIndex];
+  // For swipe view, filter out already liked profiles
+  const swipeProfiles = profiles.filter((p) => !likedIds.has(p.id));
+  const currentProfile = swipeProfiles[currentIndex];
 
   const handleLike = async (profile: Profile) => {
     if (!user) return;
