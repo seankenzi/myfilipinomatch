@@ -94,9 +94,19 @@ const ProfileDetail = () => {
         .or(`and(user1_id.eq.${user.id},user2_id.eq.${id}),and(user1_id.eq.${id},user2_id.eq.${user.id})`);
       if (data && data.length > 0) setMatchId(data[0].id);
     };
+    const checkPremium = async () => {
+      if (!user) return;
+      const { data } = await supabase
+        .from("profiles")
+        .select("is_premium")
+        .eq("id", user.id)
+        .single();
+      setIsPremium(data?.is_premium === true);
+    };
     fetchProfile();
     checkLiked();
     checkMatch();
+    checkPremium();
   }, [id, user]);
 
   const photos = profile
