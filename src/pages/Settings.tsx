@@ -1,15 +1,17 @@
-import { ArrowLeft, Bell, Lock, Shield, Trash2, Mail } from "lucide-react";
+import { ArrowLeft, Lock, Trash2, Mail, Crown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import Navbar from "@/components/Navbar";
 import BottomNav from "@/components/BottomNav";
+import { format } from "date-fns";
 
 const Settings = () => {
   const { user, signOut } = useAuth();
@@ -17,6 +19,28 @@ const Settings = () => {
   const { toast } = useToast();
   const [newPassword, setNewPassword] = useState("");
   const [changingPassword, setChangingPassword] = useState(false);
+  const [subscription, setSubscription] = useState<{
+    plan: string | null;
+    status: string | null;
+    current_period_end: string | null;
+  } | null>(null);
+  const [loadingSub, setLoadingSub] = useState(true);
+
+  useEffect(() => {
+    const fetchSubscription = async () => {
+      if (!user) return;
+      const { data } = await supabase
+        .from("subscriptions")
+        .select("plan, status, current_period_end")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      setSubscription(data);
+      setLoadingSub(false);
+    };
+    fetchSubscription();
+  }, [user]);
 
   const handleChangePassword = async () => {
     if (!newPassword || newPassword.length < 6) {
@@ -36,16 +60,13 @@ const Settings = () => {
 
   const handleDeleteAccount = async () => {
     if (!confirm("Are you sure you want to delete your account? This action cannot be undone.")) return;
-    // Sign out - actual deletion would require a backend function
     toast({ title: "Account deletion requested", description: "Your account will be deleted within 24 hours." });
     await signOut();
     navigate("/");
   };
 
-  const handleSignOut = async () => {
-    await signOut();
-    navigate("/");
-  };
+  const isActive = subscription?.status === "active";
+  const isPremium = subscription?.plan && subscription.plan !== "free";
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
@@ -58,6 +79,46 @@ const Settings = () => {
               <ArrowLeft className="h-5 w-5" />
             </button>
             <h1 className="text-xl font-bold">Settings</h1>
+          </div>
+
+          {/* Subscription */}
+          <div className="mb-4 rounded-2xl border border-border bg-card p-5 shadow-card">
+            <h2 className="mb-4 font-semibold flex items-center gap-2">
+              <Crown className="h-4 w-4 text-primary" />
+              Subscription
+            </h2>
+            {loadingSub ? (
+              <p className="text-sm text-muted-foreground">Loading...</p>
+            ) : (
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Current Plan</Label>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <p className="text-sm font-medium capitalize">
+                        {isPremium ? subscription.plan : "Free"}
+                      </p>
+                      <Badge variant={isActive && isPremium ? "default" : "secondary"} className="text-[10px] px-1.5 py-0">
+                        {isActive && isPremium ? "Active" : "Free"}
+                      </Badge>
+                    </div>
+                  </div>
+                  {!isPremium && (
+                    <Button size="sm" onClick={() => navigate("/premium")}>
+                      Upgrade
+                    </Button>
+                  )}
+                </div>
+                {isPremium && subscription?.current_period_end && (
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Renews On</Label>
+                    <p className="text-sm font-medium">
+                      {format(new Date(subscription.current_period_end), "MMMM d, yyyy")}
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Account */}
