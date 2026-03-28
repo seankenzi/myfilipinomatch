@@ -16,7 +16,7 @@ const Footer = () => (
           <Link to="/terms" className="hover:text-foreground transition-colors">Terms</Link>
           <Link to="/support" className="hover:text-foreground transition-colors">Support</Link>
         </div>
-        <p className="text-xs text-muted-foreground">© 2026 Pinoy Bridge Love. All rights reserved.</p>
+        <p className="text-xs text-muted-foreground"><p className="text-xs text-muted-foreground">© 2026 FiloHeart. All rights reserved.</p>. All rights reserved.</p>
       </div>
     </div>
   </footer>

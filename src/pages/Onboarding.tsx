@@ -104,7 +104,7 @@ const Onboarding = () => {
 
       if (error) throw error;
 
-      toast({ title: "Profile complete! 🎉", description: "toast({ title: "Profile complete! 🎉", description: "Welcome to FiloHeart." });" });
+      toast({ title: "Profile complete! 🎉", description: "Welcome to FiloHeart." });
       navigate("/discover");
     } catch (err: any) {
       toast({ title: "Error saving profile", description: err.message, variant: "destructive" });
