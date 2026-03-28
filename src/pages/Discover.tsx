@@ -559,11 +559,11 @@ const Discover = () => {
                           }}
                           transition={{ duration: 0.3 }}
                           drag="x"
-                          dragConstraints={{ left: 0, right: 0 }}
-                          dragElastic={0.8}
+                          dragSnapToOrigin={!swiped}
+                          dragElastic={0.9}
                           onDrag={(_, info) => setDragX(info.offset.x)}
                           onDragEnd={handleDragEnd}
-                          className="overflow-hidden rounded-3xl border border-border bg-card shadow-elevated cursor-grab active:cursor-grabbing select-none"
+                          className="overflow-hidden rounded-3xl border border-border bg-card shadow-elevated cursor-grab active:cursor-grabbing select-none touch-pan-y"
                         >
                           <AnimatePresence>
                             {dragX > 50 && (
