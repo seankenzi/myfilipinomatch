@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Heart, Globe, MapPin, User, Camera, CheckCircle, ArrowRight, ArrowLeft, Sparkles } from "lucide-react";
+import { Heart, Globe, MapPin, User, Camera, CheckCircle, ArrowRight, ArrowLeft, Sparkles, Ruler } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -8,12 +8,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import PhotoUpload from "@/components/PhotoUpload";
 
-const TOTAL_STEPS = 7;
+const TOTAL_STEPS = 8;
 
 const COUNTRIES = [
   "United States", "United Kingdom", "Canada", "Australia", "Germany", "France",
@@ -28,6 +29,32 @@ const INTEREST_OPTIONS = [
 ];
 
 const GENDER_OPTIONS = ["Male", "Female"];
+
+const EDUCATION_OPTIONS = [
+  "High School", "Vocational", "Associate Degree", "Bachelor's Degree",
+  "Master's Degree", "Doctorate", "Other",
+];
+
+const LANGUAGE_OPTIONS = [
+  "English", "Filipino/Tagalog", "Cebuano", "Ilocano", "Japanese",
+  "Korean", "Chinese", "Spanish", "French", "German", "Other",
+];
+
+const CHILDREN_OPTIONS = [
+  { value: "want", label: "Yes, I want children" },
+  { value: "dont-want", label: "No, I don't want children" },
+  { value: "have-and-want-more", label: "I have children and want more" },
+  { value: "have-and-done", label: "I have children and don't want more" },
+  { value: "unsure", label: "Not sure yet" },
+];
+
+const STATUS_OPTIONS = [
+  { value: "single", label: "Single" },
+  { value: "divorced", label: "Divorced" },
+  { value: "widowed", label: "Widowed" },
+  { value: "separated", label: "Separated" },
+  { value: "annulled", label: "Annulled" },
+];
 
 const Onboarding = () => {
   const [step, setStep] = useState(1);
@@ -49,9 +76,16 @@ const Onboarding = () => {
   const [gender, setGender] = useState("");
   const [bio, setBio] = useState("");
   const [interests, setInterests] = useState<string[]>([]);
-  // Step 6
-  const [internationalPref, setInternationalPref] = useState("");
+  // Step 6 - NEW: Personal Details
+  const [education, setEducation] = useState("");
+  const [language, setLanguage] = useState("");
+  const [wantChildren, setWantChildren] = useState("");
+  const [heightCm, setHeightCm] = useState("");
+  const [weightKg, setWeightKg] = useState("");
+  const [relationshipStatus, setRelationshipStatus] = useState("");
   // Step 7
+  const [internationalPref, setInternationalPref] = useState("");
+  // Step 8
   const [photos, setPhotos] = useState<string[]>([]);
 
   useEffect(() => {
@@ -80,13 +114,14 @@ const Onboarding = () => {
 
   const canProceed = (): boolean => {
     switch (step) {
-      case 1: return true; // welcome step
+      case 1: return true;
       case 2: return !!userType;
       case 3: return !!relationshipIntent;
       case 4: return userType === "foreigner" ? !!country : !!city;
       case 5: return !!fullName.trim() && !!age && parseInt(age) >= 18 && !!gender;
-      case 6: return !!internationalPref;
-      case 7: return photos.length >= 1;
+      case 6: return !!relationshipStatus;
+      case 7: return !!internationalPref;
+      case 8: return photos.length >= 1;
       default: return false;
     }
   };
@@ -95,7 +130,7 @@ const Onboarding = () => {
     if (!user) return;
     setSaving(true);
     try {
-      const profileData = {
+      const profileData: Record<string, unknown> = {
         user_type: userType,
         relationship_intent: relationshipIntent,
         country: userType === "foreigner" ? country : "Philippines",
@@ -105,6 +140,12 @@ const Onboarding = () => {
         gender: gender.toLowerCase(),
         bio: bio.trim(),
         interests,
+        education: education || null,
+        language: language || null,
+        want_children: wantChildren || null,
+        height_cm: heightCm ? parseInt(heightCm) : null,
+        weight_kg: weightKg ? parseInt(weightKg) : null,
+        relationship_status: relationshipStatus || null,
         international_preference: internationalPref === "yes",
         relocation_intent: internationalPref === "yes" ? "open-to-discuss" : "not-willing",
         photos,
@@ -164,7 +205,7 @@ const Onboarding = () => {
               <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full gradient-hero">
                 <Heart className="h-10 w-10 text-primary-foreground fill-primary-foreground" />
               </div>
-              <h1 className="text-3xl font-bold font-display"><h1 className="text-3xl font-bold font-display">Welcome to FiloHeart</h1></h1>
+              <h1 className="text-3xl font-bold font-display">Welcome to FiloHeart</h1>
               <p className="text-muted-foreground text-lg leading-relaxed max-w-md mx-auto">
                 Let's set up your profile so you can start connecting with genuine people. This takes about 3 minutes.
               </p>
@@ -328,8 +369,81 @@ const Onboarding = () => {
             </div>
           )}
 
-          {/* Step 6: International Preference */}
+          {/* Step 6: Personal Details (NEW) */}
           {step === 6 && (
+            <div className="space-y-5">
+              <div className="text-center space-y-2">
+                <Ruler className="h-10 w-10 text-primary mx-auto" />
+                <h2 className="text-2xl font-bold font-display">Personal Details</h2>
+                <p className="text-muted-foreground">Help matches know you better</p>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label>Relationship Status *</Label>
+                <div className="grid grid-cols-2 gap-2">
+                  {STATUS_OPTIONS.map((s) => (
+                    <button
+                      key={s.value}
+                      onClick={() => setRelationshipStatus(s.value)}
+                      className={`rounded-lg border-2 px-3 py-2.5 text-sm font-medium transition-all ${relationshipStatus === s.value ? "border-primary bg-primary/5 text-primary" : "border-border hover:border-muted-foreground/30"}`}
+                    >
+                      {s.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label>Education</Label>
+                <Select value={education} onValueChange={setEducation}>
+                  <SelectTrigger><SelectValue placeholder="Select education level" /></SelectTrigger>
+                  <SelectContent>
+                    {EDUCATION_OPTIONS.map((e) => (
+                      <SelectItem key={e} value={e}>{e}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label>Language</Label>
+                <Select value={language} onValueChange={setLanguage}>
+                  <SelectTrigger><SelectValue placeholder="Select primary language" /></SelectTrigger>
+                  <SelectContent>
+                    {LANGUAGE_OPTIONS.map((l) => (
+                      <SelectItem key={l} value={l}>{l}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label>Want Children?</Label>
+                <Select value={wantChildren} onValueChange={setWantChildren}>
+                  <SelectTrigger><SelectValue placeholder="Select preference" /></SelectTrigger>
+                  <SelectContent>
+                    {CHILDREN_OPTIONS.map((c) => (
+                      <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label htmlFor="height">Height (cm)</Label>
+                  <Input id="height" type="number" min={100} max={250} value={heightCm} onChange={(e) => setHeightCm(e.target.value)} placeholder="165" className="text-base" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="weight">Weight (kg)</Label>
+                  <Input id="weight" type="number" min={30} max={300} value={weightKg} onChange={(e) => setWeightKg(e.target.value)} placeholder="60" className="text-base" />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Step 7: International Preference */}
+          {step === 7 && (
             <div className="space-y-6">
               <div className="text-center space-y-2">
                 <Globe className="h-10 w-10 text-primary mx-auto" />
@@ -355,8 +469,8 @@ const Onboarding = () => {
             </div>
           )}
 
-          {/* Step 7: Photo Upload */}
-          {step === 7 && (
+          {/* Step 8: Photo Upload */}
+          {step === 8 && (
             <div className="space-y-6">
               <div className="text-center space-y-2">
                 <Camera className="h-10 w-10 text-primary mx-auto" />
@@ -391,7 +505,7 @@ const Onboarding = () => {
                 "Let's Get Started"
               ) : (
                 <>
-                  Continue <ArrowRight className="ml-2 h-4 w-4" />
+                  Next <ArrowRight className="ml-2 h-4 w-4" />
                 </>
               )}
             </Button>
