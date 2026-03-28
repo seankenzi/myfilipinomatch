@@ -70,7 +70,7 @@ const Premium = () => {
       });
   }, [user]);
 
-  const handleSubscribe = async (plan: "basic" | "boost") => {
+  const handleSubscribe = async (plan: "monthly" | "quarterly") => {
     if (!user) {
       toast({ title: "Please log in first", variant: "destructive" });
       return;
