@@ -2,6 +2,8 @@ import { createContext, useContext, useEffect, useState, ReactNode } from "react
 import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 
+const HEARTBEAT_INTERVAL = 60_000; // 1 minute
+
 interface AuthContextType {
   session: Session | null;
   user: User | null;
