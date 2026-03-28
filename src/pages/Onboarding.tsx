@@ -104,7 +104,7 @@ const Onboarding = () => {
 
       if (error) throw error;
 
-      toast({ title: "Profile complete! 🎉", description: "Welcome to Pinoy Bridge Love." });
+      toast({ title: "Profile complete! 🎉", description: "Welcome to FiloHeart." });
       navigate("/discover");
     } catch (err: any) {
       toast({ title: "Error saving profile", description: err.message, variant: "destructive" });
@@ -149,7 +149,7 @@ const Onboarding = () => {
               <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full gradient-hero">
                 <Heart className="h-10 w-10 text-primary-foreground fill-primary-foreground" />
               </div>
-              <h1 className="text-3xl font-bold font-display">Welcome to Pinoy Bridge Love</h1>
+              <h1 className="text-3xl font-bold font-display"><h1 className="text-3xl font-bold font-display">Welcome to FiloHeart</h1></h1>
               <p className="text-muted-foreground text-lg leading-relaxed max-w-md mx-auto">
                 Let's set up your profile so you can start connecting with genuine people. This takes about 3 minutes.
               </p>

@@ -13,7 +13,7 @@ const Terms = () => {
           <div className="space-y-6 text-sm text-muted-foreground leading-relaxed">
             <section>
               <h2 className="text-lg font-semibold text-foreground mb-2">1. Eligibility</h2>
-              <p>You must be at least 18 years old to use Pinoy Bridge Love. By creating an account, you confirm that you meet this age requirement and that the information you provide is accurate.</p>
+              <p>You must be at least 18 years old to <p>You must be at least 18 years old to use FiloHeart. By creating an account, you confirm that you meet this age requirement and that the information you provide is accurate.</p>. By creating an account, you confirm that you meet this age requirement and that the information you provide is accurate.</p>
             </section>
 
             <section>
@@ -38,7 +38,7 @@ const Terms = () => {
 
             <section>
               <h2 className="text-lg font-semibold text-foreground mb-2">6. Limitation of Liability</h2>
-              <p>Pinoy Bridge Love is provided "as is." We are not responsible for the actions of other users. Always exercise caution when meeting someone from the internet.</p>
+              <p><p>FiloHeart is provided "as is." We are not responsible for the actions of other users. Always exercise caution when meeting someone from the internet.</p> "as is." We are not responsible for the actions of other users. Always exercise caution when meeting someone from the internet.</p>
             </section>
           </div>
         </div>

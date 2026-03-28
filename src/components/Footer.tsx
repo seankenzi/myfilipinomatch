@@ -7,7 +7,7 @@ const Footer = () => (
       <div className="flex flex-col items-center gap-6 md:flex-row md:justify-between">
         <div className="flex items-center gap-2">
           <Heart className="h-6 w-6 text-primary fill-primary" />
-          <span className="text-lg font-bold text-foreground" style={{ fontFamily: 'var(--font-display)' }}>Pinoy Bridge Love</span>
+          <span className="text-lg font-bold text-foreground" style={{ fontFamily: 'var(--font-display)' }}>FiloHeart</span>
         </div>
         <div className="flex gap-6 text-sm text-muted-foreground">
           <Link to="/about" className="hover:text-foreground transition-colors">About</Link>
@@ -16,7 +16,7 @@ const Footer = () => (
           <Link to="/terms" className="hover:text-foreground transition-colors">Terms</Link>
           <Link to="/support" className="hover:text-foreground transition-colors">Support</Link>
         </div>
-        <p className="text-xs text-muted-foreground">© 2026 Pinoy Bridge Love. All rights reserved.</p>
+        <p className="text-xs text-muted-foreground">© 2026 FiloHeart. All rights reserved.</p>
       </div>
     </div>
   </footer>
