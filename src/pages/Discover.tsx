@@ -792,7 +792,7 @@ const Discover = () => {
               ) : currentProfile && (
                 <div className="flex flex-col lg:flex-row gap-6 lg:items-start lg:justify-center">
                   {/* Left: Swipe Card */}
-                  <div className="w-full max-w-lg mx-auto lg:mx-0 lg:flex-shrink-0">
+                  <div className="w-full max-w-md mx-auto lg:mx-0 lg:flex-shrink-0">
                     <div className="relative w-full">
                       <AnimatePresence mode="wait">
                         <motion.div
