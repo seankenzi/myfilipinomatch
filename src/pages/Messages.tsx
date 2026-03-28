@@ -558,7 +558,7 @@ const Messages = () => {
                       variant="hero"
                       size="sm"
                       className="gap-1.5"
-                      onClick={() => toast({ title: "Coming soon!", description: "Premium subscriptions will be available soon." })}
+                      onClick={() => navigate("/premium")}
                     >
                       <Crown className="h-3.5 w-3.5" />
                       Upgrade Now
@@ -575,7 +575,7 @@ const Messages = () => {
                         {remainingFree} free message{remainingFree !== 1 ? "s" : ""} remaining
                       </div>
                       <button
-                        onClick={() => toast({ title: "Coming soon!", description: "Premium subscriptions will be available soon." })}
+                        onClick={() => navigate("/premium")}
                         className="text-[11px] font-semibold text-primary hover:underline"
                       >
                         Go Premium

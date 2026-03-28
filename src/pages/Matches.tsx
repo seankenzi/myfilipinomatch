@@ -1,5 +1,5 @@
 import { Heart, MessageCircle, Crown } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import BottomNav from "@/components/BottomNav";
 import Navbar from "@/components/Navbar";
@@ -17,6 +17,7 @@ const mockLikedYou = [
 ];
 
 const Matches = () => {
+  const navigate = useNavigate();
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <Navbar />
@@ -50,7 +51,7 @@ const Matches = () => {
                 </div>
               ))}
               <div className="flex flex-shrink-0 items-center">
-                <Button variant="hero" size="sm">
+                <Button variant="hero" size="sm" onClick={() => navigate("/premium")}>
                   Upgrade to see
                 </Button>
               </div>
