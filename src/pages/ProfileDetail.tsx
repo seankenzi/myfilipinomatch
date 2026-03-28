@@ -63,6 +63,7 @@ const ProfileDetail = () => {
   const [loading, setLoading] = useState(true);
   const [liked, setLiked] = useState(false);
   const [activePhoto, setActivePhoto] = useState(0);
+  const [matchId, setMatchId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!id) return;
@@ -84,8 +85,17 @@ const ProfileDetail = () => {
         .eq("liked_id", id);
       setLiked((data || []).length > 0);
     };
+    const checkMatch = async () => {
+      if (!user) return;
+      const { data } = await supabase
+        .from("matches")
+        .select("id")
+        .or(`and(user1_id.eq.${user.id},user2_id.eq.${id}),and(user1_id.eq.${id},user2_id.eq.${user.id})`);
+      if (data && data.length > 0) setMatchId(data[0].id);
+    };
     fetchProfile();
     checkLiked();
+    checkMatch();
   }, [id, user]);
 
   const photos = profile
@@ -281,6 +291,20 @@ const ProfileDetail = () => {
               >
                 <Heart className={`h-4 w-4 ${liked ? "fill-primary text-primary" : ""}`} />
                 {liked ? "Liked" : "Like"}
+              </Button>
+              <Button
+                onClick={() => {
+                  if (matchId) {
+                    navigate(`/messages?match=${matchId}`);
+                  } else {
+                    toast({ title: "No match yet", description: `Like ${profile.full_name.split(" ")[0]} first — if they like you back, you can message each other!` });
+                  }
+                }}
+                variant="outline"
+                className="flex-1 gap-2"
+              >
+                <MessageCircle className="h-4 w-4" />
+                Message
               </Button>
             </div>
           )}
