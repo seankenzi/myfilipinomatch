@@ -824,12 +824,18 @@ const Discover = () => {
 
                           {/* Action buttons */}
                           <div className="flex gap-1.5">
-                            <button
-                              onClick={() => handleListLike(profile)}
-                              className="flex flex-1 items-center justify-center gap-1 rounded-lg bg-primary/10 py-1.5 text-[11px] font-medium text-primary hover:bg-primary/20 transition-colors"
-                            >
-                              <Heart className="h-3 w-3" /> Like
-                            </button>
+                            {likedIds.has(profile.id) ? (
+                              <div className="flex flex-1 items-center justify-center gap-1 rounded-lg bg-primary/20 py-1.5 text-[11px] font-medium text-primary">
+                                <Heart className="h-3 w-3 fill-primary" /> Liked
+                              </div>
+                            ) : (
+                              <button
+                                onClick={() => handleListLike(profile)}
+                                className="flex flex-1 items-center justify-center gap-1 rounded-lg bg-primary/10 py-1.5 text-[11px] font-medium text-primary hover:bg-primary/20 transition-colors"
+                              >
+                                <Heart className="h-3 w-3" /> Like
+                              </button>
+                            )}
                             <button
                               onClick={() => handlePriorityLike(profile)}
                               className="flex items-center justify-center rounded-lg bg-accent/10 px-2.5 py-1.5 text-accent hover:bg-accent/20 transition-colors"
