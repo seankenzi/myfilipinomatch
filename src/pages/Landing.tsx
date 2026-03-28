@@ -70,7 +70,7 @@ const Landing = () => {
             <div className="flex flex-wrap gap-4">
               <Link to="/signup">
                 <Button variant="hero" size="xl">
-                  Create Your Free Account
+                  Join Early — Start Connecting
                   <ArrowRight className="ml-1 h-5 w-5" />
                 </Button>
               </Link>
