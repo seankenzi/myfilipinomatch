@@ -260,6 +260,7 @@ const Discover = () => {
 
   const handleSwipeAction = async (action: "like" | "pass") => {
     if (!currentProfile) return;
+    setSwiped(true);
     setDirection(action === "like" ? "right" : "left");
 
     if (action === "like") await handleLike(currentProfile);
@@ -268,6 +269,7 @@ const Discover = () => {
       setCurrentIndex((prev) => prev + 1);
       setDirection(null);
       setDragX(0);
+      setSwiped(false);
       setExpandedBio(false);
     }, 300);
   };
@@ -280,7 +282,7 @@ const Discover = () => {
 
     if (offset > swipeThreshold || velocity > velocityThreshold) handleSwipeAction("like");
     else if (offset < -swipeThreshold || velocity < -velocityThreshold) handleSwipeAction("pass");
-    setDragX(0);
+    else setDragX(0);
   };
 
   const handleListLike = async (profile: Profile) => {
