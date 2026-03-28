@@ -2,7 +2,7 @@ import { Crown, Heart, Eye, Zap, MessageCircle, Check, Loader2 } from "lucide-re
 import { Button } from "@/components/ui/button";
 import Navbar from "@/components/Navbar";
 import BottomNav from "@/components/BottomNav";
-import Footer from "@/components/Footer";
+
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect } from "react";
