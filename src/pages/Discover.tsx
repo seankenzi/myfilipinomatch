@@ -272,9 +272,13 @@ const Discover = () => {
   };
 
   const handleDragEnd = (_: any, info: PanInfo) => {
-    const threshold = 100;
-    if (info.offset.x > threshold) handleSwipeAction("like");
-    else if (info.offset.x < -threshold) handleSwipeAction("pass");
+    const swipeThreshold = 60;
+    const velocityThreshold = 300;
+    const offset = info.offset.x;
+    const velocity = info.velocity.x;
+
+    if (offset > swipeThreshold || velocity > velocityThreshold) handleSwipeAction("like");
+    else if (offset < -swipeThreshold || velocity < -velocityThreshold) handleSwipeAction("pass");
     setDragX(0);
   };
 
