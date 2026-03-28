@@ -64,6 +64,7 @@ const ProfileDetail = () => {
   const [liked, setLiked] = useState(false);
   const [activePhoto, setActivePhoto] = useState(0);
   const [matchId, setMatchId] = useState<string | null>(null);
+  const [isPremium, setIsPremium] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -93,9 +94,19 @@ const ProfileDetail = () => {
         .or(`and(user1_id.eq.${user.id},user2_id.eq.${id}),and(user1_id.eq.${id},user2_id.eq.${user.id})`);
       if (data && data.length > 0) setMatchId(data[0].id);
     };
+    const checkPremium = async () => {
+      if (!user) return;
+      const { data } = await supabase
+        .from("profiles")
+        .select("is_premium")
+        .eq("id", user.id)
+        .single();
+      setIsPremium(data?.is_premium === true);
+    };
     fetchProfile();
     checkLiked();
     checkMatch();
+    checkPremium();
   }, [id, user]);
 
   const photos = profile
@@ -293,18 +304,31 @@ const ProfileDetail = () => {
                 {liked ? "Liked" : "Like"}
               </Button>
               <Button
-                onClick={() => {
+                onClick={async () => {
                   if (matchId) {
                     navigate(`/messages?match=${matchId}`);
+                  } else if (isPremium) {
+                    // Premium user: create a match so they can message directly
+                    const ids = [user!.id, profile.id].sort();
+                    const { data: newMatch, error } = await supabase
+                      .from("matches")
+                      .insert({ user1_id: ids[0], user2_id: ids[1] })
+                      .select("id")
+                      .single();
+                    if (!error && newMatch) {
+                      setMatchId(newMatch.id);
+                      navigate(`/messages?match=${newMatch.id}`);
+                    }
                   } else {
-                    toast({ title: "No match yet", description: `Like ${profile.full_name.split(" ")[0]} first — if they like you back, you can message each other!` });
+                    toast({ title: "Match required", description: "Upgrade to Premium to message anyone directly, or wait for a mutual match!" });
+                    navigate("/premium");
                   }
                 }}
                 variant="outline"
                 className="flex-1 gap-2"
               >
                 <MessageCircle className="h-4 w-4" />
-                Message
+                {isPremium && !matchId ? "Direct Message ✨" : "Message"}
               </Button>
             </div>
           )}
