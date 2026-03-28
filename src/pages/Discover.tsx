@@ -156,6 +156,7 @@ const Discover = () => {
   const [direction, setDirection] = useState<"left" | "right" | null>(null);
   const [dragX, setDragX] = useState(0);
   const [expandedBio, setExpandedBio] = useState(false);
+  const [swiped, setSwiped] = useState(false);
 
   // View toggle
   const [viewMode, setViewMode] = useState<"swipe" | "list">("swipe");
@@ -259,6 +260,7 @@ const Discover = () => {
 
   const handleSwipeAction = async (action: "like" | "pass") => {
     if (!currentProfile) return;
+    setSwiped(true);
     setDirection(action === "like" ? "right" : "left");
 
     if (action === "like") await handleLike(currentProfile);
@@ -267,6 +269,7 @@ const Discover = () => {
       setCurrentIndex((prev) => prev + 1);
       setDirection(null);
       setDragX(0);
+      setSwiped(false);
       setExpandedBio(false);
     }, 300);
   };
@@ -279,7 +282,7 @@ const Discover = () => {
 
     if (offset > swipeThreshold || velocity > velocityThreshold) handleSwipeAction("like");
     else if (offset < -swipeThreshold || velocity < -velocityThreshold) handleSwipeAction("pass");
-    setDragX(0);
+    else setDragX(0);
   };
 
   const handleListLike = async (profile: Profile) => {
@@ -556,11 +559,11 @@ const Discover = () => {
                           }}
                           transition={{ duration: 0.3 }}
                           drag="x"
-                          dragConstraints={{ left: 0, right: 0 }}
-                          dragElastic={0.8}
+                          dragSnapToOrigin={!swiped}
+                          dragElastic={0.9}
                           onDrag={(_, info) => setDragX(info.offset.x)}
                           onDragEnd={handleDragEnd}
-                          className="overflow-hidden rounded-3xl border border-border bg-card shadow-elevated cursor-grab active:cursor-grabbing select-none"
+                          className="overflow-hidden rounded-3xl border border-border bg-card shadow-elevated cursor-grab active:cursor-grabbing select-none touch-pan-y"
                         >
                           <AnimatePresence>
                             {dragX > 50 && (
