@@ -34,6 +34,17 @@ const Navbar = () => {
         <div className="flex items-center gap-3">
           {loading ? null : user ? (
             <>
+              <Link to="/premium">
+                <Button
+                  variant="hero"
+                  size="sm"
+                  className="relative overflow-hidden animate-pulse hover:animate-none"
+                >
+                  <Crown className="mr-1 h-4 w-4" />
+                  Upgrade
+                  <span className="absolute inset-0 rounded-md bg-gradient-to-r from-transparent via-white/20 to-transparent animate-[shimmer_2s_infinite] pointer-events-none" />
+                </Button>
+              </Link>
               <NotificationBell />
               <Link to="/profile">
                 <Button variant="ghost" size="sm">
