@@ -4,10 +4,11 @@ import Navbar from "@/components/Navbar";
 import BottomNav from "@/components/BottomNav";
 import visaLogo from "@/assets/visa-logo.svg";
 import mastercardLogo from "@/assets/mastercard-logo.svg";
+import paypalLogo from "@/assets/paypal-logo.svg";
 
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useToast } from "@/hooks/use-toast";
 
 const plans = [
