@@ -10,6 +10,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect, useRef } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 
 const plans = [
   {
@@ -160,6 +161,7 @@ const Premium = () => {
             });
             setIsPremium(true);
             setCurrentPlan(data.plan);
+            setTimeout(() => navigate("/discover"), 2000);
           }
         });
       } else {
