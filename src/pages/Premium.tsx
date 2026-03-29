@@ -10,6 +10,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect, useRef } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 
 const plans = [
   {
@@ -63,6 +64,7 @@ const plans = [
 const Premium = () => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState<string | null>(null);
   const [isPremium, setIsPremium] = useState(false);
   const [currentPlan, setCurrentPlan] = useState<string | null>(null);
@@ -160,6 +162,7 @@ const Premium = () => {
             });
             setIsPremium(true);
             setCurrentPlan(data.plan);
+            setTimeout(() => navigate("/discover"), 2000);
           }
         });
       } else {
