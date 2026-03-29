@@ -131,15 +131,43 @@ const Premium = () => {
     }
   };
 
-  // Check for success/cancel params
+  // Handle PayPal return — capture order on success
+  const captureAttempted = useRef(false);
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    if (params.get("success") === "true") {
-      toast({
-        title: "Payment successful! 🎉",
-        description: "Your premium subscription is now active. Enjoy unlimited access!",
-      });
-      // Clean URL
+    
+    if (params.get("success") === "true" && !captureAttempted.current) {
+      captureAttempted.current = true;
+      const orderId = sessionStorage.getItem("paypal_order_id");
+      
+      if (orderId) {
+        sessionStorage.removeItem("paypal_order_id");
+        // Capture the PayPal payment
+        supabase.functions.invoke("paypal-capture", {
+          body: { order_id: orderId },
+        }).then(({ data, error }) => {
+          if (error || !data?.success) {
+            console.error("Capture failed:", error || data);
+            toast({
+              title: "Payment processing issue",
+              description: "Your payment may still be processing. Please check back shortly.",
+              variant: "destructive",
+            });
+          } else {
+            toast({
+              title: "Payment successful! 🎉",
+              description: "Your premium subscription is now active. Enjoy unlimited access!",
+            });
+            setIsPremium(true);
+            setCurrentPlan(data.plan);
+          }
+        });
+      } else {
+        toast({
+          title: "Payment successful! 🎉",
+          description: "Your premium subscription is now active. Enjoy unlimited access!",
+        });
+      }
       window.history.replaceState({}, "", "/premium");
     } else if (params.get("cancelled") === "true") {
       toast({
