@@ -50,13 +50,15 @@ const plans = [
   {
     id: "yearly" as const,
     name: "1 Year",
-    price: "$199.99",
-    priceSub: "Only $16.67/month — save 44%",
+    price: "$219.99",
+    priceSub: "Only $18.33/month — save 39%",
     period: "/year",
     popular: true,
+    savings: `You save $${((29.99 * 12) - 219.99).toFixed(2)} vs monthly`,
     features: [
       "All Premium features included",
       "Best value — biggest savings",
+      "Includes 2 hours free video calls/month",
       "VIP badge on your profile",
       "Priority support & early access to new features",
     ],
