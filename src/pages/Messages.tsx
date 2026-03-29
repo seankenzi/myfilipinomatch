@@ -89,6 +89,8 @@ const Messages = () => {
   const [reportDialog, setReportDialog] = useState(false);
   const [reportReason, setReportReason] = useState("");
   const [reportDetails, setReportDetails] = useState("");
+  // Video call
+  const [videoCallOpen, setVideoCallOpen] = useState(false);
 
   // My sent message count for current match (total)
   const mySentCount = messages.filter((m) => m.sender_id === user?.id).length;
