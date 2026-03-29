@@ -131,6 +131,12 @@ const Onboarding = () => {
     if (!user) return;
     setSaving(true);
     try {
+      const bioContact = detectContactInfo(bio.trim());
+      if (bioContact) {
+        toast({ title: "Contact info not allowed", description: `Your bio contains ${bioContact}. Please remove it.`, variant: "destructive" });
+        setSaving(false);
+        return;
+      }
       const profileData: Record<string, unknown> = {
         user_type: userType,
         relationship_intent: relationshipIntent,

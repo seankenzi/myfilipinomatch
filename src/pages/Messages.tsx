@@ -293,47 +293,6 @@ const Messages = () => {
     return () => { supabase.removeChannel(channel); };
   }, [selectedMatch, user]);
 
-  // Detect contact information in messages
-  const containsContactInfo = (text: string): string | null => {
-    const lower = text.toLowerCase().replace(/\s+/g, ' ');
-    const normalized = text.replace(/[\s\-().]/g, '');
-    
-    // Phone numbers (7+ digits, with or without country code)
-    if (/(\+?\d{1,3}[-.\s]?)?\(?\d{2,4}\)?[-.\s]?\d{3,4}[-.\s]?\d{3,4}/.test(text) && /\d{7,}/.test(normalized)) {
-      return "phone numbers";
-    }
-    // Email addresses
-    if (/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/.test(text)) {
-      return "email addresses";
-    }
-    // Social media handles/platforms
-    const socialPatterns = [
-      /(?:facebook|fb)[\s.:\/]*(?:\.com|me|profile|@|\w{3,})/i,
-      /(?:instagram|ig|insta)[\s.:\/]*(?:\.com|@|\w{3,})/i,
-      /(?:twitter|x\.com)[\s.:\/]*(?:\.com|@|\w{3,})/i,
-      /(?:whatsapp|whats\s*app|wa\.me|viber|telegram|tg)[\s.:\/]*(?:\.me|@|\+?\d|\w{3,})/i,
-      /(?:snapchat|snap|tiktok|tik\s*tok)[\s.:\/]*(?:\.com|@|\w{3,})/i,
-      /(?:line|wechat|kakaotalk|kakao)[\s.:\/]*(?:\.me|id|@|\w{3,})/i,
-      /(?:skype|discord|zoom)[\s.:\/]*(?:\.com|@|#|\w{3,})/i,
-      /@[a-zA-Z0-9._]{3,}/,  // Generic @username pattern
-    ];
-    for (const pattern of socialPatterns) {
-      if (pattern.test(text)) return "social media accounts";
-    }
-    // URLs
-    if (/(?:https?:\/\/|www\.)[^\s]+/i.test(text)) {
-      return "links or URLs";
-    }
-    // Common evasion: "add me on", "find me on", "my number is", etc.
-    if (/(?:add|find|reach|contact|message|text|call|hit)\s+(?:me|us)\s+(?:on|at|in|via)/i.test(lower)) {
-      return "contact sharing";
-    }
-    if (/(?:my|here'?s?\s+my|send\s+(?:me\s+)?(?:your|ur))\s+(?:number|phone|cell|mobile|email|e-mail|ig|insta|fb|snap|tiktok|line|whatsapp|viber|telegram|discord|skype|account|handle|username)/i.test(lower)) {
-      return "contact sharing";
-    }
-    return null;
-  };
-
   const handleSend = async () => {
     if (!newMessage.trim() || !selectedMatch || !user || sending || isLocked) return;
     if (newMessage.trim().length > 1000) {
@@ -341,7 +300,7 @@ const Messages = () => {
       return;
     }
     const content = newMessage.trim();
-    const contactType = containsContactInfo(content);
+    const contactType = detectContactInfo(content);
     if (contactType) {
       toast({
         title: "Contact sharing not allowed",
