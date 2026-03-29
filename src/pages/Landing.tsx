@@ -288,73 +288,8 @@ const Landing = () => {
         </div>
       </section>
 
-      {/* ===== PRICING / FREE VS PREMIUM ===== */}
-      <section className="py-20 bg-background">
-        <div className="container">
-          <h2 className="mb-4 text-center text-3xl font-bold md:text-4xl" style={{ fontFamily: 'var(--font-display)' }}>
-            Start for Free. Upgrade Anytime.
-          </h2>
-          <p className="text-center text-muted-foreground mb-12 max-w-md mx-auto">
-            No pressure. Explore at your own pace.
-          </p>
-          <div className="mx-auto max-w-3xl grid gap-6 md:grid-cols-2">
-            {/* Free */}
-            <Card className="border-border bg-card shadow-card">
-              <CardContent className="p-8">
-                <h3 className="text-xl font-bold text-foreground mb-1">Free</h3>
-                <p className="text-sm text-muted-foreground mb-6">Get started at no cost</p>
-                <ul className="flex flex-col gap-3">
-                  {[
-                    "Account creation",
-                    "Profile browsing",
-                    "Limited messaging",
-                  ].map((f) => (
-                    <li key={f} className="flex items-center gap-2 text-sm text-foreground">
-                      <CheckCircle className="h-4 w-4 text-secondary flex-shrink-0" />
-                      {f}
-                    </li>
-                  ))}
-                </ul>
-                <Link to="/signup" className="block mt-8">
-                  <Button variant="outline" size="lg" className="w-full">
-                    Create Free Account
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
 
-            {/* Premium */}
-            <Card className="border-primary/30 bg-card shadow-card-hover relative overflow-hidden">
-              <div className="absolute top-0 left-0 right-0 h-1 gradient-hero" />
-              <CardContent className="p-8">
-                <div className="flex items-center gap-2 mb-1">
-                  <h3 className="text-xl font-bold text-foreground">Premium</h3>
-                  <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-primary/10 text-primary">Popular</span>
-                </div>
-                <p className="text-sm text-muted-foreground mb-6">For those serious about finding love</p>
-                <ul className="flex flex-col gap-3">
-                  {[
-                    "Unlimited messaging",
-                    "Video calls",
-                    "Priority visibility",
-                    "See who liked you",
-                  ].map((f) => (
-                    <li key={f} className="flex items-center gap-2 text-sm text-foreground">
-                      <CheckCircle className="h-4 w-4 text-primary flex-shrink-0" />
-                      {f}
-                    </li>
-                  ))}
-                </ul>
-                <Link to="/premium" className="block mt-8">
-                  <Button variant="hero" size="lg" className="w-full">
-                    ❤️ Upgrade to Annual
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
+
 
       {/* ===== FINAL CTA ===== */}
       <section className="relative py-24 overflow-hidden">
