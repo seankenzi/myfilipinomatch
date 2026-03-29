@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { detectContactInfo } from "@/lib/contactFilter";
 import { useNavigate } from "react-router-dom";
 import { Heart, Globe, MapPin, User, Camera, CheckCircle, ArrowRight, ArrowLeft, Sparkles, Ruler } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -130,6 +131,12 @@ const Onboarding = () => {
     if (!user) return;
     setSaving(true);
     try {
+      const bioContact = detectContactInfo(bio.trim());
+      if (bioContact) {
+        toast({ title: "Contact info not allowed", description: `Your bio contains ${bioContact}. Please remove it.`, variant: "destructive" });
+        setSaving(false);
+        return;
+      }
       const profileData: Record<string, unknown> = {
         user_type: userType,
         relationship_intent: relationshipIntent,

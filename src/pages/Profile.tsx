@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { detectContactInfo } from "@/lib/contactFilter";
 import { Camera, Edit, Shield, MapPin, Heart, Globe, Settings, LogOut, Crown, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -68,7 +69,12 @@ const Profile = () => {
 
   const saveProfile = async () => {
     if (!user) return;
-    setSaving(true);
+    const bioContact = detectContactInfo(profile.bio);
+    if (bioContact) {
+      toast({ title: "Contact info not allowed", description: `Your bio contains ${bioContact}. Please remove it.`, variant: "destructive" });
+      setSaving(false);
+      return;
+    }
     const { error } = await supabase.from("profiles").update({
       full_name: profile.full_name,
       age: profile.age,
