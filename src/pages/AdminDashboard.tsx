@@ -394,6 +394,184 @@ const SubscriptionsTab = () => {
   );
 };
 
+// ─── Feature Flags Tab ───
+const COMMON_FEATURES = ["video_calls", "profile_boost", "unlimited_likes", "unlimited_messages", "who_liked_you", "undo_pass"];
+
+const FeatureFlagsTab = () => {
+  const { toast } = useToast();
+  const [flags, setFlags] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [selectedUser, setSelectedUser] = useState<string>("");
+  const [selectedFeature, setSelectedFeature] = useState<string>(COMMON_FEATURES[0]);
+  const [users, setUsers] = useState<any[]>([]);
+
+  const fetchFlags = async () => {
+    setLoading(true);
+    const { data } = await supabase
+      .from("feature_flags")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(200);
+
+    if (data && data.length > 0) {
+      const userIds = [...new Set(data.map(f => f.user_id))];
+      const { data: profiles } = await supabase.from("profiles").select("id, full_name, email").in("id", userIds);
+      const profileMap = new Map((profiles || []).map(p => [p.id, p]));
+      setFlags(data.map(f => ({
+        ...f,
+        user_name: profileMap.get(f.user_id)?.full_name || "Unknown",
+        user_email: profileMap.get(f.user_id)?.email || "—",
+      })));
+    } else {
+      setFlags([]);
+    }
+    setLoading(false);
+  };
+
+  const searchUsers = async (term: string) => {
+    if (!term.trim()) { setUsers([]); return; }
+    const { data } = await supabase.from("profiles").select("id, full_name, email")
+      .or(`full_name.ilike.%${term}%,email.ilike.%${term}%`).limit(5);
+    setUsers(data || []);
+  };
+
+  useEffect(() => { fetchFlags(); }, []);
+
+  const toggleFlag = async (id: string, currentEnabled: boolean) => {
+    await supabase.from("feature_flags").update({ enabled: !currentEnabled, updated_at: new Date().toISOString() }).eq("id", id);
+    toast({ title: `Feature flag ${!currentEnabled ? "enabled" : "disabled"}` });
+    fetchFlags();
+  };
+
+  const deleteFlag = async (id: string) => {
+    await supabase.from("feature_flags").delete().eq("id", id);
+    toast({ title: "Feature flag removed" });
+    fetchFlags();
+  };
+
+  const addFlag = async () => {
+    if (!selectedUser || !selectedFeature) {
+      toast({ title: "Select a user and feature", variant: "destructive" });
+      return;
+    }
+    const { error } = await supabase.from("feature_flags").insert({
+      user_id: selectedUser,
+      feature_name: selectedFeature,
+      enabled: true,
+    });
+    if (error) {
+      toast({ title: error.message.includes("duplicate") ? "Flag already exists for this user" : error.message, variant: "destructive" });
+      return;
+    }
+    toast({ title: "Feature flag added ✅" });
+    setSelectedUser("");
+    setSearch("");
+    setUsers([]);
+    fetchFlags();
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Add new flag */}
+      <div className="rounded-xl border border-border bg-card p-4 space-y-3">
+        <h3 className="text-sm font-semibold flex items-center gap-2"><Plus className="h-4 w-4" /> Add Feature Flag</h3>
+        <div className="flex flex-col sm:flex-row gap-2">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search user by name or email..."
+              value={search}
+              onChange={(e) => { setSearch(e.target.value); searchUsers(e.target.value); }}
+              className="pl-9"
+            />
+            {users.length > 0 && (
+              <div className="absolute z-10 top-full mt-1 w-full bg-popover border border-border rounded-lg shadow-lg max-h-40 overflow-y-auto">
+                {users.map(u => (
+                  <button
+                    key={u.id}
+                    className="w-full text-left px-3 py-2 hover:bg-muted text-sm flex justify-between"
+                    onClick={() => { setSelectedUser(u.id); setSearch(u.full_name || u.email); setUsers([]); }}
+                  >
+                    <span className="font-medium">{u.full_name || "—"}</span>
+                    <span className="text-muted-foreground text-xs">{u.email}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+          <select
+            value={selectedFeature}
+            onChange={(e) => setSelectedFeature(e.target.value)}
+            className="h-10 rounded-md border border-input bg-background px-3 text-sm"
+          >
+            {COMMON_FEATURES.map(f => <option key={f} value={f}>{f.replace(/_/g, " ")}</option>)}
+          </select>
+          <Button onClick={addFlag} size="sm" className="h-10">
+            <Plus className="h-4 w-4 mr-1" /> Add
+          </Button>
+        </div>
+      </div>
+
+      {/* Flags list */}
+      {loading ? (
+        <div className="flex justify-center py-10"><div className="h-6 w-6 animate-spin rounded-full border-4 border-primary border-t-transparent" /></div>
+      ) : flags.length === 0 ? (
+        <div className="rounded-xl border border-border bg-card p-10 text-center text-muted-foreground">
+          <ToggleLeft className="mx-auto mb-3 h-10 w-10 text-muted-foreground/30" />
+          <p>No feature flags configured yet.</p>
+        </div>
+      ) : (
+        <div className="rounded-xl border border-border overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-muted/50">
+                <tr>
+                  <th className="text-left p-3 font-medium text-muted-foreground">User</th>
+                  <th className="text-left p-3 font-medium text-muted-foreground">Feature</th>
+                  <th className="text-center p-3 font-medium text-muted-foreground">Status</th>
+                  <th className="text-left p-3 font-medium text-muted-foreground">Updated</th>
+                  <th className="text-right p-3 font-medium text-muted-foreground">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {flags.map(f => (
+                  <tr key={f.id} className="hover:bg-muted/30 transition-colors">
+                    <td className="p-3">
+                      <p className="font-medium">{f.user_name}</p>
+                      <p className="text-xs text-muted-foreground">{f.user_email}</p>
+                    </td>
+                    <td className="p-3">
+                      <span className="bg-muted px-2 py-0.5 rounded text-xs font-mono">{f.feature_name}</span>
+                    </td>
+                    <td className="p-3 text-center">
+                      {f.enabled
+                        ? <ToggleRight className="h-5 w-5 text-secondary mx-auto" />
+                        : <ToggleLeft className="h-5 w-5 text-muted-foreground/40 mx-auto" />
+                      }
+                    </td>
+                    <td className="p-3 text-muted-foreground text-xs">{format(new Date(f.updated_at), "MMM d, yyyy")}</td>
+                    <td className="p-3">
+                      <div className="flex gap-1 justify-end">
+                        <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => toggleFlag(f.id, f.enabled)}>
+                          {f.enabled ? "Disable" : "Enable"}
+                        </Button>
+                        <Button size="sm" variant="ghost" className="h-7 text-xs text-destructive" onClick={() => deleteFlag(f.id)}>
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 // ─── Main Admin Dashboard ───
 const AdminDashboard = () => {
   const navigate = useNavigate();
