@@ -2,6 +2,8 @@ import { Crown, Heart, Eye, Zap, MessageCircle, Check, Loader2 } from "lucide-re
 import { Button } from "@/components/ui/button";
 import Navbar from "@/components/Navbar";
 import BottomNav from "@/components/BottomNav";
+import visaLogo from "@/assets/visa-logo.png";
+import mastercardLogo from "@/assets/mastercard-logo.png";
 
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -235,8 +237,8 @@ const Premium = () => {
           <div className="mt-8 text-center">
             <p className="text-xs text-muted-foreground mb-2">Accepted payment methods</p>
             <div className="flex items-center justify-center gap-4 text-sm font-medium text-muted-foreground">
-              <span className="rounded-lg border border-border px-3 py-1.5">💳 Visa</span>
-              <span className="rounded-lg border border-border px-3 py-1.5">💳 Mastercard</span>
+              <span className="flex items-center gap-2 rounded-lg border border-border px-3 py-1.5"><img src={visaLogo} alt="Visa" className="h-5 w-auto" loading="lazy" /> Visa</span>
+              <span className="flex items-center gap-2 rounded-lg border border-border px-3 py-1.5"><img src={mastercardLogo} alt="Mastercard" className="h-5 w-auto" loading="lazy" /> Mastercard</span>
             </div>
           </div>
 
