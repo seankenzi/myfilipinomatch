@@ -18,15 +18,16 @@ const Index = () => {
       return;
     }
 
-    // User is logged in — check onboarding status and redirect
+    // User is logged in — check admin role and onboarding status, then redirect
     const checkAndRedirect = async () => {
-      const { data } = await supabase
-        .from("profiles")
-        .select("onboarding_completed")
-        .eq("id", user.id)
-        .single();
+      const [{ data: roleData }, { data }] = await Promise.all([
+        supabase.rpc("has_role", { _user_id: user.id, _role: "admin" as any }),
+        supabase.from("profiles").select("onboarding_completed").eq("id", user.id).single(),
+      ]);
 
-      if (data?.onboarding_completed) {
+      if (roleData === true) {
+        navigate("/admin", { replace: true });
+      } else if (data?.onboarding_completed) {
         navigate("/discover", { replace: true });
       } else {
         navigate("/onboarding", { replace: true });
