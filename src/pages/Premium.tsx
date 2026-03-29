@@ -22,6 +22,7 @@ const plans = [
     priceSub: "per month",
     period: "/month",
     popular: false,
+    savings: null,
     features: [
       "Unlimited likes (free users get 10/day)",
       "Unlimited messaging",
@@ -40,6 +41,7 @@ const plans = [
     priceSub: "$23.33/month — save 22%",
     period: "/3 months",
     popular: false,
+    savings: `You save $${((29.99 * 3) - 69.99).toFixed(2)} vs monthly`,
     features: [
       "Everything in Monthly",
       "Priority in Discover",
@@ -50,13 +52,15 @@ const plans = [
   {
     id: "yearly" as const,
     name: "1 Year",
-    price: "$199.99",
-    priceSub: "Only $16.67/month — save 44%",
+    price: "$219.99",
+    priceSub: "Only $18.33/month — save 39%",
     period: "/year",
     popular: true,
+    savings: `You save $${((29.99 * 12) - 219.99).toFixed(2)} vs monthly`,
     features: [
       "All Premium features included",
       "Best value — biggest savings",
+      "Includes 2 hours free video calls/month",
       "VIP badge on your profile",
       "Priority support & early access to new features",
     ],
@@ -236,7 +240,11 @@ const Premium = () => {
                   <span className="text-3xl font-bold text-foreground">{plan.price}</span>
                   <span className="text-sm text-muted-foreground">{plan.period}</span>
                 </div>
-                <p className="text-xs text-muted-foreground mb-5">{plan.priceSub}</p>
+                <p className="text-xs text-muted-foreground mb-1">{plan.priceSub}</p>
+                {plan.savings && (
+                  <p className="text-xs font-semibold text-primary mb-4">{plan.savings}</p>
+                )}
+                {!plan.savings && <div className="mb-5" />}
 
                 <ul className="space-y-2.5 mb-6">
                   {plan.features.map((f) => (
