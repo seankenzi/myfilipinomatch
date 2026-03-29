@@ -240,7 +240,11 @@ const Premium = () => {
                   <span className="text-3xl font-bold text-foreground">{plan.price}</span>
                   <span className="text-sm text-muted-foreground">{plan.period}</span>
                 </div>
-                <p className="text-xs text-muted-foreground mb-5">{plan.priceSub}</p>
+                <p className="text-xs text-muted-foreground mb-1">{plan.priceSub}</p>
+                {plan.savings && (
+                  <p className="text-xs font-semibold text-primary mb-4">{plan.savings}</p>
+                )}
+                {!plan.savings && <div className="mb-5" />}
 
                 <ul className="space-y-2.5 mb-6">
                   {plan.features.map((f) => (
