@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Video, Heart, X, Crown } from "lucide-react";
+import { Video, Heart, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
