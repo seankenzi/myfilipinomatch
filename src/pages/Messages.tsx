@@ -744,6 +744,13 @@ const Messages = () => {
         />
       )}
 
+      {/* Video Call Upgrade Modal */}
+      <VideoCallModal
+        open={videoUpgradeOpen}
+        onOpenChange={setVideoUpgradeOpen}
+        userName={selectedMatch?.other_user.full_name}
+      />
+
       <BottomNav />
     </div>
   );
