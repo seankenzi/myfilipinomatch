@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import {
   Heart, X, MapPin, Shield, Filter, ChevronDown, Star, Flag,
   LayoutGrid, Layers, Globe, Send, Sparkles, Clock, UserPlus,
-  ChevronLeft, ChevronRight, SlidersHorizontal, Undo2, Zap, Lock, Crown
+  ChevronLeft, ChevronRight, SlidersHorizontal, Undo2, Zap, Lock, Crown, Video, Gem
 } from "lucide-react";
 import OnlineStatus from "@/components/OnlineStatus";
 import { Button } from "@/components/ui/button";
@@ -21,6 +21,8 @@ import Navbar from "@/components/Navbar";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import VideoBanner from "@/components/VideoBanner";
+import VideoCallModal from "@/components/VideoCallModal";
 
 interface Profile {
   id: string;
