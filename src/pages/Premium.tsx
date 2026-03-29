@@ -61,7 +61,7 @@ const plans = [
     features: [
       "All Premium features included",
       "Best value — biggest savings",
-      "Includes 2 hours free video calls/month",
+      "Includes 2 FREE hours of video calls every month",
       "VIP badge on your profile",
       "Priority support & early access to new features",
     ],
@@ -249,7 +249,7 @@ const Premium = () => {
 
                 <ul className="space-y-2.5 mb-6">
                   {plan.features.map((f) => {
-                    const isVideoFeature = f === "Includes 2 hours free video calls/month";
+                    const isVideoFeature = f === "Includes 2 FREE hours of video calls every month";
                     const content = (
                       <li key={f} className={`flex items-center gap-2 text-sm ${isVideoFeature ? "text-primary font-semibold" : "text-foreground"}`}>
                         {isVideoFeature ? <Video className="h-4 w-4 text-primary flex-shrink-0" /> : <Check className="h-4 w-4 text-primary flex-shrink-0" />}
