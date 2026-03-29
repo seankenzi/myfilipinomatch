@@ -1,4 +1,4 @@
-import { Video, Crown, Shield, CheckCircle } from "lucide-react";
+import { Video, Heart, Shield, CheckCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
@@ -22,16 +22,20 @@ const VideoCallModal = ({ open, onOpenChange, userName = "this person" }: VideoC
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/15">
               <Video className="h-4 w-4 text-primary" />
             </div>
-            🔒 Video Calls Locked
+            🔒 Video Calls are included in Annual
           </DialogTitle>
           <DialogDescription className="space-y-3 pt-2">
             <p>
-              Want to connect with <span className="font-semibold text-foreground">{userName}</span> face-to-face? ❤️
+              Want to connect with <span className="font-semibold text-foreground">{userName}</span> face-to-face?
             </p>
             <div className="space-y-2">
               <div className="flex items-center gap-2 text-sm">
                 <Video className="h-4 w-4 text-primary flex-shrink-0" />
-                <span>Get 2 FREE hours of video calls every month</span>
+                <span>🎥 Get 2 FREE hours of video calls every month</span>
+              </div>
+              <div className="flex items-center gap-2 text-sm">
+                <Heart className="h-4 w-4 text-primary flex-shrink-0" />
+                <span>❤️ Build real connections faster</span>
               </div>
               <div className="flex items-center gap-2 text-sm">
                 <CheckCircle className="h-4 w-4 text-secondary flex-shrink-0" />
@@ -54,8 +58,8 @@ const VideoCallModal = ({ open, onOpenChange, userName = "this person" }: VideoC
             className="gap-1.5"
             onClick={() => { onOpenChange(false); navigate("/premium"); }}
           >
-            <Crown className="h-3.5 w-3.5" />
-            Upgrade to Annual
+            <Heart className="h-3.5 w-3.5 fill-primary-foreground" />
+            ❤️ Upgrade to Annual
           </Button>
         </DialogFooter>
       </DialogContent>

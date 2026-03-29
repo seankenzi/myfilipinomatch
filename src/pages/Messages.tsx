@@ -611,7 +611,7 @@ const Messages = () => {
                         className="rounded-2xl border border-primary/20 bg-primary/5 px-4 py-3 text-center transition-colors hover:bg-primary/10 max-w-xs"
                       >
                         <p className="text-sm font-medium text-foreground">💡 Ready to take this further?</p>
-                        <p className="text-xs text-primary mt-1">🎥 Start a video call (Annual only)</p>
+                        <p className="text-xs text-primary mt-1">🎥 Video calls are included in Annual</p>
                       </button>
                     </div>
                   )}

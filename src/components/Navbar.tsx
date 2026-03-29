@@ -1,4 +1,4 @@
-import { Video, LogIn, LogOut, User } from "lucide-react";
+import { Heart, LogIn, LogOut, User } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
@@ -47,18 +47,18 @@ const Navbar = () => {
                         className="relative gap-1.5 overflow-hidden bg-gradient-to-r from-primary via-accent via-50% to-primary bg-[length:300%_100%] border-0 shadow-md hover:shadow-lg transition-all hover:scale-105 text-sm px-4"
                         style={{ animation: "gradient-shift 3s ease-in-out infinite, pulse-glow 2.5s ease-in-out infinite" }}
                       >
-                        <Video className="h-4 w-4" style={{ animation: "gentle-bounce 1.5s ease-in-out infinite" }} />
-                        <span className="hidden sm:inline">🎥 Unlock Video Calls</span>
-                        <span className="sm:hidden">🎥 Video</span>
+                        <Heart className="h-4 w-4 fill-primary-foreground" style={{ animation: "gentle-bounce 1.5s ease-in-out infinite" }} />
+                        <span className="hidden sm:inline">❤️ Upgrade to Annual</span>
+                        <span className="sm:hidden">❤️ Upgrade</span>
                         <span className="absolute inset-0 rounded-md bg-gradient-to-r from-transparent via-white/25 to-transparent pointer-events-none" style={{ animation: "shimmer 2s ease-in-out infinite" }} />
                         <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-accent" style={{ animation: "sparkle 2s ease-in-out infinite" }} />
                         <span className="absolute -bottom-0.5 -left-0.5 h-1.5 w-1.5 rounded-full bg-primary-foreground/80" style={{ animation: "sparkle 2s ease-in-out 1s infinite" }} />
                       </Button>
                     </Link>
                   </TooltipTrigger>
-                  <TooltipContent side="bottom" className="max-w-[220px] text-center p-3">
-                    <p className="font-semibold text-sm">Get 2 FREE hours of video calls every month</p>
-                    <p className="text-xs text-muted-foreground mt-1">Upgrade to Annual plan</p>
+                  <TooltipContent side="bottom" className="max-w-[240px] text-center p-3">
+                    <p className="font-semibold text-sm">❤️ Upgrade to Annual</p>
+                    <p className="text-xs text-muted-foreground mt-1">🎥 Includes 2 FREE hours of video calls every month</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>

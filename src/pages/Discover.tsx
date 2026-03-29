@@ -774,7 +774,7 @@ const Discover = () => {
                   <span className="font-semibold text-foreground">{dailyLikesRemaining}</span>
                   <span className="text-muted-foreground">likes left</span>
                 </div>
-                <span className="text-[10px] text-muted-foreground px-1">🎥 Video calls available on Annual</span>
+                <span className="text-[10px] text-muted-foreground px-1">🎥 Video calls included in Annual</span>
               </div>
             )}
             <button
@@ -1174,7 +1174,7 @@ const Discover = () => {
                           {/* Video call microcopy */}
                           {!isPremium && (
                             <p className="text-[9px] text-muted-foreground text-center">
-                              🎥 Video call available with upgrade
+                              🎥 Video call available with Annual
                             </p>
                           )}
                         </div>
