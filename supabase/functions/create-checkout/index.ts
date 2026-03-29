@@ -26,8 +26,8 @@ const PLANS: Record<string, { name: string; amount: string; description: string 
   },
   yearly: {
     name: "MyFilipinoMatch Premium — 1 Year",
-    amount: "199.99",
-    description: "Biggest savings — only $16.67/month, save 44% vs monthly",
+    amount: "219.99",
+    description: "Biggest savings — only $18.33/month, includes 2hrs free video calls/month",
   },
 };
 
