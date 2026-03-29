@@ -2,6 +2,8 @@ import { Crown, Heart, Eye, Zap, MessageCircle, Check, Loader2 } from "lucide-re
 import { Button } from "@/components/ui/button";
 import Navbar from "@/components/Navbar";
 import BottomNav from "@/components/BottomNav";
+import visaLogo from "@/assets/visa-logo.png";
+import mastercardLogo from "@/assets/mastercard-logo.png";
 
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
