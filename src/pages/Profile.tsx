@@ -319,7 +319,7 @@ const Profile = () => {
               <p className="text-sm text-primary-foreground/80 mb-4">
                 Unlock unlimited messaging, see who liked you, and boost your profile visibility.
               </p>
-              <Button variant="secondary" size="sm" onClick={() => toast({ title: "Coming soon!", description: "Premium subscriptions will be available soon." })}>Upgrade Now</Button>
+              <Button variant="secondary" size="sm" onClick={() => navigate("/premium")}>Upgrade Now</Button>
             </div>
           )}
 
