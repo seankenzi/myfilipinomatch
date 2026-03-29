@@ -3,6 +3,7 @@ import {
   Send, ArrowLeft, Shield, Lock, MessageCircle, Sparkles,
   Flag, Ban, AlertTriangle, MoreVertical, MapPin, Crown, Video
 } from "lucide-react";
+import VideoCallModal from "@/components/VideoCallModal";
 import { detectContactInfo } from "@/lib/contactFilter";
 import OnlineStatus from "@/components/OnlineStatus";
 import { useNavigate } from "react-router-dom";
@@ -91,6 +92,7 @@ const Messages = () => {
   const [reportDetails, setReportDetails] = useState("");
   // Video call
   const [videoCallOpen, setVideoCallOpen] = useState(false);
+  const [videoUpgradeOpen, setVideoUpgradeOpen] = useState(false);
 
   // My sent message count for current match (total)
   const mySentCount = messages.filter((m) => m.sender_id === user?.id).length;
