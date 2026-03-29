@@ -235,10 +235,16 @@ const Premium = () => {
 
           {/* Payment methods */}
           <div className="mt-8 text-center">
-            <p className="text-xs text-muted-foreground mb-2">Accepted payment methods</p>
-            <div className="flex items-center justify-center gap-4 text-sm font-medium text-muted-foreground">
-              <span className="flex items-center gap-2 rounded-lg border border-border px-3 py-1.5"><img src={visaLogo} alt="Visa" className="h-5 w-auto" loading="lazy" /> Visa</span>
-              <span className="flex items-center gap-2 rounded-lg border border-border px-3 py-1.5"><img src={mastercardLogo} alt="Mastercard" className="h-5 w-auto" loading="lazy" /> Mastercard</span>
+            <p className="text-xs text-muted-foreground mb-3">Accepted payment methods</p>
+            <div className="flex items-center justify-center gap-3">
+              <span className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-4 py-2 shadow-sm">
+                <img src={visaLogo} alt="Visa" className="h-6 w-6 object-contain" loading="lazy" />
+                <span className="text-sm font-medium text-foreground">Visa</span>
+              </span>
+              <span className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-4 py-2 shadow-sm">
+                <img src={mastercardLogo} alt="Mastercard" className="h-6 w-6 object-contain" loading="lazy" />
+                <span className="text-sm font-medium text-foreground">Mastercard</span>
+              </span>
             </div>
           </div>
 
