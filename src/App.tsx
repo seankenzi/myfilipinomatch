@@ -23,6 +23,8 @@ import Terms from "./pages/Terms.tsx";
 import Support from "./pages/Support.tsx";
 import Verification from "./pages/Verification.tsx";
 import AdminVerifications from "./pages/AdminVerifications.tsx";
+import AdminDashboard from "./pages/AdminDashboard.tsx";
+import AdminRoute from "@/components/AdminRoute";
 import Premium from "./pages/Premium.tsx";
 import Notifications from "./pages/Notifications.tsx";
 import ForgotPassword from "./pages/ForgotPassword.tsx";
