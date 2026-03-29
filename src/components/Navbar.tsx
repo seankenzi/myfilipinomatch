@@ -38,11 +38,14 @@ const Navbar = () => {
                 <Button
                   variant="hero"
                   size="sm"
-                  className="relative gap-1.5 overflow-hidden bg-gradient-to-r from-primary via-accent via-50% to-primary bg-[length:300%_100%] animate-[gradient-shift_4s_linear_infinite] border-0 shadow-md hover:shadow-lg transition-shadow"
+                  className="relative gap-1.5 overflow-hidden bg-gradient-to-r from-primary via-accent via-50% to-primary bg-[length:300%_100%] animate-[gradient-shift_3s_ease-in-out_infinite] border-0 shadow-md hover:shadow-lg transition-all hover:scale-105 animate-[pulse-glow_2.5s_ease-in-out_infinite]"
+                  style={{ animation: "gradient-shift 3s ease-in-out infinite, pulse-glow 2.5s ease-in-out infinite" }}
                 >
-                  <Crown className="h-3.5 w-3.5 animate-[gentle-bounce_2s_ease-in-out_infinite]" />
+                  <Crown className="h-3.5 w-3.5" style={{ animation: "gentle-bounce 1.5s ease-in-out infinite" }} />
                   Upgrade
-                  <span className="absolute inset-0 rounded-md bg-gradient-to-r from-transparent via-white/20 to-transparent animate-[shimmer_2.5s_ease-in-out_infinite] pointer-events-none" />
+                  <span className="absolute inset-0 rounded-md bg-gradient-to-r from-transparent via-white/25 to-transparent pointer-events-none" style={{ animation: "shimmer 2s ease-in-out infinite" }} />
+                  <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-accent" style={{ animation: "sparkle 2s ease-in-out infinite" }} />
+                  <span className="absolute -bottom-0.5 -left-0.5 h-1.5 w-1.5 rounded-full bg-primary-foreground/80" style={{ animation: "sparkle 2s ease-in-out 1s infinite" }} />
                 </Button>
               </Link>
               <NotificationBell />
