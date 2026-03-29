@@ -64,6 +64,7 @@ const plans = [
 const Premium = () => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState<string | null>(null);
   const [isPremium, setIsPremium] = useState(false);
   const [currentPlan, setCurrentPlan] = useState<string | null>(null);
