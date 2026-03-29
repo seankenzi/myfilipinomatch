@@ -155,7 +155,7 @@ const Landing = () => {
       <section className="py-20 bg-card">
         <div className="container">
           <h2 className="mb-4 text-center text-3xl font-bold md:text-4xl" style={{ fontFamily: 'var(--font-display)' }}>
-            Why <span className="text-gradient">FiloHeart</span> Is Different
+            Why <span className="text-gradient">MyFilipinoMatch</span> Is Different
           </h2>
           <p className="text-center text-muted-foreground mb-12 max-w-md mx-auto">
             We're built for real relationships — not empty promises
