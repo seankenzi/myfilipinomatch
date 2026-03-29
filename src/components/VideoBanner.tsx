@@ -40,8 +40,8 @@ const VideoBanner = () => {
               className="gap-1.5 whitespace-nowrap"
               onClick={() => navigate("/premium")}
             >
-              <Crown className="h-3.5 w-3.5" />
-              Upgrade to Annual
+              <Heart className="h-3.5 w-3.5 fill-primary-foreground" />
+              ❤️ Upgrade to Annual
             </Button>
             <button
               onClick={() => setDismissed(true)}
