@@ -918,6 +918,18 @@ const Discover = () => {
                       <button onClick={() => handleSwipeAction("pass")} className="flex h-14 w-14 items-center justify-center rounded-full border-2 border-border bg-card shadow-card transition-all hover:shadow-card-hover hover:scale-105 active:scale-95">
                         <X className="h-6 w-6 text-muted-foreground" />
                       </button>
+                      <button
+                        onClick={() => {
+                          if (!isPremium) {
+                            setVideoModalTarget(currentProfile.full_name);
+                            setVideoModalOpen(true);
+                          }
+                        }}
+                        className="flex h-12 w-12 items-center justify-center rounded-full border-2 border-secondary bg-secondary/10 shadow-card transition-all hover:shadow-card-hover hover:scale-105 active:scale-95"
+                        title="Video Call"
+                      >
+                        <Video className="h-5 w-5 text-secondary" />
+                      </button>
                       <button onClick={() => handlePriorityLike(currentProfile)} className="flex h-12 w-12 items-center justify-center rounded-full border-2 border-accent bg-accent/10 shadow-card transition-all hover:shadow-card-hover hover:scale-105 active:scale-95">
                         <Star className="h-5 w-5 text-accent fill-accent" />
                       </button>
