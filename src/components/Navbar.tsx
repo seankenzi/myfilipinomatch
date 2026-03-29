@@ -41,7 +41,7 @@ const Navbar = () => {
                   Profile
                 </Button>
               </Link>
-              <Button variant="ghost" size="sm" onClick={signOut}>
+              <Button variant="ghost" size="sm" onClick={async () => { await signOut(); navigate("/"); }}>
                 <LogOut className="mr-1 h-4 w-4" />
                 Log out
               </Button>
