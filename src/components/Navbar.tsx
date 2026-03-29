@@ -38,10 +38,11 @@ const Navbar = () => {
                 <Button
                   variant="hero-outline"
                   size="sm"
-                  className="gap-1.5"
+                  className="relative gap-1.5 overflow-hidden"
                 >
                   <Crown className="h-3.5 w-3.5" />
                   Upgrade
+                  <span className="absolute inset-0 rounded-md bg-gradient-to-r from-transparent via-primary/10 to-transparent animate-[shimmer_3s_ease-in-out_infinite] pointer-events-none" />
                 </Button>
               </Link>
               <NotificationBell />
