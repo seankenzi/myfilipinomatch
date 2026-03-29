@@ -82,18 +82,28 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Check yearly subscription
-    const { data: sub } = await supabase
-      .from("subscriptions")
-      .select("plan, status, current_period_end")
-      .eq("user_id", user.id)
-      .eq("status", "active")
-      .eq("plan", "yearly")
-      .maybeSingle();
+    // Check yearly subscription OR video_calls feature flag
+    const [{ data: sub }, { data: featureFlag }] = await Promise.all([
+      supabase
+        .from("subscriptions")
+        .select("plan, status, current_period_end")
+        .eq("user_id", user.id)
+        .eq("status", "active")
+        .eq("plan", "yearly")
+        .maybeSingle(),
+      supabase
+        .from("feature_flags")
+        .select("enabled")
+        .eq("user_id", user.id)
+        .eq("feature_name", "video_calls")
+        .eq("enabled", true)
+        .maybeSingle(),
+    ]);
 
     const hasYearly = sub && sub.current_period_end && new Date(sub.current_period_end) > new Date();
+    const hasFeatureFlag = featureFlag?.enabled === true;
 
-    if (!hasYearly) {
+    if (!hasYearly && !hasFeatureFlag) {
       return new Response(
         JSON.stringify({ error: "Video calls require a 1-year membership" }),
         { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
