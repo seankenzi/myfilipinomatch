@@ -36,13 +36,13 @@ const Navbar = () => {
             <>
               <Link to="/premium">
                 <Button
-                  variant="hero-outline"
+                  variant="hero"
                   size="sm"
-                  className="relative gap-1.5 overflow-hidden"
+                  className="relative gap-1.5 overflow-hidden bg-gradient-to-r from-primary via-accent to-primary bg-[length:200%_100%] animate-[gradient-shift_3s_ease-in-out_infinite] border-0"
                 >
                   <Crown className="h-3.5 w-3.5" />
                   Upgrade
-                  <span className="absolute inset-0 rounded-md bg-gradient-to-r from-transparent via-primary/10 to-transparent animate-[shimmer_2s_ease-in-out_infinite] pointer-events-none" />
+                  <span className="absolute inset-0 rounded-md bg-gradient-to-r from-transparent via-white/15 to-transparent animate-[shimmer_2s_ease-in-out_infinite] pointer-events-none" />
                 </Button>
               </Link>
               <NotificationBell />
