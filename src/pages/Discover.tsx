@@ -501,17 +501,6 @@ const Discover = () => {
           <div className="mb-4 flex items-center gap-2">
             <div className="flex rounded-xl border border-border bg-card p-1 shadow-card">
               <button
-                onClick={() => setViewMode("swipe")}
-                className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all ${
-                  viewMode === "swipe"
-                    ? "bg-primary text-primary-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                <Layers className="h-3.5 w-3.5" />
-                Cards
-              </button>
-              <button
                 onClick={() => setViewMode("list")}
                 className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all ${
                   viewMode === "list"
@@ -521,6 +510,17 @@ const Discover = () => {
               >
                 <LayoutGrid className="h-3.5 w-3.5" />
                 Grid
+              </button>
+              <button
+                onClick={() => setViewMode("swipe")}
+                className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all ${
+                  viewMode === "swipe"
+                    ? "bg-primary text-primary-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <Layers className="h-3.5 w-3.5" />
+                Cards
               </button>
             </div>
 
