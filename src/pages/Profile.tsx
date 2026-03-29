@@ -333,6 +333,12 @@ const Profile = () => {
 
           {/* Actions */}
           <div className="space-y-2">
+            {isAdmin && (
+              <button onClick={() => navigate("/admin")} className="flex w-full items-center gap-3 rounded-xl border border-border bg-card px-4 py-3 text-sm font-medium shadow-card transition-all hover:shadow-card-hover">
+                <BarChart3 className="h-4 w-4 text-primary" />
+                Admin Dashboard
+              </button>
+            )}
             <button onClick={() => navigate("/settings")} className="flex w-full items-center gap-3 rounded-xl border border-border bg-card px-4 py-3 text-sm font-medium shadow-card transition-all hover:shadow-card-hover">
               <Settings className="h-4 w-4 text-muted-foreground" />
               Settings
