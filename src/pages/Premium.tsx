@@ -1,4 +1,5 @@
-import { Crown, Heart, Eye, Zap, MessageCircle, Check, Loader2 } from "lucide-react";
+import { Crown, Heart, Eye, Zap, MessageCircle, Check, Loader2, Video } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 import Navbar from "@/components/Navbar";
 import BottomNav from "@/components/BottomNav";
