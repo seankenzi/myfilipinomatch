@@ -3,7 +3,8 @@ import { useNavigate } from "react-router-dom";
 import {
   Users, Heart, MessageSquare, Shield, CreditCard, TrendingUp,
   BarChart3, ArrowLeft, Search, Ban, CheckCircle, XCircle,
-  Clock, Eye, Star, AlertTriangle, RefreshCw
+  Clock, Eye, Star, AlertTriangle, RefreshCw, ToggleLeft, ToggleRight,
+  Plus, Trash2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
