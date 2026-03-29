@@ -1,4 +1,5 @@
-import { Crown, Heart, Eye, Zap, MessageCircle, Check, Loader2 } from "lucide-react";
+import { Crown, Heart, Eye, Zap, MessageCircle, Check, Loader2, Video } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 import Navbar from "@/components/Navbar";
 import BottomNav from "@/components/BottomNav";
@@ -247,12 +248,29 @@ const Premium = () => {
                 {!plan.savings && <div className="mb-5" />}
 
                 <ul className="space-y-2.5 mb-6">
-                  {plan.features.map((f) => (
-                    <li key={f} className="flex items-center gap-2 text-sm text-foreground">
-                      <Check className="h-4 w-4 text-primary flex-shrink-0" />
-                      {f}
-                    </li>
-                  ))}
+                  {plan.features.map((f) => {
+                    const isVideoFeature = f === "Includes 2 hours free video calls/month";
+                    const content = (
+                      <li key={f} className={`flex items-center gap-2 text-sm ${isVideoFeature ? "text-primary font-semibold" : "text-foreground"}`}>
+                        {isVideoFeature ? <Video className="h-4 w-4 text-primary flex-shrink-0" /> : <Check className="h-4 w-4 text-primary flex-shrink-0" />}
+                        {isVideoFeature ? <span className="underline decoration-dotted cursor-help">{f}</span> : f}
+                      </li>
+                    );
+                    if (isVideoFeature) {
+                      return (
+                        <TooltipProvider key={f}>
+                          <Tooltip>
+                            <TooltipTrigger asChild>{content}</TooltipTrigger>
+                            <TooltipContent side="top" className="max-w-[250px] text-center p-3">
+                              <p className="font-semibold text-sm">Build real connections faster with 2 FREE hours of video call every month</p>
+                              <p className="text-xs text-muted-foreground mt-1">(Worth $28.80/year in call credits)</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      );
+                    }
+                    return content;
+                  })}
                 </ul>
 
                 <Button
