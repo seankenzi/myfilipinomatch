@@ -204,6 +204,10 @@ const Discover = () => {
   const [lastPassedProfile, setLastPassedProfile] = useState<Profile | null>(null);
   const [lastPassedIndex, setLastPassedIndex] = useState<number | null>(null);
 
+  // Video call modal
+  const [videoModalOpen, setVideoModalOpen] = useState(false);
+  const [videoModalTarget, setVideoModalTarget] = useState<string>("");
+
   // Boost
   const [isBoosted, setIsBoosted] = useState(false);
   const [boostExpiresAt, setBoostExpiresAt] = useState<string | null>(null);
@@ -497,8 +501,19 @@ const Discover = () => {
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <Navbar />
+      {!isPremium && <VideoBanner />}
       <main className="flex flex-1 flex-col items-center px-4 py-4 pb-24 md:pb-6">
         <div className="w-full max-w-6xl">
+
+          {/* Hero section */}
+          <div className="mb-4 rounded-2xl bg-gradient-to-r from-primary/5 via-accent/5 to-primary/5 border border-primary/10 p-4 text-center">
+            <h2 className="text-lg font-bold text-foreground" style={{ fontFamily: 'var(--font-display)' }}>
+              ❤️ Don't just match — actually connect
+            </h2>
+            <p className="text-sm text-muted-foreground mt-1">
+              🎥 Video calls help you build real relationships faster
+            </p>
+          </div>
 
           {/* Top Bar */}
           <div className="mb-4 flex items-center gap-2">
