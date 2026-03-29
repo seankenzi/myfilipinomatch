@@ -22,6 +22,7 @@ const plans = [
     priceSub: "per month",
     period: "/month",
     popular: false,
+    savings: null,
     features: [
       "Unlimited likes (free users get 10/day)",
       "Unlimited messaging",
@@ -40,6 +41,7 @@ const plans = [
     priceSub: "$23.33/month — save 22%",
     period: "/3 months",
     popular: false,
+    savings: `You save $${((29.99 * 3) - 69.99).toFixed(2)} vs monthly`,
     features: [
       "Everything in Monthly",
       "Priority in Discover",
