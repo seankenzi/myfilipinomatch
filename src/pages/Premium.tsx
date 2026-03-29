@@ -4,6 +4,8 @@ import Navbar from "@/components/Navbar";
 import BottomNav from "@/components/BottomNav";
 import visaLogo from "@/assets/visa-logo.svg";
 import mastercardLogo from "@/assets/mastercard-logo.svg";
+import amexLogo from "@/assets/amex-logo.svg";
+import discoverLogo from "@/assets/discover-logo.svg";
 import paypalLogo from "@/assets/paypal-logo.png";
 
 import { useAuth } from "@/contexts/AuthContext";
@@ -284,6 +286,14 @@ const Premium = () => {
               <span className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-4 py-2 shadow-sm">
                 <img src={mastercardLogo} alt="Mastercard" className="h-6 w-6 object-contain" loading="lazy" />
                 <span className="text-sm font-medium text-foreground">Mastercard</span>
+              </span>
+              <span className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-4 py-2 shadow-sm">
+                <img src={amexLogo} alt="Amex" className="h-6 w-6 object-contain" loading="lazy" />
+                <span className="text-sm font-medium text-foreground">Amex</span>
+              </span>
+              <span className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-4 py-2 shadow-sm">
+                <img src={discoverLogo} alt="Discover" className="h-6 w-6 object-contain" loading="lazy" />
+                <span className="text-sm font-medium text-foreground">Discover</span>
               </span>
             </div>
           </div>
