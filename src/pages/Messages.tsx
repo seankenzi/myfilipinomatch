@@ -603,6 +603,18 @@ const Messages = () => {
                       ))}
                     </div>
                   ))}
+                  {/* Chat upgrade trigger after 5+ messages */}
+                  {!isPremium && messages.length >= 5 && (
+                    <div className="flex justify-center my-4">
+                      <button
+                        onClick={() => setVideoUpgradeOpen(true)}
+                        className="rounded-2xl border border-primary/20 bg-primary/5 px-4 py-3 text-center transition-colors hover:bg-primary/10 max-w-xs"
+                      >
+                        <p className="text-sm font-medium text-foreground">💡 Ready to take this further?</p>
+                        <p className="text-xs text-primary mt-1">🎥 Start a video call (Annual only)</p>
+                      </button>
+                    </div>
+                  )}
                   <div ref={messagesEndRef} />
                 </div>
               </div>
