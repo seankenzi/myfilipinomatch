@@ -57,7 +57,7 @@ Deno.serve(async (req) => {
     const { order_id } = parsed.data;
 
     // Get PayPal access token
-    const tokenRes = await fetch("https://api-m.sandbox.paypal.com/v1/oauth2/token", {
+    const tokenRes = await fetch("https://api-m.paypal.com/v1/oauth2/token", {
       method: "POST",
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
@@ -76,7 +76,7 @@ Deno.serve(async (req) => {
 
     // Capture the order
     const captureRes = await fetch(
-      `https://api-m.sandbox.paypal.com/v2/checkout/orders/${order_id}/capture`,
+      `https://api-m.paypal.com/v2/checkout/orders/${order_id}/capture`,
       {
         method: "POST",
         headers: {
