@@ -53,10 +53,14 @@ const VideoCall = ({ matchId, otherUserName, open, onClose }: VideoCallProps) =>
       const data = await res.json();
 
       if (!res.ok) {
-        if (res.status === 403 && data.error?.includes("1-year")) {
+        const message = data.error || "Failed to start video call";
+
+        if (res.status === 403 && message.includes("1-year")) {
           setNeedsUpgrade(true);
+        } else if (message.toLowerCase().includes("payment method") || message.toLowerCase().includes("daily dashboard")) {
+          setError("Video calling is configured, but the Daily account needs a payment method before calls can start.");
         } else {
-          setError(data.error || "Failed to start video call");
+          setError(message);
         }
         setLoading(false);
         return;
