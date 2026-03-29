@@ -163,7 +163,7 @@ const Discover = () => {
   const [swiped, setSwiped] = useState(false);
 
   // View toggle
-  const [viewMode, setViewMode] = useState<"swipe" | "list">("swipe");
+  const [viewMode, setViewMode] = useState<"swipe" | "list">("list");
 
   // Filters
   const [showFilters, setShowFilters] = useState(false);
