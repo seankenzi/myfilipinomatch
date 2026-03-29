@@ -109,17 +109,17 @@ Deno.serve(async (req) => {
             reference_id: `${user.id}_${plan}`,
             description: planConfig.description,
             amount: {
-              currency_code: "PHP",
+              currency_code: "USD",
               value: planConfig.amount,
               breakdown: {
-                item_total: { currency_code: "PHP", value: planConfig.amount },
+                item_total: { currency_code: "USD", value: planConfig.amount },
               },
             },
             items: [
               {
                 name: planConfig.name,
                 quantity: "1",
-                unit_amount: { currency_code: "PHP", value: planConfig.amount },
+                unit_amount: { currency_code: "USD", value: planConfig.amount },
                 category: "DIGITAL_GOODS",
               },
             ],
