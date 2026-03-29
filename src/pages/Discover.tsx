@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import {
   Heart, X, MapPin, Shield, Filter, ChevronDown, Star, Flag,
   LayoutGrid, Layers, Globe, Send, Sparkles, Clock, UserPlus,
-  ChevronLeft, ChevronRight, SlidersHorizontal, Undo2, Zap, Lock, Crown
+  ChevronLeft, ChevronRight, SlidersHorizontal, Undo2, Zap, Lock, Crown, Video, Gem
 } from "lucide-react";
 import OnlineStatus from "@/components/OnlineStatus";
 import { Button } from "@/components/ui/button";
@@ -21,6 +21,8 @@ import Navbar from "@/components/Navbar";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import VideoBanner from "@/components/VideoBanner";
+import VideoCallModal from "@/components/VideoCallModal";
 
 interface Profile {
   id: string;
@@ -201,6 +203,10 @@ const Discover = () => {
   // Undo pass
   const [lastPassedProfile, setLastPassedProfile] = useState<Profile | null>(null);
   const [lastPassedIndex, setLastPassedIndex] = useState<number | null>(null);
+
+  // Video call modal
+  const [videoModalOpen, setVideoModalOpen] = useState(false);
+  const [videoModalTarget, setVideoModalTarget] = useState<string>("");
 
   // Boost
   const [isBoosted, setIsBoosted] = useState(false);
@@ -495,8 +501,19 @@ const Discover = () => {
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <Navbar />
+      {!isPremium && <VideoBanner />}
       <main className="flex flex-1 flex-col items-center px-4 py-4 pb-24 md:pb-6">
         <div className="w-full max-w-6xl">
+
+          {/* Hero section */}
+          <div className="mb-4 rounded-2xl bg-gradient-to-r from-primary/5 via-accent/5 to-primary/5 border border-primary/10 p-4 text-center">
+            <h2 className="text-lg font-bold text-foreground" style={{ fontFamily: 'var(--font-display)' }}>
+              ❤️ Don't just match — actually connect
+            </h2>
+            <p className="text-sm text-muted-foreground mt-1">
+              🎥 Video calls help you build real relationships faster
+            </p>
+          </div>
 
           {/* Top Bar */}
           <div className="mb-4 flex items-center gap-2">
@@ -751,10 +768,13 @@ const Discover = () => {
               </p>
             </div>
             {!isPremium && (
-              <div className="flex items-center gap-1.5 rounded-xl border border-border bg-card px-3 py-2 text-xs shadow-card">
-                <Heart className="h-3.5 w-3.5 text-primary" />
-                <span className="font-semibold text-foreground">{dailyLikesRemaining}</span>
-                <span className="text-muted-foreground">likes left</span>
+              <div className="flex flex-col items-end gap-0.5">
+                <div className="flex items-center gap-1.5 rounded-xl border border-border bg-card px-3 py-2 text-xs shadow-card">
+                  <Heart className="h-3.5 w-3.5 text-primary" />
+                  <span className="font-semibold text-foreground">{dailyLikesRemaining}</span>
+                  <span className="text-muted-foreground">likes left</span>
+                </div>
+                <span className="text-[10px] text-muted-foreground px-1">🎥 Video calls available on Annual</span>
               </div>
             )}
             <button
@@ -897,6 +917,18 @@ const Discover = () => {
                       )}
                       <button onClick={() => handleSwipeAction("pass")} className="flex h-14 w-14 items-center justify-center rounded-full border-2 border-border bg-card shadow-card transition-all hover:shadow-card-hover hover:scale-105 active:scale-95">
                         <X className="h-6 w-6 text-muted-foreground" />
+                      </button>
+                      <button
+                        onClick={() => {
+                          if (!isPremium) {
+                            setVideoModalTarget(currentProfile.full_name);
+                            setVideoModalOpen(true);
+                          }
+                        }}
+                        className="flex h-12 w-12 items-center justify-center rounded-full border-2 border-secondary bg-secondary/10 shadow-card transition-all hover:shadow-card-hover hover:scale-105 active:scale-95"
+                        title="Video Call"
+                      >
+                        <Video className="h-5 w-5 text-secondary" />
                       </button>
                       <button onClick={() => handlePriorityLike(currentProfile)} className="flex h-12 w-12 items-center justify-center rounded-full border-2 border-accent bg-accent/10 shadow-card transition-all hover:shadow-card-hover hover:scale-105 active:scale-95">
                         <Star className="h-5 w-5 text-accent fill-accent" />
@@ -1053,6 +1085,14 @@ const Discover = () => {
                             <div className="absolute top-2 right-2 text-sm">{getFlagEmoji(profile.country)}</div>
                           )}
 
+                          {/* Annual member badge (mock: show for premium profiles) */}
+                          {isPremium && (
+                            <div className="absolute top-2 left-1/2 -translate-x-1/2 rounded-full bg-accent/90 backdrop-blur-sm px-2 py-0.5 flex items-center gap-1 shadow-sm">
+                              <Gem className="h-2.5 w-2.5 text-primary-foreground" />
+                              <span className="text-[9px] font-bold text-primary-foreground">Annual Member</span>
+                            </div>
+                          )}
+
                           {/* Verified badge */}
                           {profile.is_verified && (
                             <div className="absolute top-2 left-2 rounded-full bg-card/80 backdrop-blur-sm p-1">
@@ -1106,6 +1146,18 @@ const Discover = () => {
                               </button>
                             )}
                             <button
+                              onClick={() => {
+                                if (!isPremium) {
+                                  setVideoModalTarget(profile.full_name);
+                                  setVideoModalOpen(true);
+                                }
+                              }}
+                              className="flex items-center justify-center rounded-lg bg-secondary/10 px-2.5 py-1.5 text-secondary hover:bg-secondary/20 transition-colors"
+                              title="Video Call"
+                            >
+                              <Video className="h-3 w-3" />
+                            </button>
+                            <button
                               onClick={() => handlePriorityLike(profile)}
                               className="flex items-center justify-center rounded-lg bg-accent/10 px-2.5 py-1.5 text-accent hover:bg-accent/20 transition-colors"
                             >
@@ -1118,6 +1170,13 @@ const Discover = () => {
                               <Flag className="h-3 w-3" />
                             </button>
                           </div>
+
+                          {/* Video call microcopy */}
+                          {!isPremium && (
+                            <p className="text-[9px] text-muted-foreground text-center">
+                              🎥 Video call available with upgrade
+                            </p>
+                          )}
                         </div>
                       </motion.div>
                     ))}
@@ -1204,6 +1263,13 @@ const Discover = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Video Call Upgrade Modal */}
+      <VideoCallModal
+        open={videoModalOpen}
+        onOpenChange={setVideoModalOpen}
+        userName={videoModalTarget}
+      />
 
       <BottomNav />
     </div>
