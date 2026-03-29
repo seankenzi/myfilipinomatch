@@ -585,6 +585,14 @@ const Messages = () => {
               {/* Messages */}
               <div className="flex-1 overflow-y-auto px-4 py-4">
                 <div className="mx-auto max-w-2xl space-y-1">
+                  {/* Contact sharing warning */}
+                  <div className="flex items-start gap-2 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 p-3 mb-4">
+                    <Shield className="h-4 w-4 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
+                    <p className="text-xs text-amber-800 dark:text-amber-300">
+                      <strong>Safety reminder:</strong> Sharing contact info (phone numbers, emails, social media) is not allowed. Keep all conversations on MyFilipinoMatch for your protection.
+                    </p>
+                  </div>
+
                   {messages.length === 0 && (
                     <div className="text-center py-16">
                       <Sparkles className="h-10 w-10 text-muted-foreground/30 mx-auto mb-3" />
