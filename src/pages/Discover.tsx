@@ -1073,6 +1073,14 @@ const Discover = () => {
                             <div className="absolute top-2 right-2 text-sm">{getFlagEmoji(profile.country)}</div>
                           )}
 
+                          {/* Annual member badge (mock: show for premium profiles) */}
+                          {isPremium && (
+                            <div className="absolute top-2 left-1/2 -translate-x-1/2 rounded-full bg-accent/90 backdrop-blur-sm px-2 py-0.5 flex items-center gap-1 shadow-sm">
+                              <Gem className="h-2.5 w-2.5 text-primary-foreground" />
+                              <span className="text-[9px] font-bold text-primary-foreground">Annual Member</span>
+                            </div>
+                          )}
+
                           {/* Verified badge */}
                           {profile.is_verified && (
                             <div className="absolute top-2 left-2 rounded-full bg-card/80 backdrop-blur-sm p-1">
