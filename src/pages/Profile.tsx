@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { detectContactInfo } from "@/lib/contactFilter";
-import { Camera, Edit, Shield, MapPin, Heart, Globe, Settings, LogOut, Crown, Save } from "lucide-react";
+import { Camera, Edit, Shield, MapPin, Heart, Globe, Settings, LogOut, Crown, Save, BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
