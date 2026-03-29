@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import {
   Send, ArrowLeft, Shield, Lock, MessageCircle, Sparkles,
-  Flag, Ban, AlertTriangle, MoreVertical, MapPin, Crown
+  Flag, Ban, AlertTriangle, MoreVertical, MapPin, Crown, Video
 } from "lucide-react";
 import { detectContactInfo } from "@/lib/contactFilter";
 import OnlineStatus from "@/components/OnlineStatus";
