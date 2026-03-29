@@ -1126,6 +1126,18 @@ const Discover = () => {
                               </button>
                             )}
                             <button
+                              onClick={() => {
+                                if (!isPremium) {
+                                  setVideoModalTarget(profile.full_name);
+                                  setVideoModalOpen(true);
+                                }
+                              }}
+                              className="flex items-center justify-center rounded-lg bg-secondary/10 px-2.5 py-1.5 text-secondary hover:bg-secondary/20 transition-colors"
+                              title="Video Call"
+                            >
+                              <Video className="h-3 w-3" />
+                            </button>
+                            <button
                               onClick={() => handlePriorityLike(profile)}
                               className="flex items-center justify-center rounded-lg bg-accent/10 px-2.5 py-1.5 text-accent hover:bg-accent/20 transition-colors"
                             >
@@ -1138,6 +1150,13 @@ const Discover = () => {
                               <Flag className="h-3 w-3" />
                             </button>
                           </div>
+
+                          {/* Video call microcopy */}
+                          {!isPremium && (
+                            <p className="text-[9px] text-muted-foreground text-center">
+                              🎥 Video call available with upgrade
+                            </p>
+                          )}
                         </div>
                       </motion.div>
                     ))}
