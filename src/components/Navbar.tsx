@@ -1,5 +1,5 @@
 import { LogIn, LogOut, User } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import NotificationBell from "@/components/NotificationBell";
@@ -7,6 +7,7 @@ import logo from "@/assets/filoheart-logo.png";
 
 const Navbar = () => {
   const { user, loading, signOut } = useAuth();
+  const navigate = useNavigate();
 
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-card/90 backdrop-blur-md">
@@ -40,7 +41,7 @@ const Navbar = () => {
                   Profile
                 </Button>
               </Link>
-              <Button variant="ghost" size="sm" onClick={signOut}>
+              <Button variant="ghost" size="sm" onClick={async () => { await signOut(); navigate("/"); }}>
                 <LogOut className="mr-1 h-4 w-4" />
                 Log out
               </Button>
