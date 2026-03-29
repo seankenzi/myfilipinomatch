@@ -4,7 +4,7 @@ import Navbar from "@/components/Navbar";
 import BottomNav from "@/components/BottomNav";
 import visaLogo from "@/assets/visa-logo.svg";
 import mastercardLogo from "@/assets/mastercard-logo.svg";
-import paypalLogo from "@/assets/paypal-logo.svg";
+import paypalLogo from "@/assets/paypal-logo.png";
 
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -97,8 +97,6 @@ const Premium = () => {
 
     setLoading(plan);
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      
       const res = await supabase.functions.invoke("create-checkout", {
         body: {
           plan,
@@ -109,7 +107,13 @@ const Premium = () => {
 
       if (res.error) throw new Error(res.error.message);
 
-      const { checkout_url } = res.data;
+      const { checkout_url, order_id } = res.data;
+      
+      // Store order_id for capture on return
+      if (order_id) {
+        sessionStorage.setItem("paypal_order_id", order_id);
+      }
+
       if (checkout_url) {
         window.location.href = checkout_url;
       } else {
