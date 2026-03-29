@@ -7,6 +7,7 @@ import logo from "@/assets/filoheart-logo.png";
 
 const Navbar = () => {
   const { user, loading, signOut } = useAuth();
+  const navigate = useNavigate();
 
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-card/90 backdrop-blur-md">
