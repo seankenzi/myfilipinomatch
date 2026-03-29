@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { detectContactInfo } from "@/lib/contactFilter";
 import { useNavigate } from "react-router-dom";
 import { Heart, Globe, MapPin, User, Camera, CheckCircle, ArrowRight, ArrowLeft, Sparkles, Ruler } from "lucide-react";
 import { Button } from "@/components/ui/button";

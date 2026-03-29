@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { detectContactInfo } from "@/lib/contactFilter";
 import { Camera, Edit, Shield, MapPin, Heart, Globe, Settings, LogOut, Crown, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
