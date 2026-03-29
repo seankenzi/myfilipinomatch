@@ -13,20 +13,20 @@ const BodySchema = z.object({
   cancel_url: z.string().url(),
 });
 
-const PLANS: Record<string, { name: string; amount: number; description: string }> = {
+const PLANS: Record<string, { name: string; amount: string; description: string }> = {
   monthly: {
     name: "MyFilipinoMatch Premium — Monthly",
-    amount: 169900, // ₱1,699.00 in centavos
+    amount: "1699.00",
     description: "Unlimited messaging, see who liked you, profile boost",
   },
   quarterly: {
     name: "MyFilipinoMatch Premium — 3 Months",
-    amount: 389900, // ₱3,899.00 in centavos
+    amount: "3899.00",
     description: "Best value — everything in Premium for 3 months, save 23%",
   },
   yearly: {
     name: "MyFilipinoMatch Premium — 1 Year",
-    amount: 1199900, // ₱11,999.00 in centavos
+    amount: "11999.00",
     description: "Biggest savings — only ₱1,000/month, save 41% vs monthly",
   },
 };
@@ -37,9 +37,10 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const PAYMONGO_SECRET_KEY = Deno.env.get("PAYMONGO_SECRET_KEY");
-    if (!PAYMONGO_SECRET_KEY) {
-      throw new Error("PAYMONGO_SECRET_KEY is not configured");
+    const PAYPAL_CLIENT_ID = Deno.env.get("PAYPAL_CLIENT_ID");
+    const PAYPAL_SECRET_KEY = Deno.env.get("PAYPAL_SECRET_KEY");
+    if (!PAYPAL_CLIENT_ID || !PAYPAL_SECRET_KEY) {
+      throw new Error("PayPal credentials are not configured");
     }
 
     // Verify user
@@ -76,52 +77,88 @@ Deno.serve(async (req) => {
     const { plan, success_url, cancel_url } = parsed.data;
     const planConfig = PLANS[plan];
 
-    // Create PayMongo Checkout Session
-    const paymongoRes = await fetch("https://api.paymongo.com/v1/checkout_sessions", {
+    // Get PayPal access token
+    const tokenRes = await fetch("https://api-m.paypal.com/v1/oauth2/token", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+        Authorization: `Basic ${btoa(PAYPAL_CLIENT_ID + ":" + PAYPAL_SECRET_KEY)}`,
+      },
+      body: "grant_type=client_credentials",
+    });
+
+    const tokenData = await tokenRes.json();
+    if (!tokenRes.ok) {
+      console.error("PayPal token error:", JSON.stringify(tokenData));
+      throw new Error("Failed to obtain PayPal access token");
+    }
+
+    const accessToken = tokenData.access_token;
+
+    // Create PayPal order
+    const orderRes = await fetch("https://api-m.paypal.com/v2/checkout/orders", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Accept: "application/json",
-        Authorization: `Basic ${btoa(PAYMONGO_SECRET_KEY + ":")}`,
+        Authorization: `Bearer ${accessToken}`,
       },
       body: JSON.stringify({
-        data: {
-          attributes: {
-            send_email_receipt: true,
-            show_description: true,
-            show_line_items: true,
+        intent: "CAPTURE",
+        purchase_units: [
+          {
+            reference_id: `${user.id}_${plan}`,
             description: planConfig.description,
-            line_items: [
+            amount: {
+              currency_code: "PHP",
+              value: planConfig.amount,
+              breakdown: {
+                item_total: { currency_code: "PHP", value: planConfig.amount },
+              },
+            },
+            items: [
               {
-                currency: "PHP",
-                amount: planConfig.amount,
                 name: planConfig.name,
-                quantity: 1,
+                quantity: "1",
+                unit_amount: { currency_code: "PHP", value: planConfig.amount },
+                category: "DIGITAL_GOODS",
               },
             ],
-            payment_method_types: ["card"],
-            success_url,
-            cancel_url,
-            metadata: {
-              user_id: user.id,
-              plan,
+            custom_id: JSON.stringify({ user_id: user.id, plan }),
+          },
+        ],
+        payment_source: {
+          paypal: {
+            experience_context: {
+              payment_method_preference: "IMMEDIATE_PAYMENT_REQUIRED",
+              brand_name: "MyFilipinoMatch",
+              locale: "en-PH",
+              landing_page: "LOGIN",
+              user_action: "PAY_NOW",
+              return_url: success_url,
+              cancel_url: cancel_url,
             },
           },
         },
       }),
     });
 
-    const paymongoData = await paymongoRes.json();
-
-    if (!paymongoRes.ok) {
-      console.error("PayMongo error:", JSON.stringify(paymongoData));
-      throw new Error(`PayMongo API error [${paymongoRes.status}]: ${JSON.stringify(paymongoData)}`);
+    const orderData = await orderRes.json();
+    if (!orderRes.ok) {
+      console.error("PayPal order error:", JSON.stringify(orderData));
+      throw new Error(`PayPal API error [${orderRes.status}]: ${JSON.stringify(orderData)}`);
     }
 
-    const checkoutUrl = paymongoData.data.attributes.checkout_url;
+    // Find the approval link
+    const approveLink = orderData.links?.find(
+      (l: { rel: string; href: string }) => l.rel === "payer-action"
+    );
+
+    if (!approveLink) {
+      throw new Error("No PayPal approval URL returned");
+    }
 
     return new Response(
-      JSON.stringify({ checkout_url: checkoutUrl }),
+      JSON.stringify({ checkout_url: approveLink.href, order_id: orderData.id }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error: unknown) {

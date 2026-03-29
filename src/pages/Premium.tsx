@@ -4,10 +4,11 @@ import Navbar from "@/components/Navbar";
 import BottomNav from "@/components/BottomNav";
 import visaLogo from "@/assets/visa-logo.svg";
 import mastercardLogo from "@/assets/mastercard-logo.svg";
+import paypalLogo from "@/assets/paypal-logo.png";
 
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useToast } from "@/hooks/use-toast";
 
 const plans = [
@@ -96,8 +97,6 @@ const Premium = () => {
 
     setLoading(plan);
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      
       const res = await supabase.functions.invoke("create-checkout", {
         body: {
           plan,
@@ -108,7 +107,13 @@ const Premium = () => {
 
       if (res.error) throw new Error(res.error.message);
 
-      const { checkout_url } = res.data;
+      const { checkout_url, order_id } = res.data;
+      
+      // Store order_id for capture on return
+      if (order_id) {
+        sessionStorage.setItem("paypal_order_id", order_id);
+      }
+
       if (checkout_url) {
         window.location.href = checkout_url;
       } else {
@@ -126,15 +131,43 @@ const Premium = () => {
     }
   };
 
-  // Check for success/cancel params
+  // Handle PayPal return — capture order on success
+  const captureAttempted = useRef(false);
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    if (params.get("success") === "true") {
-      toast({
-        title: "Payment successful! 🎉",
-        description: "Your premium subscription is now active. Enjoy unlimited access!",
-      });
-      // Clean URL
+    
+    if (params.get("success") === "true" && !captureAttempted.current) {
+      captureAttempted.current = true;
+      const orderId = sessionStorage.getItem("paypal_order_id");
+      
+      if (orderId) {
+        sessionStorage.removeItem("paypal_order_id");
+        // Capture the PayPal payment
+        supabase.functions.invoke("paypal-capture", {
+          body: { order_id: orderId },
+        }).then(({ data, error }) => {
+          if (error || !data?.success) {
+            console.error("Capture failed:", error || data);
+            toast({
+              title: "Payment processing issue",
+              description: "Your payment may still be processing. Please check back shortly.",
+              variant: "destructive",
+            });
+          } else {
+            toast({
+              title: "Payment successful! 🎉",
+              description: "Your premium subscription is now active. Enjoy unlimited access!",
+            });
+            setIsPremium(true);
+            setCurrentPlan(data.plan);
+          }
+        });
+      } else {
+        toast({
+          title: "Payment successful! 🎉",
+          description: "Your premium subscription is now active. Enjoy unlimited access!",
+        });
+      }
       window.history.replaceState({}, "", "/premium");
     } else if (params.get("cancelled") === "true") {
       toast({
@@ -235,8 +268,12 @@ const Premium = () => {
 
           {/* Payment methods */}
           <div className="mt-8 text-center">
-            <p className="text-xs text-muted-foreground mb-3">Accepted payment methods</p>
+            <p className="text-xs text-muted-foreground mb-3">Secure payments via PayPal</p>
             <div className="flex items-center justify-center gap-3">
+              <span className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-4 py-2 shadow-sm">
+                <img src={paypalLogo} alt="PayPal" className="h-6 object-contain" loading="lazy" width={24} height={24} />
+                <span className="text-sm font-medium text-foreground">PayPal</span>
+              </span>
               <span className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-4 py-2 shadow-sm">
                 <img src={visaLogo} alt="Visa" className="h-6 w-6 object-contain" loading="lazy" />
                 <span className="text-sm font-medium text-foreground">Visa</span>
