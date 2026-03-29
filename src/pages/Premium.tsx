@@ -154,7 +154,7 @@ const Premium = () => {
           <div className="mb-10">
             <div className="inline-flex items-center gap-2 rounded-full bg-accent/10 px-4 py-1.5 text-sm font-medium text-accent mb-4">
               <Crown className="h-4 w-4" />
-              FiloHeart Premium
+              MyFilipinoMatch Premium
             </div>
             <h1
               className="text-3xl font-bold md:text-4xl mb-3"

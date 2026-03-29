@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
-import logo from "@/assets/filoheart-logo.png";
+import logo from "@/assets/myfilipinomatch-logo.png";
 
 const Signup = () => {
   const [name, setName] = useState("");
@@ -61,8 +61,8 @@ const Signup = () => {
       <div className="w-full max-w-md animate-scale-in">
         <div className="mb-8 text-center">
           <Link to="/" className="inline-flex items-center gap-2 mb-6">
-            <img src={logo} alt="FiloHeart" className="h-10 w-10" />
-            <span className="text-2xl font-display font-bold">FiloHeart</span>
+            <img src={logo} alt="MyFilipinoMatch" className="h-10 w-10" />
+            <span className="text-2xl font-display font-bold">MyFilipinoMatch</span>
           </Link>
           <h1 className="text-2xl font-bold">Create your account</h1>
           <p className="mt-2 text-muted-foreground">Start finding your perfect match today</p>

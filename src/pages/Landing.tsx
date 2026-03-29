@@ -109,7 +109,7 @@ const Landing = () => {
       <section className="py-20 bg-card">
         <div className="container">
           <h2 className="mb-12 text-center text-3xl font-bold md:text-4xl" style={{ fontFamily: 'var(--font-display)' }}>
-            Why Choose <span className="text-gradient">FiloHeart</span>?
+            Why Choose <span className="text-gradient">MyFilipinoMatch</span>?
           </h2>
           <div className="mx-auto max-w-5xl grid gap-6 md:grid-cols-2">
             {/* Left: image */}

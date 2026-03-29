@@ -15,17 +15,17 @@ const BodySchema = z.object({
 
 const PLANS: Record<string, { name: string; amount: number; description: string }> = {
   monthly: {
-    name: "FiloHeart Premium — Monthly",
+    name: "MyFilipinoMatch Premium — Monthly",
     amount: 169900, // ₱1,699.00 in centavos
     description: "Unlimited messaging, see who liked you, profile boost",
   },
   quarterly: {
-    name: "FiloHeart Premium — 3 Months",
+    name: "MyFilipinoMatch Premium — 3 Months",
     amount: 389900, // ₱3,899.00 in centavos
     description: "Best value — everything in Premium for 3 months, save 23%",
   },
   yearly: {
-    name: "FiloHeart Premium — 1 Year",
+    name: "MyFilipinoMatch Premium — 1 Year",
     amount: 1199900, // ₱11,999.00 in centavos
     description: "Biggest savings — only ₱1,000/month, save 41% vs monthly",
   },
