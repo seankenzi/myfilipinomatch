@@ -23,6 +23,8 @@ import Terms from "./pages/Terms.tsx";
 import Support from "./pages/Support.tsx";
 import Verification from "./pages/Verification.tsx";
 import AdminVerifications from "./pages/AdminVerifications.tsx";
+import AdminDashboard from "./pages/AdminDashboard.tsx";
+import AdminRoute from "@/components/AdminRoute";
 import Premium from "./pages/Premium.tsx";
 import Notifications from "./pages/Notifications.tsx";
 import ForgotPassword from "./pages/ForgotPassword.tsx";
@@ -54,7 +56,8 @@ const App = () => (
                 <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
                 <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
                 <Route path="/verification" element={<ProtectedRoute><Verification /></ProtectedRoute>} />
-                <Route path="/admin/verifications" element={<ProtectedRoute><AdminVerifications /></ProtectedRoute>} />
+                <Route path="/admin/verifications" element={<AdminRoute><AdminVerifications /></AdminRoute>} />
+                <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
                 <Route path="/premium" element={<ProtectedRoute><Premium /></ProtectedRoute>} />
                 <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
                 <Route path="/about" element={<About />} />
