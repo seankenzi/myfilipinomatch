@@ -14,6 +14,8 @@ export const useAdmin = () => {
       return;
     }
 
+    setLoading(true);
+
     const checkAdmin = async () => {
       const { data, error } = await supabase.rpc("has_role", {
         _user_id: user.id,
