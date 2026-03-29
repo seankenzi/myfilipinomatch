@@ -768,10 +768,13 @@ const Discover = () => {
               </p>
             </div>
             {!isPremium && (
-              <div className="flex items-center gap-1.5 rounded-xl border border-border bg-card px-3 py-2 text-xs shadow-card">
-                <Heart className="h-3.5 w-3.5 text-primary" />
-                <span className="font-semibold text-foreground">{dailyLikesRemaining}</span>
-                <span className="text-muted-foreground">likes left</span>
+              <div className="flex flex-col items-end gap-0.5">
+                <div className="flex items-center gap-1.5 rounded-xl border border-border bg-card px-3 py-2 text-xs shadow-card">
+                  <Heart className="h-3.5 w-3.5 text-primary" />
+                  <span className="font-semibold text-foreground">{dailyLikesRemaining}</span>
+                  <span className="text-muted-foreground">likes left</span>
+                </div>
+                <span className="text-[10px] text-muted-foreground px-1">🎥 Video calls available on Annual</span>
               </div>
             )}
             <button
