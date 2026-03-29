@@ -138,10 +138,21 @@
 
 @keyframes gradient-shift {
   0% { background-position: 0% 50%; }
-  100% { background-position: 100% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
 
 @keyframes gentle-bounce {
   0%, 100% { transform: translateY(0) rotate(0deg); }
-  50% { transform: translateY(-1.5px) rotate(-8deg); }
+  50% { transform: translateY(-2px) rotate(-12deg); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 4px hsl(350 65% 55% / 0.3), 0 0 8px hsl(35 80% 55% / 0.15); }
+  50% { box-shadow: 0 0 10px hsl(350 65% 55% / 0.5), 0 0 20px hsl(35 80% 55% / 0.3); }
+}
+
+@keyframes sparkle {
+  0%, 100% { opacity: 0; transform: scale(0) rotate(0deg); }
+  50% { opacity: 1; transform: scale(1) rotate(180deg); }
 }
