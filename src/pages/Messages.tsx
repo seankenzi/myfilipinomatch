@@ -516,7 +516,15 @@ const Messages = () => {
                   <OnlineStatus lastSeen={selectedMatch.other_user.last_seen} size="sm" showText />
                 </div>
 
-                {/* Actions dropdown */}
+                {/* Video call button */}
+                <button
+                  onClick={() => setVideoCallOpen(true)}
+                  className="rounded-lg p-2 hover:bg-muted transition-colors"
+                  title="Video Call"
+                >
+                  <Video className="h-4 w-4 text-primary" />
+                </button>
+
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <button className="rounded-lg p-2 hover:bg-muted transition-colors">
