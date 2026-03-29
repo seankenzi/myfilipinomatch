@@ -1264,6 +1264,13 @@ const Discover = () => {
         </DialogContent>
       </Dialog>
 
+      {/* Video Call Upgrade Modal */}
+      <VideoCallModal
+        open={videoModalOpen}
+        onOpenChange={setVideoModalOpen}
+        userName={videoModalTarget}
+      />
+
       <BottomNav />
     </div>
   );
