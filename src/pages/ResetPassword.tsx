@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import logo from "@/assets/filoheart-logo.png";
+import logo from "@/assets/myfilipinomatch-logo.png";
 
 const ResetPassword = () => {
   const [password, setPassword] = useState("");
@@ -60,8 +60,8 @@ const ResetPassword = () => {
       <div className="flex min-h-screen items-center justify-center px-4 py-12">
         <div className="w-full max-w-md text-center">
           <Link to="/" className="inline-flex items-center gap-2 mb-6">
-            <img src={logo} alt="FiloHeart" className="h-10 w-10" />
-            <span className="text-2xl font-display font-bold">FiloHeart</span>
+            <img src={logo} alt="MyFilipinoMatch" className="h-10 w-10" />
+            <span className="text-2xl font-display font-bold">MyFilipinoMatch</span>
           </Link>
           <h1 className="text-2xl font-bold mb-2">Invalid reset link</h1>
           <p className="text-muted-foreground mb-6">This link is expired or invalid. Please request a new one.</p>
@@ -78,8 +78,8 @@ const ResetPassword = () => {
       <div className="w-full max-w-md animate-scale-in">
         <div className="mb-8 text-center">
           <Link to="/" className="inline-flex items-center gap-2 mb-6">
-            <img src={logo} alt="FiloHeart" className="h-10 w-10" />
-            <span className="text-2xl font-display font-bold">FiloHeart</span>
+            <img src={logo} alt="MyFilipinoMatch" className="h-10 w-10" />
+            <span className="text-2xl font-display font-bold">MyFilipinoMatch</span>
           </Link>
           <h1 className="text-2xl font-bold">Set new password</h1>
           <p className="mt-2 text-muted-foreground">Choose a strong password for your account.</p>

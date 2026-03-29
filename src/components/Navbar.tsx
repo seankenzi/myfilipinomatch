@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import NotificationBell from "@/components/NotificationBell";
-import logo from "@/assets/filoheart-logo.png";
+import logo from "@/assets/myfilipinomatch-logo.png";
 
 const Navbar = () => {
   const { user, loading, signOut } = useAuth();
@@ -13,9 +13,9 @@ const Navbar = () => {
     <header className="sticky top-0 z-50 border-b border-border bg-card/90 backdrop-blur-md">
       <div className="container flex h-16 items-center justify-between">
         <Link to={user ? "/discover" : "/"} className="flex items-center gap-2">
-          <img src={logo} alt="FiloHeart" className="h-10 w-10" />
+          <img src={logo} alt="MyFilipinoMatch" className="h-10 w-10" />
           <span className="text-xl font-display font-bold text-foreground">
-            FiloHeart
+            MyFilipinoMatch
           </span>
         </Link>
 

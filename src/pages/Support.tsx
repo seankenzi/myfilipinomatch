@@ -53,12 +53,12 @@ const Support = () => {
               <p className="text-xs text-muted-foreground mt-1">Coming soon</p>
             </button>
             <a
-              href="mailto:support@pinoybridgelove.com"
+              href="mailto:support@myfilipinomatch.com"
               className="rounded-2xl border border-border bg-card p-5 shadow-card text-center hover:shadow-card-hover transition-all"
             >
               <Mail className="h-6 w-6 text-primary mx-auto mb-2" />
               <h3 className="font-semibold text-foreground text-sm">Email</h3>
-              <p className="text-xs text-muted-foreground mt-1">support@pinoybridgelove.com</p>
+              <p className="text-xs text-muted-foreground mt-1">support@myfilipinomatch.com</p>
             </a>
           </div>
 

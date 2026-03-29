@@ -8,11 +8,11 @@ const About = () => {
       <Navbar />
       <main className="flex-1 px-4 py-12 pb-24 md:pb-12">
         <div className="mx-auto max-w-3xl">
-          <h1 className="text-3xl font-bold mb-6" style={{ fontFamily: 'var(--font-display)' }}><h1 className="text-3xl font-bold mb-6" style={{ fontFamily: 'var(--font-display)' }}>About FiloHeart</h1></h1>
+          <h1 className="text-3xl font-bold mb-6" style={{ fontFamily: 'var(--font-display)' }}>About MyFilipinoMatch</h1>
 
           <div className="prose prose-sm max-w-none text-muted-foreground space-y-6">
             <p className="text-base text-foreground leading-relaxed">
-              FiloHeart is a dating platform dedicated to fostering genuine, meaningful relationships between Filipinos and people from around the world. We believe that love knows no borders. dedicated to fostering genuine, meaningful relationships between Filipinos and people from around the world. We believe that love knows no borders.
+              MyFilipinoMatch is a dating platform dedicated to fostering genuine, meaningful relationships between Filipinos and people from around the world. We believe that love knows no borders.
             </p>
 
             <div className="grid gap-6 sm:grid-cols-2 not-prose mt-8">
