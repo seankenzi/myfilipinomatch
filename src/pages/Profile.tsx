@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { detectContactInfo } from "@/lib/contactFilter";
-import { Camera, Edit, Shield, MapPin, Heart, Globe, Settings, LogOut, Crown, Save, BarChart3 } from "lucide-react";
+import { Camera, Edit, Shield, MapPin, Heart, Globe, Settings, LogOut, Crown, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -13,13 +13,11 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
-import { useAdmin } from "@/hooks/useAdmin";
 
 const Profile = () => {
   const { user, signOut } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
-  const { isAdmin } = useAdmin();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [editing, setEditing] = useState(false);
@@ -333,12 +331,6 @@ const Profile = () => {
 
           {/* Actions */}
           <div className="space-y-2">
-            {isAdmin && (
-              <button onClick={() => navigate("/admin")} className="flex w-full items-center gap-3 rounded-xl border border-border bg-card px-4 py-3 text-sm font-medium shadow-card transition-all hover:shadow-card-hover">
-                <BarChart3 className="h-4 w-4 text-primary" />
-                Admin Dashboard
-              </button>
-            )}
             <button onClick={() => navigate("/settings")} className="flex w-full items-center gap-3 rounded-xl border border-border bg-card px-4 py-3 text-sm font-medium shadow-card transition-all hover:shadow-card-hover">
               <Settings className="h-4 w-4 text-muted-foreground" />
               Settings
