@@ -720,6 +720,16 @@ const Messages = () => {
         </DialogContent>
       </Dialog>
 
+      {/* Video Call */}
+      {selectedMatch && (
+        <VideoCall
+          matchId={selectedMatch.id}
+          otherUserName={selectedMatch.other_user.full_name}
+          open={videoCallOpen}
+          onClose={() => setVideoCallOpen(false)}
+        />
+      )}
+
       <BottomNav />
     </div>
   );
