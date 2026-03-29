@@ -36,7 +36,19 @@ const Signup = () => {
     setLoading(true);
     const { error } = await signUp(email, password, name);
     if (error) {
-      toast({ title: "Signup failed", description: error.message, variant: "destructive" });
+      const isDuplicate = error.message.includes("already exists");
+      toast({
+        title: "Signup failed",
+        description: isDuplicate ? (
+          <span>
+            An account with this email already exists.{" "}
+            <a href="/login" onClick={(e) => { e.preventDefault(); navigate("/login"); }} className="font-medium underline">
+              Sign in instead
+            </a>
+          </span>
+        ) : error.message,
+        variant: "destructive",
+      });
     } else {
       toast({ title: "Check your email", description: "We sent you a confirmation link to verify your account." });
       navigate("/login");
