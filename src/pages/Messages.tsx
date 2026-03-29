@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import {
   Send, ArrowLeft, Shield, Lock, MessageCircle, Sparkles,
-  Flag, Ban, AlertTriangle, MoreVertical, MapPin, Crown
+  Flag, Ban, AlertTriangle, MoreVertical, MapPin, Crown, Video
 } from "lucide-react";
 import { detectContactInfo } from "@/lib/contactFilter";
 import OnlineStatus from "@/components/OnlineStatus";
@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import BottomNav from "@/components/BottomNav";
+import VideoCall from "@/components/VideoCall";
 import Navbar from "@/components/Navbar";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -88,6 +89,8 @@ const Messages = () => {
   const [reportDialog, setReportDialog] = useState(false);
   const [reportReason, setReportReason] = useState("");
   const [reportDetails, setReportDetails] = useState("");
+  // Video call
+  const [videoCallOpen, setVideoCallOpen] = useState(false);
 
   // My sent message count for current match (total)
   const mySentCount = messages.filter((m) => m.sender_id === user?.id).length;
@@ -513,7 +516,15 @@ const Messages = () => {
                   <OnlineStatus lastSeen={selectedMatch.other_user.last_seen} size="sm" showText />
                 </div>
 
-                {/* Actions dropdown */}
+                {/* Video call button */}
+                <button
+                  onClick={() => setVideoCallOpen(true)}
+                  className="rounded-lg p-2 hover:bg-muted transition-colors"
+                  title="Video Call"
+                >
+                  <Video className="h-4 w-4 text-primary" />
+                </button>
+
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <button className="rounded-lg p-2 hover:bg-muted transition-colors">
@@ -708,6 +719,16 @@ const Messages = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Video Call */}
+      {selectedMatch && (
+        <VideoCall
+          matchId={selectedMatch.id}
+          otherUserName={selectedMatch.other_user.full_name}
+          open={videoCallOpen}
+          onClose={() => setVideoCallOpen(false)}
+        />
+      )}
 
       <BottomNav />
     </div>
