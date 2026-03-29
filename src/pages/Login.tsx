@@ -39,11 +39,18 @@ const Login = () => {
       toast({ title: "Login failed", description: error.message, variant: "destructive" });
     } else {
       toast({ title: "Welcome back!" });
-      // Check onboarding status
+      // Check admin role first, then onboarding status
       const userId = data?.user?.id;
       if (userId) {
-        const { data: profile } = await supabase.from("profiles").select("onboarding_completed").eq("id", userId).single();
-        navigate(profile?.onboarding_completed ? "/discover" : "/onboarding");
+        const [{ data: roleData }, { data: profile }] = await Promise.all([
+          supabase.rpc("has_role", { _user_id: userId, _role: "admin" as any }),
+          supabase.from("profiles").select("onboarding_completed").eq("id", userId).single(),
+        ]);
+        if (roleData === true) {
+          navigate("/admin");
+        } else {
+          navigate(profile?.onboarding_completed ? "/discover" : "/onboarding");
+        }
       } else {
         navigate("/onboarding");
       }
