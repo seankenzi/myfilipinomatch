@@ -38,11 +38,11 @@ const Navbar = () => {
                 <Button
                   variant="hero"
                   size="sm"
-                  className="relative gap-1.5 overflow-hidden bg-gradient-to-r from-primary via-accent to-primary bg-[length:200%_100%] animate-[gradient-shift_3s_ease-in-out_infinite] border-0"
+                  className="relative gap-1.5 overflow-hidden bg-gradient-to-r from-primary via-accent via-50% to-primary bg-[length:300%_100%] animate-[gradient-shift_4s_linear_infinite] border-0 shadow-md hover:shadow-lg transition-shadow"
                 >
-                  <Crown className="h-3.5 w-3.5" />
+                  <Crown className="h-3.5 w-3.5 animate-[gentle-bounce_2s_ease-in-out_infinite]" />
                   Upgrade
-                  <span className="absolute inset-0 rounded-md bg-gradient-to-r from-transparent via-white/15 to-transparent animate-[shimmer_2s_ease-in-out_infinite] pointer-events-none" />
+                  <span className="absolute inset-0 rounded-md bg-gradient-to-r from-transparent via-white/20 to-transparent animate-[shimmer_2.5s_ease-in-out_infinite] pointer-events-none" />
                 </Button>
               </Link>
               <NotificationBell />
