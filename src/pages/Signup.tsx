@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Mail, Lock, User, Eye, EyeOff } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, Shield, Heart, Users } from "lucide-react";
 import { lovable } from "@/integrations/lovable/index";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,7 +10,6 @@ import { useAuth } from "@/contexts/AuthContext";
 import logo from "@/assets/myfilipinomatch-logo.png";
 
 const Signup = () => {
-  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -34,7 +33,7 @@ const Signup = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    const { error } = await signUp(email, password, name);
+    const { error } = await signUp(email, password, "");
     if (error) {
       const isDuplicate = error.message.includes("already exists");
       toast({
@@ -57,26 +56,25 @@ const Signup = () => {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center px-4 py-12">
+    <div className="flex min-h-screen items-center justify-center px-4 py-12 bg-background">
       <div className="w-full max-w-md animate-scale-in">
+        {/* Logo & Header */}
         <div className="mb-8 text-center">
-          <Link to="/" className="inline-flex items-center gap-2 mb-6">
+          <Link to="/" className="inline-flex items-center gap-2 mb-4">
             <img src={logo} alt="MyFilipinoMatch" className="h-10 w-10" />
             <span className="text-2xl font-display font-bold">MyFilipinoMatch</span>
           </Link>
-          <h1 className="text-2xl font-bold">Create your account</h1>
-          <p className="mt-2 text-muted-foreground">Start finding your perfect match today</p>
+          <h1 className="text-2xl font-bold font-display">Find Your Filipino Match</h1>
+          <p className="mt-2 text-muted-foreground">Takes less than 30 seconds to get started</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <div className="space-y-2">
-            <Label htmlFor="name">Full Name</Label>
-            <div className="relative">
-              <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input id="name" placeholder="Your full name" className="pl-10" value={name} onChange={(e) => setName(e.target.value)} required />
-            </div>
-          </div>
+        {/* Trust Badges */}
+        <div className="mb-6 flex items-center justify-center gap-4 text-xs text-muted-foreground">
+          <span className="flex items-center gap-1"><Shield className="h-3.5 w-3.5 text-secondary" /> No fake accounts</span>
+          <span className="flex items-center gap-1"><Lock className="h-3.5 w-3.5 text-secondary" /> Your info is safe</span>
+        </div>
 
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <div className="relative">
@@ -97,7 +95,7 @@ const Signup = () => {
           </div>
 
           <Button type="submit" variant="hero" size="lg" className="w-full" disabled={loading}>
-            {loading ? "Creating account..." : "Create account"}
+            {loading ? "Creating account..." : "Create Free Account"}
           </Button>
         </form>
 
@@ -123,6 +121,21 @@ const Signup = () => {
           </svg>
           {googleLoading ? "Signing up..." : "Continue with Google"}
         </Button>
+
+        {/* Social Proof */}
+        <div className="mt-6 rounded-xl border border-border bg-card p-4 text-center">
+          <div className="flex items-center justify-center gap-3 text-sm text-muted-foreground">
+            <div className="flex items-center gap-1.5">
+              <Heart className="h-4 w-4 text-primary fill-primary" />
+              <span className="font-medium text-foreground">Serious relationships only</span>
+            </div>
+            <span className="text-border">•</span>
+            <div className="flex items-center gap-1.5">
+              <Users className="h-4 w-4 text-secondary" />
+              <span>100% reviewed profiles</span>
+            </div>
+          </div>
+        </div>
 
         <p className="mt-4 text-center text-xs text-muted-foreground">
           By signing up, you agree to our{" "}
