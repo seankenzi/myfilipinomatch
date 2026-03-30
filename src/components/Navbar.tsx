@@ -1,8 +1,9 @@
-import { Heart, LogIn, LogOut, User } from "lucide-react";
+import { Heart, LogIn, LogOut, User, Eye } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import NotificationBell from "@/components/NotificationBell";
+import { useNewLikesCount } from "@/hooks/useNewLikesCount";
 import VideoBanner from "@/components/VideoBanner";
 import {
   Tooltip, TooltipContent, TooltipProvider, TooltipTrigger,
@@ -16,6 +17,7 @@ interface NavbarProps {
 const Navbar = ({ bannerSubtitle }: NavbarProps) => {
   const { user, loading, signOut } = useAuth();
   const navigate = useNavigate();
+  const newLikesCount = useNewLikesCount();
 
   return (
     <>
@@ -35,8 +37,13 @@ const Navbar = ({ bannerSubtitle }: NavbarProps) => {
           <Link to="/matches" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
             Matches
           </Link>
-          <Link to="/who-liked-me" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+          <Link to="/who-liked-me" className="relative text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
             Who Liked Me
+            {newLikesCount > 0 && (
+              <span className="absolute -top-2 -right-4 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground">
+                {newLikesCount > 99 ? "99+" : newLikesCount}
+              </span>
+            )}
           </Link>
           <Link to="/messages" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
             Messages
