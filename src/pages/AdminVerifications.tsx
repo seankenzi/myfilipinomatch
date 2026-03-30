@@ -294,6 +294,14 @@ const AdminVerifications = () => {
             </DialogTitle>
           </DialogHeader>
 
+          {/* Pose challenge instruction */}
+          {compareRecord?.pose_instruction && (
+            <div className="rounded-lg border border-accent/30 bg-accent/5 px-4 py-2.5 flex items-center gap-2">
+              <span className="text-sm font-medium text-accent">🎯 Required pose:</span>
+              <span className="text-sm text-foreground">{compareRecord.pose_instruction}</span>
+            </div>
+          )}
+
           <div className="grid grid-cols-2 gap-6">
             {/* Left: Verification selfie */}
             <div>
