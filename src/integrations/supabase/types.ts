@@ -529,6 +529,35 @@ export type Database = {
         Args: { other_user_id: string }
         Returns: string
       }
+      get_profile_by_id: {
+        Args: { profile_id: string }
+        Returns: {
+          age: number
+          avatar_url: string
+          bio: string
+          city: string
+          country: string
+          created_at: string
+          education: string
+          full_name: string
+          gender: string
+          height_cm: number
+          id: string
+          interests: string[]
+          international_preference: boolean
+          is_premium: boolean
+          is_verified: boolean
+          language: string
+          last_seen: string
+          photos: string[]
+          relationship_intent: string
+          relationship_status: string
+          relocation_intent: string
+          user_type: string
+          want_children: string
+          weight_kg: number
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
