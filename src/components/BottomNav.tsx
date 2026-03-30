@@ -1,4 +1,4 @@
-import { Heart, MessageCircle, Search, User, Bell } from "lucide-react";
+import { Heart, MessageCircle, Search, User, Eye } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useNotifications } from "@/hooks/useNotifications";
@@ -6,7 +6,7 @@ import { useNotifications } from "@/hooks/useNotifications";
 const navItems = [
   { icon: Search, label: "Discover", path: "/discover" },
   { icon: Heart, label: "Matches", path: "/matches" },
-  { icon: Bell, label: "Alerts", path: "/notifications" },
+  { icon: Eye, label: "Liked Me", path: "/who-liked-me" },
   { icon: MessageCircle, label: "Chat", path: "/messages" },
   { icon: User, label: "Profile", path: "/profile" },
 ];

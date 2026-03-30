@@ -35,6 +35,9 @@ const Navbar = ({ bannerSubtitle }: NavbarProps) => {
           <Link to="/matches" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
             Matches
           </Link>
+          <Link to="/who-liked-me" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+            Who Liked Me
+          </Link>
           <Link to="/messages" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
             Messages
           </Link>
