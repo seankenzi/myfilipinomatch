@@ -775,6 +775,7 @@ const FeatureFlagsTab = () => {
 // ─── Main Admin Dashboard ───
 const AdminDashboard = () => {
   const navigate = useNavigate();
+  const [subsRefreshKey, setSubsRefreshKey] = useState(0);
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
