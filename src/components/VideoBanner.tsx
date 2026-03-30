@@ -18,7 +18,7 @@ const VideoBanner = () => {
             🎥 Meet Matches Face-to-Face
           </p>
           <p className="text-xs text-muted-foreground">
-            Upgrade to Annual and get 2 FREE hours of video calls every month{" "}
+            See who you're talking to instantly{" "}
             <span className="text-primary">❤️ Build real connections faster</span>
           </p>
         </div>
