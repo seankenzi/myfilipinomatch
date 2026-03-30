@@ -23,6 +23,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { format, isToday, isYesterday } from "date-fns";
+import { getSignedPhotoUrl } from "@/lib/storage";
 
 const FREE_MESSAGE_LIMIT = 3; // Only applies to premium direct-message matches (non-mutual)
 const FREE_DAILY_MESSAGE_LIMIT = 10; // Daily limit for free users on mutual matches
@@ -70,6 +71,12 @@ const formatMessageTime = (dateStr: string) => {
 const getPhoto = (user: { avatar_url: string | null; photos: string[] | null }) => {
   if (user.photos && user.photos.length > 0) return user.photos[0];
   return user.avatar_url;
+};
+
+// Resolve a photo path to a signed URL
+const resolvePhoto = async (photoPath: string | null): Promise<string | null> => {
+  if (!photoPath) return null;
+  return getSignedPhotoUrl(photoPath);
 };
 
 const Messages = () => {
