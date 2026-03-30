@@ -1,5 +1,6 @@
+import { useState, useEffect } from "react";
 import { Heart, LogIn, LogOut, User, Eye } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
