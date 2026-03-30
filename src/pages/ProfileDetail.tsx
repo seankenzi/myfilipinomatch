@@ -136,6 +136,16 @@ const ProfileDetail = () => {
       if (mutual && mutual.length > 0) {
         await supabase.rpc("create_match_if_mutual", { other_user_id: profile.id });
         toast({ title: "It's a Match! 🎉", description: `You and ${profile.full_name.split(" ")[0]} liked each other!` });
+        if (user.email) {
+          supabase.functions.invoke("send-transactional-email", {
+            body: {
+              templateName: "match-notification",
+              recipientEmail: user.email,
+              idempotencyKey: `match-notif-${user.id}-${profile.id}`,
+              templateData: { matchName: profile.full_name.split(" ")[0] },
+            },
+          }).catch(() => {});
+        }
       }
     }
   };
