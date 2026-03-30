@@ -73,7 +73,7 @@ const ProfileDetail = () => {
     const fetchProfile = async () => {
       const { data } = await supabase
         .from("profiles")
-        .select("*")
+        .select("id, full_name, age, gender, country, city, bio, interests, relationship_intent, relocation_intent, photos, avatar_url, is_verified, user_type, international_preference, education, language, want_children, height_cm, weight_kg, relationship_status, created_at, last_seen")
         .eq("id", id)
         .single();
       setProfile(data as Profile | null);
