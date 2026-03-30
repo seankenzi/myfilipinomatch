@@ -380,13 +380,14 @@ const Discover = () => {
       .maybeSingle();
 
     if (mutualLike) {
-      // Create match record
-      const ids = [user.id, profile.id].sort();
-      await supabase.from("matches").insert({ user1_id: ids[0], user2_id: ids[1] });
-      toast({
-        title: "🎉 It's a Match!",
-        description: `You and ${profile.full_name} liked each other!`,
-      });
+      // Create match via secure server-side function that validates mutual likes
+      const { error: matchError } = await supabase.rpc("create_match_if_mutual", { other_user_id: profile.id });
+      if (!matchError) {
+        toast({
+          title: "🎉 It's a Match!",
+          description: `You and ${profile.full_name} liked each other!`,
+        });
+      }
     }
 
     setLikedIds((prev) => new Set(prev).add(profile.id));

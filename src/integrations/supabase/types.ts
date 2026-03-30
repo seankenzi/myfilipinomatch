@@ -402,9 +402,96 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      public_profiles: {
+        Row: {
+          age: number | null
+          avatar_url: string | null
+          bio: string | null
+          city: string | null
+          country: string | null
+          created_at: string | null
+          education: string | null
+          full_name: string | null
+          gender: string | null
+          height_cm: number | null
+          id: string | null
+          interests: string[] | null
+          international_preference: boolean | null
+          is_premium: boolean | null
+          is_verified: boolean | null
+          language: string | null
+          last_seen: string | null
+          onboarding_completed: boolean | null
+          photos: string[] | null
+          relationship_intent: string | null
+          relationship_status: string | null
+          relocation_intent: string | null
+          user_type: string | null
+          want_children: string | null
+          weight_kg: number | null
+        }
+        Insert: {
+          age?: number | null
+          avatar_url?: string | null
+          bio?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string | null
+          education?: string | null
+          full_name?: string | null
+          gender?: string | null
+          height_cm?: number | null
+          id?: string | null
+          interests?: string[] | null
+          international_preference?: boolean | null
+          is_premium?: boolean | null
+          is_verified?: boolean | null
+          language?: string | null
+          last_seen?: string | null
+          onboarding_completed?: boolean | null
+          photos?: string[] | null
+          relationship_intent?: string | null
+          relationship_status?: string | null
+          relocation_intent?: string | null
+          user_type?: string | null
+          want_children?: string | null
+          weight_kg?: number | null
+        }
+        Update: {
+          age?: number | null
+          avatar_url?: string | null
+          bio?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string | null
+          education?: string | null
+          full_name?: string | null
+          gender?: string | null
+          height_cm?: number | null
+          id?: string | null
+          interests?: string[] | null
+          international_preference?: boolean | null
+          is_premium?: boolean | null
+          is_verified?: boolean | null
+          language?: string | null
+          last_seen?: string | null
+          onboarding_completed?: boolean | null
+          photos?: string[] | null
+          relationship_intent?: string | null
+          relationship_status?: string | null
+          relocation_intent?: string | null
+          user_type?: string | null
+          want_children?: string | null
+          weight_kg?: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
+      create_match_if_mutual: {
+        Args: { other_user_id: string }
+        Returns: string
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
