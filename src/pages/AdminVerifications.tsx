@@ -22,6 +22,7 @@ interface VerificationRecord {
   status: string | null;
   created_at: string;
   reviewed_at: string | null;
+  pose_instruction: string | null;
   profile?: {
     full_name: string;
     avatar_url: string | null;
