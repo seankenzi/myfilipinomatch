@@ -122,40 +122,54 @@ const UsersTab = () => {
   };
 
   const handlePremium = async (userId: string, premium: boolean) => {
-    // Update profile
-    await supabase.from("profiles").update({ is_premium: premium }).eq("id", userId);
+    const timestamp = new Date().toISOString();
+    const periodEnd = premium ? new Date(Date.now() + 365 * 86400000).toISOString() : null;
 
-    // Sync subscriptions table
-    const { data: existing } = await supabase
+    const { data: existingSubs, error: existingError } = await supabase
       .from("subscriptions")
       .select("id")
       .eq("user_id", userId)
-      .maybeSingle();
+      .order("created_at", { ascending: false });
 
-    if (premium) {
-      const periodEnd = new Date(Date.now() + 365 * 86400000).toISOString();
-      if (existing) {
-        await supabase.from("subscriptions").update({
-          plan: "yearly",
-          status: "active",
-          current_period_end: periodEnd,
-          updated_at: new Date().toISOString(),
-        }).eq("id", existing.id);
-      } else {
-        await supabase.from("subscriptions").insert({
+    if (existingError) {
+      toast({ title: `Could not load subscription record: ${existingError.message}`, variant: "destructive" });
+      return;
+    }
+
+    const latestSub = existingSubs?.[0] ?? null;
+
+    const { error: profileError } = await supabase
+      .from("profiles")
+      .update({ is_premium: premium })
+      .eq("id", userId);
+
+    if (profileError) {
+      toast({ title: `Could not update premium status: ${profileError.message}`, variant: "destructive" });
+      return;
+    }
+
+    const subscriptionPayload = {
+      plan: premium ? "yearly" : "free",
+      status: premium ? "active" : "canceled",
+      current_period_end: periodEnd,
+      updated_at: timestamp,
+    };
+
+    const { error: subscriptionError } = latestSub
+      ? await supabase
+          .from("subscriptions")
+          .update(subscriptionPayload)
+          .eq("id", latestSub.id)
+      : await supabase.from("subscriptions").insert({
           user_id: userId,
-          plan: "yearly",
-          status: "active",
-          current_period_end: periodEnd,
+          ...subscriptionPayload,
         });
-      }
-    } else if (existing) {
-      await supabase.from("subscriptions").update({
-        plan: "free",
-        status: "canceled",
-        current_period_end: null,
-        updated_at: new Date().toISOString(),
-      }).eq("id", existing.id);
+
+    if (subscriptionError) {
+      await supabase.from("profiles").update({ is_premium: !premium }).eq("id", userId);
+      toast({ title: `Could not sync subscription: ${subscriptionError.message}`, variant: "destructive" });
+      fetchUsers();
+      return;
     }
 
     toast({ title: premium ? "Premium granted ⭐" : "Premium removed" });
