@@ -9,6 +9,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
+import { getSignedPhotoUrl } from "@/lib/storage";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle
 } from "@/components/ui/dialog";
@@ -77,14 +78,22 @@ const AdminVerifications = () => {
       .select("id, full_name, avatar_url, photos, email")
       .in("id", userIds);
 
-    const profileMap = new Map(
-      (profiles || []).map((p) => [p.id, p])
+    // Resolve signed URLs for profile photos and document URLs
+    const resolvedProfiles = await Promise.all(
+      (profiles || []).map(async (p) => {
+        const avatar = p.avatar_url ? await getSignedPhotoUrl(p.avatar_url) : null;
+        return { ...p, avatar_url: avatar };
+      })
     );
+    const profileMap = new Map(resolvedProfiles.map((p) => [p.id, p]));
 
-    const enriched: VerificationRecord[] = data.map((v) => ({
-      ...v,
-      profile: profileMap.get(v.user_id) || undefined,
-    }));
+    const enriched: VerificationRecord[] = await Promise.all(
+      data.map(async (v) => ({
+        ...v,
+        document_url: v.document_url ? await getSignedPhotoUrl(v.document_url) : null,
+        profile: profileMap.get(v.user_id) || undefined,
+      }))
+    );
 
     setRecords(enriched);
     setLoading(false);
