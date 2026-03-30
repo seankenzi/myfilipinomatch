@@ -306,17 +306,16 @@ const Onboarding = () => {
                 </p>
               </div>
               {userType === "foreigner" ? (
-                <div className="grid grid-cols-2 gap-2">
-                  {COUNTRIES.map((c) => (
-                    <button
-                      key={c}
-                      onClick={() => setCountry(c)}
-                      className={`rounded-xl border-2 px-3 py-3 text-sm font-medium transition-all ${country === c ? "border-primary bg-primary/5 text-primary shadow-sm" : "border-border hover:border-muted-foreground/30"}`}
-                    >
-                      {c}
-                    </button>
-                  ))}
-                </div>
+                <Select value={country} onValueChange={setCountry}>
+                  <SelectTrigger className="w-full text-base h-12 rounded-xl">
+                    <SelectValue placeholder="Select your country" />
+                  </SelectTrigger>
+                  <SelectContent className="max-h-[300px]">
+                    {COUNTRIES.map((c) => (
+                      <SelectItem key={c} value={c}>{c}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               ) : (
                 <div className="space-y-3">
                   <div className="grid grid-cols-2 gap-2">
