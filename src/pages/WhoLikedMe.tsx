@@ -147,6 +147,15 @@ const WhoLikedMe = () => {
     const { error: matchError } = await supabase.rpc("create_match_if_mutual", { other_user_id: likerId });
     if (!matchError) {
       toast({ title: "🎉 It's a Match!", description: "You liked each other! Start a conversation now." });
+      if (user.email) {
+        supabase.functions.invoke("send-transactional-email", {
+          body: {
+            templateName: "match-notification",
+            recipientEmail: user.email,
+            idempotencyKey: `match-notif-${user.id}-${likerId}`,
+          },
+        }).catch(() => {});
+      }
     } else {
       toast({ title: "Liked!", description: "You liked them back." });
     }
