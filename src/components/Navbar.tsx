@@ -9,6 +9,8 @@ import {
   Tooltip, TooltipContent, TooltipProvider, TooltipTrigger,
 } from "@/components/ui/tooltip";
 import logo from "@/assets/myfilipinomatch-logo.png";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface NavbarProps {
   bannerSubtitle?: string;
