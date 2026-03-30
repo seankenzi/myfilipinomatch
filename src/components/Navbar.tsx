@@ -26,7 +26,7 @@ const taglines = [
 ];
 
 const RotatingTagline = () => {
-  const [index, setIndex] = useState(0);
+  const [index, setIndex] = useState(() => Math.floor(Math.random() * taglines.length));
 
   useEffect(() => {
     const interval = setInterval(() => {
