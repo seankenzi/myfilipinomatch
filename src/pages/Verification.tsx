@@ -22,6 +22,7 @@ const Verification = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
 
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
@@ -261,10 +262,17 @@ const Verification = () => {
               {/* Upload area */}
               <div className="mb-6 rounded-2xl border border-border bg-card p-5 shadow-card">
                 <input
-                  ref={fileInputRef}
+                  ref={cameraInputRef}
                   type="file"
                   accept="image/*"
                   capture="user"
+                  onChange={handleFileSelect}
+                  className="hidden"
+                />
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
                   onChange={handleFileSelect}
                   className="hidden"
                 />
@@ -310,20 +318,41 @@ const Verification = () => {
                     </div>
                   </div>
                 ) : (
-                  <button
-                    onClick={() => fileInputRef.current?.click()}
-                    className="flex w-full flex-col items-center gap-3 rounded-xl border-2 border-dashed border-muted-foreground/30 p-8 transition-colors hover:border-primary/50 hover:bg-primary/5"
-                  >
-                    <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/10">
-                      <Camera className="h-7 w-7 text-primary" />
+                  <div className="flex flex-col gap-3">
+                    <button
+                      onClick={() => cameraInputRef.current?.click()}
+                      className="flex w-full flex-col items-center gap-3 rounded-xl border-2 border-dashed border-primary/40 bg-primary/5 p-6 transition-colors hover:border-primary/60 hover:bg-primary/10"
+                    >
+                      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/10">
+                        <Camera className="h-7 w-7 text-primary" />
+                      </div>
+                      <div className="text-center">
+                        <p className="font-medium text-foreground">Take a Selfie</p>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          Opens your camera directly
+                        </p>
+                      </div>
+                    </button>
+
+                    <div className="flex items-center gap-3">
+                      <div className="h-px flex-1 bg-border" />
+                      <span className="text-xs text-muted-foreground">or</span>
+                      <div className="h-px flex-1 bg-border" />
                     </div>
-                    <div className="text-center">
-                      <p className="font-medium text-foreground">Take or upload a selfie</p>
-                      <p className="mt-1 text-xs text-muted-foreground">
-                        JPG, PNG • Max 10MB
-                      </p>
-                    </div>
-                  </button>
+
+                    <button
+                      onClick={() => fileInputRef.current?.click()}
+                      className="flex w-full items-center gap-3 rounded-xl border border-border p-4 transition-colors hover:bg-muted/50"
+                    >
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted">
+                        <Upload className="h-5 w-5 text-muted-foreground" />
+                      </div>
+                      <div className="text-left">
+                        <p className="text-sm font-medium text-foreground">Upload from Gallery</p>
+                        <p className="text-xs text-muted-foreground">JPG, PNG • Max 10MB</p>
+                      </div>
+                    </button>
+                  </div>
                 )}
               </div>
 
