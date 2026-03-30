@@ -71,6 +71,7 @@ const Onboarding = () => {
   const [country, setCountry] = useState("");
   const [countryOpen, setCountryOpen] = useState(false);
   const [city, setCity] = useState("");
+  const [cityOpen, setCityOpen] = useState(false);
   // Step 4: Basic Profile
   const [fullName, setFullName] = useState("");
   const [age, setAge] = useState("");
@@ -334,17 +335,29 @@ const Onboarding = () => {
                 </Popover>
               ) : (
                 <div className="space-y-3">
-                  <div className="grid grid-cols-2 gap-2">
-                    {PH_CITIES.map((c) => (
-                      <button
-                        key={c}
-                        onClick={() => setCity(c)}
-                        className={`rounded-xl border-2 px-3 py-3 text-sm font-medium transition-all ${city === c ? "border-primary bg-primary/5 text-primary shadow-sm" : "border-border hover:border-muted-foreground/30"}`}
-                      >
-                        {c}
-                      </button>
-                    ))}
-                  </div>
+                  <Popover open={cityOpen} onOpenChange={setCityOpen}>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline" role="combobox" aria-expanded={cityOpen} className="w-full text-base h-12 rounded-xl justify-between font-normal">
+                        {city && city !== "Other" ? city : city === "Other" ? "Other" : "Select your city..."}
+                        <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                      <Command>
+                        <CommandInput placeholder="Search city..." />
+                        <CommandList>
+                          <CommandEmpty>No city found.</CommandEmpty>
+                          <CommandGroup>
+                            {PH_CITIES.map((c) => (
+                              <CommandItem key={c} value={c} onSelect={(val) => { setCity(val); setCityOpen(false); }} className={city === c ? "bg-primary/10" : ""}>
+                                {c}
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
                   {city === "Other" && (
                     <Input
                       placeholder="Type your city..."
