@@ -176,7 +176,7 @@ const Verification = () => {
     setUploading(true);
     try {
       const ext = selectedFile.name.split(".").pop() || "jpg";
-      const filePath = `verifications/${user.id}/${Date.now()}.${ext}`;
+      const filePath = `${user.id}/verifications/${Date.now()}.${ext}`;
       const { error: uploadError } = await supabase.storage
         .from("profile-photos")
         .upload(filePath, selectedFile, { upsert: true });
