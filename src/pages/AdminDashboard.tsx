@@ -331,35 +331,166 @@ const ModerationTab = () => {
 };
 
 // ─── Subscriptions Tab ───
+const PLAN_OPTIONS = [
+  { value: "free", label: "Free" },
+  { value: "monthly", label: "Monthly ($29.99)" },
+  { value: "3-month", label: "3-Month ($69.99)" },
+  { value: "yearly", label: "Annual ($219.99)" },
+];
+
 const SubscriptionsTab = () => {
+  const { toast } = useToast();
   const [subs, setSubs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [selectedUser, setSelectedUser] = useState<{ id: string; name: string; email: string } | null>(null);
+  const [selectedPlan, setSelectedPlan] = useState("monthly");
+  const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
-    const fetch = async () => {
-      const { data } = await supabase.from("subscriptions").select("*").order("created_at", { ascending: false }).limit(100);
-      
-      if (data && data.length > 0) {
-        const userIds = [...new Set(data.map(s => s.user_id))];
-        const { data: profiles } = await supabase.from("profiles").select("id, full_name, email").in("id", userIds);
-        const profileMap = new Map((profiles || []).map(p => [p.id, p]));
-        
-        setSubs(data.map(s => ({
-          ...s,
-          user_name: profileMap.get(s.user_id)?.full_name || "Unknown",
-          user_email: profileMap.get(s.user_id)?.email || "—",
-        })));
-      }
-      setLoading(false);
-    };
-    fetch();
-  }, []);
+  const fetchSubs = async () => {
+    setLoading(true);
+    const { data } = await supabase.from("subscriptions").select("*").order("created_at", { ascending: false }).limit(100);
 
-  if (loading) return <div className="flex justify-center py-20"><div className="h-6 w-6 animate-spin rounded-full border-4 border-primary border-t-transparent" /></div>;
+    if (data && data.length > 0) {
+      const userIds = [...new Set(data.map(s => s.user_id))];
+      const { data: profiles } = await supabase.from("profiles").select("id, full_name, email").in("id", userIds);
+      const profileMap = new Map((profiles || []).map(p => [p.id, p]));
+
+      setSubs(data.map(s => ({
+        ...s,
+        user_name: profileMap.get(s.user_id)?.full_name || "Unknown",
+        user_email: profileMap.get(s.user_id)?.email || "—",
+      })));
+    } else {
+      setSubs([]);
+    }
+    setLoading(false);
+  };
+
+  useEffect(() => { fetchSubs(); }, []);
+
+  const searchUsers = async (term: string) => {
+    if (!term.trim()) { setSearchResults([]); return; }
+    const { data } = await supabase.from("profiles").select("id, full_name, email")
+      .or(`full_name.ilike.%${term}%,email.ilike.%${term}%`).limit(5);
+    setSearchResults(data || []);
+  };
+
+  const assignPlan = async () => {
+    if (!selectedUser) {
+      toast({ title: "Select a user first", variant: "destructive" });
+      return;
+    }
+    setSaving(true);
+
+    const isPremium = selectedPlan !== "free";
+    const periodEnd = isPremium
+      ? new Date(Date.now() + (selectedPlan === "monthly" ? 30 : selectedPlan === "3-month" ? 90 : 365) * 86400000).toISOString()
+      : null;
+
+    // Check if subscription exists
+    const { data: existing } = await supabase
+      .from("subscriptions")
+      .select("id")
+      .eq("user_id", selectedUser.id)
+      .maybeSingle();
+
+    if (existing) {
+      await supabase.from("subscriptions").update({
+        plan: selectedPlan,
+        status: isPremium ? "active" : "canceled",
+        current_period_end: periodEnd,
+        updated_at: new Date().toISOString(),
+      }).eq("id", existing.id);
+    } else {
+      await supabase.from("subscriptions").insert({
+        user_id: selectedUser.id,
+        plan: selectedPlan,
+        status: isPremium ? "active" : "canceled",
+        current_period_end: periodEnd,
+      });
+    }
+
+    // Sync is_premium on profiles
+    await supabase.from("profiles").update({ is_premium: isPremium }).eq("id", selectedUser.id);
+
+    toast({ title: `Plan set to "${selectedPlan}" for ${selectedUser.name || selectedUser.email} ✅` });
+    setSelectedUser(null);
+    setSearch("");
+    setSearchResults([]);
+    setSaving(false);
+    fetchSubs();
+  };
+
+  const removeSub = async (subId: string, userId: string) => {
+    await supabase.from("subscriptions").update({
+      plan: "free",
+      status: "canceled",
+      current_period_end: null,
+      updated_at: new Date().toISOString(),
+    }).eq("id", subId);
+    await supabase.from("profiles").update({ is_premium: false }).eq("id", userId);
+    toast({ title: "Subscription removed" });
+    fetchSubs();
+  };
 
   return (
-    <div>
-      {subs.length === 0 ? (
+    <div className="space-y-6">
+      {/* Plan Switcher */}
+      <div className="rounded-xl border border-border bg-card p-4 space-y-3">
+        <h3 className="text-sm font-semibold flex items-center gap-2"><CreditCard className="h-4 w-4" /> Assign Subscription Plan</h3>
+        <div className="flex flex-col sm:flex-row gap-2">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search user by name or email..."
+              value={search}
+              onChange={(e) => { setSearch(e.target.value); searchUsers(e.target.value); }}
+              className="pl-9"
+            />
+            {searchResults.length > 0 && (
+              <div className="absolute z-10 top-full mt-1 w-full bg-popover border border-border rounded-lg shadow-lg max-h-40 overflow-y-auto">
+                {searchResults.map(u => (
+                  <button
+                    key={u.id}
+                    className="w-full text-left px-3 py-2 hover:bg-muted text-sm flex justify-between"
+                    onClick={() => {
+                      setSelectedUser({ id: u.id, name: u.full_name || "", email: u.email || "" });
+                      setSearch(u.full_name || u.email);
+                      setSearchResults([]);
+                    }}
+                  >
+                    <span className="font-medium">{u.full_name || "—"}</span>
+                    <span className="text-muted-foreground text-xs">{u.email}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+          <select
+            value={selectedPlan}
+            onChange={(e) => setSelectedPlan(e.target.value)}
+            className="h-10 rounded-md border border-input bg-background px-3 text-sm"
+          >
+            {PLAN_OPTIONS.map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
+          </select>
+          <Button onClick={assignPlan} size="sm" className="h-10" disabled={saving || !selectedUser}>
+            {saving ? <RefreshCw className="h-4 w-4 animate-spin mr-1" /> : <Plus className="h-4 w-4 mr-1" />}
+            Assign
+          </Button>
+        </div>
+        {selectedUser && (
+          <p className="text-xs text-muted-foreground">
+            Selected: <span className="font-medium text-foreground">{selectedUser.name || selectedUser.email}</span>
+          </p>
+        )}
+      </div>
+
+      {/* Subscriptions list */}
+      {loading ? (
+        <div className="flex justify-center py-10"><div className="h-6 w-6 animate-spin rounded-full border-4 border-primary border-t-transparent" /></div>
+      ) : subs.length === 0 ? (
         <div className="rounded-xl border border-border bg-card p-10 text-center text-muted-foreground">
           <CreditCard className="mx-auto mb-3 h-10 w-10 text-muted-foreground/30" />
           <p>No subscriptions yet.</p>
@@ -375,6 +506,7 @@ const SubscriptionsTab = () => {
                   <th className="text-left p-3 font-medium text-muted-foreground">Status</th>
                   <th className="text-left p-3 font-medium text-muted-foreground">Expires</th>
                   <th className="text-left p-3 font-medium text-muted-foreground">Created</th>
+                  <th className="text-right p-3 font-medium text-muted-foreground">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
@@ -394,6 +526,11 @@ const SubscriptionsTab = () => {
                       {s.current_period_end ? format(new Date(s.current_period_end), "MMM d, yyyy") : "—"}
                     </td>
                     <td className="p-3 text-muted-foreground text-xs">{format(new Date(s.created_at), "MMM d, yyyy")}</td>
+                    <td className="p-3 text-right">
+                      <Button size="sm" variant="ghost" className="h-7 text-xs text-destructive" onClick={() => removeSub(s.id, s.user_id)}>
+                        <Trash2 className="h-3.5 w-3.5 mr-1" /> Remove
+                      </Button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
