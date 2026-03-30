@@ -51,7 +51,7 @@ const Navbar = ({ bannerSubtitle }: NavbarProps) => {
           </Link>
         </nav>
         ) : (
-          <p className="hidden md:block text-sm font-medium text-muted-foreground italic tracking-wide">
+          <p className="hidden md:block text-base font-display font-semibold bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent tracking-wide">
             Find Your Perfect Filipino Match 💖
           </p>
         )}
