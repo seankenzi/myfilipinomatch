@@ -1,7 +1,11 @@
 import { Video } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-const VideoBanner = () => {
+interface VideoBannerProps {
+  subtitle?: string;
+}
+
+const VideoBanner = ({ subtitle }: VideoBannerProps) => {
   const navigate = useNavigate();
 
   return (
@@ -18,7 +22,7 @@ const VideoBanner = () => {
             🎥 Meet Matches Face-to-Face
           </p>
           <p className="text-xs text-muted-foreground">
-            See who you're talking to instantly{" "}
+            {subtitle ?? "Upgrade to Annual and get 2 FREE hours of video calls every month"}{" "}
             <span className="text-primary">❤️ Build real connections faster</span>
           </p>
         </div>
