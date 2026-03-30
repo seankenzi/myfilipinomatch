@@ -71,7 +71,6 @@ const DashboardTab = () => {
     { label: "Pending Reports", value: stats.pendingReports, icon: AlertTriangle, color: "text-destructive" },
   ];
 
-  const navigate = useNavigate();
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
