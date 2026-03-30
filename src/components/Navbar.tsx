@@ -9,6 +9,8 @@ import {
   Tooltip, TooltipContent, TooltipProvider, TooltipTrigger,
 } from "@/components/ui/tooltip";
 import logo from "@/assets/myfilipinomatch-logo.png";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface NavbarProps {
   bannerSubtitle?: string;
@@ -18,7 +20,17 @@ const Navbar = ({ bannerSubtitle }: NavbarProps) => {
   const { user, loading, signOut } = useAuth();
   const navigate = useNavigate();
   const newLikesCount = useNewLikesCount();
+  const [isPremium, setIsPremium] = useState(false);
 
+  useEffect(() => {
+    if (!user) return;
+    supabase
+      .from("profiles")
+      .select("is_premium")
+      .eq("id", user.id)
+      .single()
+      .then(({ data }) => setIsPremium(data?.is_premium === true));
+  }, [user]);
   return (
     <>
     <header className="sticky top-0 z-50 border-b border-border bg-card/90 backdrop-blur-md">
@@ -53,6 +65,7 @@ const Navbar = ({ bannerSubtitle }: NavbarProps) => {
         <div className="flex items-center gap-3">
           {loading ? null : user ? (
             <>
+              {!isPremium && (
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -78,6 +91,7 @@ const Navbar = ({ bannerSubtitle }: NavbarProps) => {
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
+              )}
               <NotificationBell />
               <Link to="/profile">
                 <Button variant="ghost" size="sm">

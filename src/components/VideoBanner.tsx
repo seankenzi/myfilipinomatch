@@ -1,5 +1,8 @@
 import { Video } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface VideoBannerProps {
   subtitle?: string;
@@ -7,6 +10,20 @@ interface VideoBannerProps {
 
 const VideoBanner = ({ subtitle }: VideoBannerProps) => {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const [isPremium, setIsPremium] = useState(false);
+
+  useEffect(() => {
+    if (!user) return;
+    supabase
+      .from("profiles")
+      .select("is_premium")
+      .eq("id", user.id)
+      .single()
+      .then(({ data }) => setIsPremium(data?.is_premium === true));
+  }, [user]);
+
+  if (isPremium) return null;
 
   return (
     <div
