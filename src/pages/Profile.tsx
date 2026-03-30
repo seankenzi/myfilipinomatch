@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { detectContactInfo } from "@/lib/contactFilter";
 import { Camera, Edit, Shield, MapPin, Heart, Globe, Settings, LogOut, Crown, Save } from "lucide-react";
+import ProfileCompletion from "@/components/ProfileCompletion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -156,6 +157,10 @@ const Profile = () => {
               )}
             </div>
           </div>
+
+
+          {/* Profile Completion */}
+          <ProfileCompletion profile={profile} onEditClick={() => setEditing(true)} />
 
           {/* Photos */}
           <div className="mb-6 rounded-2xl border border-border bg-card p-5 shadow-card">
