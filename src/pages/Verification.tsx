@@ -88,11 +88,22 @@ const Verification = () => {
         audio: false,
       });
       streamRef.current = stream;
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        await videoRef.current.play();
-      }
       setCameraActive(true);
+      // Wait for React to render the video element, then attach the stream
+      await new Promise<void>((resolve) => {
+        const check = () => {
+          if (videoRef.current) {
+            videoRef.current.srcObject = stream;
+            videoRef.current.onloadedmetadata = () => {
+              videoRef.current?.play();
+              resolve();
+            };
+          } else {
+            requestAnimationFrame(check);
+          }
+        };
+        requestAnimationFrame(check);
+      });
     } catch (err: any) {
       console.error("Camera error:", err);
       setCameraError(
