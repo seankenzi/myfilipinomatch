@@ -69,6 +69,7 @@ const Onboarding = () => {
   const [relationshipIntent, setRelationshipIntent] = useState("");
   // Step 3: Location
   const [country, setCountry] = useState("");
+  const [countryOpen, setCountryOpen] = useState(false);
   const [city, setCity] = useState("");
   // Step 4: Basic Profile
   const [fullName, setFullName] = useState("");
