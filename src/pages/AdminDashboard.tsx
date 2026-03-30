@@ -12,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
+import { getSignedPhotoUrl } from "@/lib/storage";
 import Navbar from "@/components/Navbar";
 
 // ─── Dashboard Tab ───
@@ -97,8 +98,17 @@ const UsersTab = () => {
     if (search.trim()) {
       query = query.or(`full_name.ilike.%${search}%,email.ilike.%${search}%`);
     }
-    const { data } = await query;
-    setUsers(data || []);
+    // Resolve signed URLs for avatars
+    const usersWithSignedUrls = await Promise.all(
+      (data || []).map(async (u: any) => {
+        if (u.avatar_url) {
+          const signedUrl = await getSignedPhotoUrl(u.avatar_url);
+          return { ...u, avatar_url: signedUrl };
+        }
+        return u;
+      })
+    );
+    setUsers(usersWithSignedUrls);
     setLoading(false);
   };
 
