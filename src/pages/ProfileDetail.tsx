@@ -72,12 +72,9 @@ const ProfileDetail = () => {
   useEffect(() => {
     if (!id) return;
     const fetchProfile = async () => {
-      const { data } = await supabase
-        .from("profiles")
-        .select("id, full_name, age, gender, country, city, bio, interests, relationship_intent, relocation_intent, photos, avatar_url, is_verified, user_type, international_preference, education, language, want_children, height_cm, weight_kg, relationship_status, created_at, last_seen")
-        .eq("id", id)
-        .single();
-      setProfile(data as Profile | null);
+      const { data } = await supabase.rpc("get_profile_by_id", { profile_id: id });
+      const profileData = data && data.length > 0 ? data[0] : null;
+      setProfile(profileData as Profile | null);
       setLoading(false);
     };
     const checkLiked = async () => {
