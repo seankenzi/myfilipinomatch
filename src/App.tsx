@@ -29,6 +29,7 @@ import AdminDashboard from "./pages/AdminDashboard.tsx";
 import AdminRoute from "@/components/AdminRoute";
 import Premium from "./pages/Premium.tsx";
 import Notifications from "./pages/Notifications.tsx";
+import WhoLikedMe from "./pages/WhoLikedMe.tsx";
 import ForgotPassword from "./pages/ForgotPassword.tsx";
 import ResetPassword from "./pages/ResetPassword.tsx";
 import NotFound from "./pages/NotFound.tsx";
@@ -63,6 +64,7 @@ const App = () => (
                 <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
                 <Route path="/premium" element={<ProtectedRoute><Premium /></ProtectedRoute>} />
                 <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
+                <Route path="/who-liked-me" element={<ProtectedRoute><WhoLikedMe /></ProtectedRoute>} />
                 <Route path="/about" element={<About />} />
                 <Route path="/safety" element={<Safety />} />
                 <Route path="/privacy" element={<Privacy />} />
