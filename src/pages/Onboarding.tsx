@@ -71,6 +71,7 @@ const Onboarding = () => {
   const [country, setCountry] = useState("");
   const [countryOpen, setCountryOpen] = useState(false);
   const [city, setCity] = useState("");
+  const [cityOpen, setCityOpen] = useState(false);
   // Step 4: Basic Profile
   const [fullName, setFullName] = useState("");
   const [age, setAge] = useState("");
