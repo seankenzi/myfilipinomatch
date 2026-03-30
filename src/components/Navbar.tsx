@@ -65,6 +65,7 @@ const Navbar = ({ bannerSubtitle }: NavbarProps) => {
         <div className="flex items-center gap-3">
           {loading ? null : user ? (
             <>
+              {!isPremium && (
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -90,6 +91,7 @@ const Navbar = ({ bannerSubtitle }: NavbarProps) => {
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
+              )}
               <NotificationBell />
               <Link to="/profile">
                 <Button variant="ghost" size="sm">
