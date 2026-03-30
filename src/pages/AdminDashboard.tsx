@@ -98,6 +98,7 @@ const UsersTab = () => {
     if (search.trim()) {
       query = query.or(`full_name.ilike.%${search}%,email.ilike.%${search}%`);
     }
+    const { data } = await query;
     // Resolve signed URLs for avatars
     const usersWithSignedUrls = await Promise.all(
       (data || []).map(async (u: any) => {
