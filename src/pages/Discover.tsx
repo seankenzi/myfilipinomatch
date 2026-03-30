@@ -23,6 +23,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import VideoBanner from "@/components/VideoBanner";
 import VideoCallModal from "@/components/VideoCallModal";
+import { getSignedPhotoUrls } from "@/lib/storage";
 
 interface Profile {
   id: string;
@@ -271,7 +272,7 @@ const Discover = () => {
 
     let query = supabase
       .from("profiles")
-      .select("*")
+      .select("id, full_name, age, gender, country, city, bio, interests, relationship_intent, relocation_intent, photos, avatar_url, is_verified, user_type, international_preference, created_at, last_seen, education, language, want_children, height_cm, weight_kg, is_premium")
       .neq("id", user.id)
       .eq("onboarding_completed", true)
       .order("created_at", { ascending: false });
@@ -301,7 +302,36 @@ const Discover = () => {
       const allProfiles = (data || []) as Profile[];
       const boosted = allProfiles.filter((p) => boostedUserIds.has(p.id));
       const nonBoosted = allProfiles.filter((p) => !boostedUserIds.has(p.id));
-      setProfiles([...boosted, ...nonBoosted]);
+      const sortedProfiles = [...boosted, ...nonBoosted];
+      
+      // Resolve signed URLs for all profile photos
+      const allPhotoPaths: string[] = [];
+      const photoMap = new Map<string, number[]>(); // path -> [profile indices]
+      sortedProfiles.forEach((p) => {
+        const photos = p.photos || [];
+        if (p.avatar_url && !photos.includes(p.avatar_url)) photos.push(p.avatar_url);
+        photos.forEach((photo) => {
+          if (photo) allPhotoPaths.push(photo);
+        });
+      });
+      
+      if (allPhotoPaths.length > 0) {
+        const signedUrls = await getSignedPhotoUrls(allPhotoPaths);
+        const urlMap = new Map<string, string>();
+        allPhotoPaths.forEach((path, i) => urlMap.set(path, signedUrls[i]));
+        
+        // Replace photo paths with signed URLs in profiles
+        sortedProfiles.forEach((p) => {
+          if (p.photos) {
+            p.photos = p.photos.map((photo) => urlMap.get(photo) || photo);
+          }
+          if (p.avatar_url) {
+            p.avatar_url = urlMap.get(p.avatar_url) || p.avatar_url;
+          }
+        });
+      }
+      
+      setProfiles(sortedProfiles);
       setCurrentIndex(0);
     }
     setLoading(false);

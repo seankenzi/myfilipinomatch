@@ -23,6 +23,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { format, isToday, isYesterday } from "date-fns";
+import { getSignedPhotoUrl } from "@/lib/storage";
 
 const FREE_MESSAGE_LIMIT = 3; // Only applies to premium direct-message matches (non-mutual)
 const FREE_DAILY_MESSAGE_LIMIT = 10; // Daily limit for free users on mutual matches
@@ -70,6 +71,12 @@ const formatMessageTime = (dateStr: string) => {
 const getPhoto = (user: { avatar_url: string | null; photos: string[] | null }) => {
   if (user.photos && user.photos.length > 0) return user.photos[0];
   return user.avatar_url;
+};
+
+// Resolve a photo path to a signed URL
+const resolvePhoto = async (photoPath: string | null): Promise<string | null> => {
+  if (!photoPath) return null;
+  return getSignedPhotoUrl(photoPath);
 };
 
 const Messages = () => {
@@ -196,8 +203,21 @@ const Messages = () => {
       .select("id, full_name, avatar_url, photos, is_verified, age, city, country, is_premium, last_seen")
       .in("id", otherUserIds);
 
+    // Resolve signed URLs for profile photos
+    const resolvedProfiles = await Promise.all(
+      (profilesData || []).map(async (p) => {
+        const photo = getPhoto(p);
+        const signedUrl = await resolvePhoto(photo);
+        return {
+          ...p,
+          avatar_url: signedUrl,
+          photos: p.photos ? [signedUrl].filter(Boolean) as string[] : null,
+        };
+      })
+    );
+
     const profileMap = new Map(
-      (profilesData || []).map((p) => [p.id, p])
+      resolvedProfiles.map((p) => [p.id, p])
     );
 
     const matchList: Match[] = [];
