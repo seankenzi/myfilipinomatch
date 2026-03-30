@@ -285,8 +285,9 @@ const Messages = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  // Realtime: new messages, read updates, and typing indicators
   useEffect(() => {
-    if (!selectedMatch) return;
+    if (!selectedMatch || !user) return;
     const channel = supabase
       .channel(`messages-${selectedMatch.id}`)
       .on("postgres_changes", {
@@ -302,11 +303,47 @@ const Messages = () => {
         });
         if (newMsg.sender_id !== user?.id) {
           supabase.from("messages").update({ read: true }).eq("id", newMsg.id);
+          setIsOtherTyping(false); // They sent a message, so they stopped typing
+        }
+      })
+      .on("postgres_changes", {
+        event: "UPDATE",
+        schema: "public",
+        table: "messages",
+        filter: `match_id=eq.${selectedMatch.id}`,
+      }, (payload) => {
+        const updated = payload.new as Message;
+        setMessages((prev) =>
+          prev.map((m) => (m.id === updated.id ? { ...m, read: updated.read } : m))
+        );
+      })
+      .on("broadcast", { event: "typing" }, (payload) => {
+        if (payload.payload?.user_id !== user.id) {
+          setIsOtherTyping(true);
+          if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+          typingTimeoutRef.current = setTimeout(() => setIsOtherTyping(false), 3000);
         }
       })
       .subscribe();
 
-    return () => { supabase.removeChannel(channel); };
+    return () => {
+      supabase.removeChannel(channel);
+      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+      setIsOtherTyping(false);
+    };
+  }, [selectedMatch, user]);
+
+  // Broadcast typing indicator (throttled to once per 2s)
+  const broadcastTyping = useCallback(() => {
+    if (!selectedMatch || !user) return;
+    const now = Date.now();
+    if (now - lastTypingBroadcastRef.current < 2000) return;
+    lastTypingBroadcastRef.current = now;
+    supabase.channel(`messages-${selectedMatch.id}`).send({
+      type: "broadcast",
+      event: "typing",
+      payload: { user_id: user.id },
+    });
   }, [selectedMatch, user]);
 
   const handleSend = async () => {
