@@ -143,10 +143,12 @@ const Signup = () => {
           <Link to="/privacy" className="text-primary hover:underline">Privacy Policy</Link>
         </p>
 
-        <p className="mt-4 text-center text-sm text-muted-foreground">
-          Already have an account?{" "}
-          <Link to="/login" className="font-medium text-primary hover:underline">Sign in</Link>
-        </p>
+        <div className="mt-5 rounded-xl border border-primary/20 bg-primary/5 p-4 text-center">
+          <p className="text-sm text-muted-foreground mb-2">Already have an account?</p>
+          <Button variant="outline" size="lg" className="w-full border-primary/30 text-primary hover:bg-primary/10" asChild>
+            <Link to="/login">Sign in to your account</Link>
+          </Button>
+        </div>
       </div>
     </div>
   );
