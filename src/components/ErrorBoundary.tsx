@@ -37,6 +37,17 @@ class ErrorBoundary extends Component<Props, State> {
       if (sessionStorage.getItem(storageKey)) return;
       sessionStorage.setItem(storageKey, "1");
 
+      // Log to database
+      const { data: { user } } = await supabase.auth.getUser();
+      await supabase.from("crash_logs" as any).insert({
+        error_message: error.message,
+        error_stack: (error.stack || "").slice(0, 2000),
+        page_url: window.location.href,
+        user_agent: navigator.userAgent,
+        user_id: user?.id || null,
+      });
+
+      // Send email notification
       await supabase.functions.invoke("send-transactional-email", {
         body: {
           templateName: "app-crash-alert",

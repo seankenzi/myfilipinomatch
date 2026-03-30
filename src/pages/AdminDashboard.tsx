@@ -4,7 +4,7 @@ import {
   Users, Heart, MessageSquare, Shield, CreditCard, TrendingUp,
   BarChart3, ArrowLeft, Search, Ban, CheckCircle, XCircle,
   Clock, Eye, Star, AlertTriangle, RefreshCw, ToggleLeft, ToggleRight,
-  Plus, Trash2
+  Plus, Trash2, Bug
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -799,6 +799,63 @@ const FeatureFlagsTab = () => {
   );
 };
 
+// ─── Crash Logs Tab ───
+const CrashLogsTab = () => {
+  const [logs, setLogs] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchLogs = async () => {
+    setLoading(true);
+    const { data } = await supabase
+      .from("crash_logs" as any)
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(100);
+    setLogs(data || []);
+    setLoading(false);
+  };
+
+  useEffect(() => { fetchLogs(); }, []);
+
+  if (loading) return <div className="flex justify-center py-20"><div className="h-6 w-6 animate-spin rounded-full border-4 border-primary border-t-transparent" /></div>;
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h3 className="text-lg font-semibold flex items-center gap-2"><Bug className="h-5 w-5 text-destructive" /> Crash Logs ({logs.length})</h3>
+        <Button onClick={fetchLogs} variant="outline" size="icon"><RefreshCw className="h-4 w-4" /></Button>
+      </div>
+      {logs.length === 0 ? (
+        <p className="text-sm text-muted-foreground py-10 text-center">No crashes recorded. 🎉</p>
+      ) : (
+        <div className="space-y-3">
+          {logs.map((log: any) => (
+            <div key={log.id} className="rounded-xl border border-border bg-card p-4 space-y-2">
+              <div className="flex items-start justify-between gap-4">
+                <p className="text-sm font-medium text-destructive break-all">{log.error_message}</p>
+                <span className="text-[10px] text-muted-foreground whitespace-nowrap">
+                  {format(new Date(log.created_at), "MMM d, yyyy h:mm a")}
+                </span>
+              </div>
+              {log.page_url && (
+                <p className="text-xs text-muted-foreground">Page: {log.page_url}</p>
+              )}
+              {log.error_stack && (
+                <pre className="text-[11px] bg-muted rounded-lg p-3 overflow-auto max-h-32 text-muted-foreground font-mono whitespace-pre-wrap break-all">
+                  {log.error_stack}
+                </pre>
+              )}
+              {log.user_agent && (
+                <p className="text-[10px] text-muted-foreground/60 truncate">Browser: {log.user_agent}</p>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
 // ─── Main Admin Dashboard ───
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -824,12 +881,13 @@ const AdminDashboard = () => {
           </div>
 
           <Tabs defaultValue="dashboard" className="space-y-6" onValueChange={(v) => { if (v === "subscriptions") setSubsRefreshKey(k => k + 1); }}>
-            <TabsList className="grid w-full grid-cols-5 max-w-2xl">
+            <TabsList className="grid w-full grid-cols-6 max-w-3xl">
               <TabsTrigger value="dashboard" className="text-xs"><TrendingUp className="h-3.5 w-3.5 mr-1" /> Overview</TabsTrigger>
               <TabsTrigger value="users" className="text-xs"><Users className="h-3.5 w-3.5 mr-1" /> Users</TabsTrigger>
               <TabsTrigger value="moderation" className="text-xs"><Shield className="h-3.5 w-3.5 mr-1" /> Moderation</TabsTrigger>
               <TabsTrigger value="subscriptions" className="text-xs"><CreditCard className="h-3.5 w-3.5 mr-1" /> Subs</TabsTrigger>
               <TabsTrigger value="features" className="text-xs"><ToggleRight className="h-3.5 w-3.5 mr-1" /> Features</TabsTrigger>
+              <TabsTrigger value="crashes" className="text-xs"><Bug className="h-3.5 w-3.5 mr-1" /> Crashes</TabsTrigger>
             </TabsList>
 
             <TabsContent value="dashboard"><DashboardTab /></TabsContent>
@@ -837,6 +895,7 @@ const AdminDashboard = () => {
             <TabsContent value="moderation"><ModerationTab /></TabsContent>
             <TabsContent value="subscriptions"><SubscriptionsTab refreshKey={subsRefreshKey} /></TabsContent>
             <TabsContent value="features"><FeatureFlagsTab /></TabsContent>
+            <TabsContent value="crashes"><CrashLogsTab /></TabsContent>
           </Tabs>
         </div>
       </main>
