@@ -324,58 +324,65 @@ const Premium = () => {
             </div>
           </div>
 
-          {/* Free vs Premium comparison */}
+          {/* Plan comparison table */}
           <div className="mt-12">
-            <h2 className="text-2xl font-bold text-foreground mb-6">Free vs Premium</h2>
-            <div className="rounded-2xl border border-border bg-card shadow-card overflow-hidden">
+            <h2 className="text-2xl font-bold text-foreground mb-6">Compare Plans</h2>
+            <div className="rounded-2xl border border-border bg-card shadow-card overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-border bg-muted/50">
-                    <th className="text-left py-3 px-4 font-semibold text-foreground">Feature</th>
-                    <th className="py-3 px-4 font-semibold text-foreground text-center">Free</th>
-                    <th className="py-3 px-4 font-semibold text-primary text-center">
-                      <span className="inline-flex items-center gap-1"><Crown className="h-4 w-4" /> Premium</span>
+                    <th className="text-left py-3 px-3 font-semibold text-foreground min-w-[140px]">Feature</th>
+                    <th className="py-3 px-2 font-semibold text-foreground text-center min-w-[80px]">Free</th>
+                    <th className="py-3 px-2 font-semibold text-foreground text-center min-w-[80px]">
+                      <div>1 Month</div>
+                      <div className="text-xs font-normal text-muted-foreground">$29.99</div>
+                    </th>
+                    <th className="py-3 px-2 font-semibold text-foreground text-center min-w-[80px]">
+                      <div>3 Months</div>
+                      <div className="text-xs font-normal text-muted-foreground">$69.99</div>
+                    </th>
+                    <th className="py-3 px-2 font-semibold text-primary text-center min-w-[80px]">
+                      <span className="inline-flex items-center gap-1 justify-center"><Crown className="h-3.5 w-3.5" /> Annual</span>
+                      <div className="text-xs font-normal text-primary/70">$219.99</div>
                     </th>
                   </tr>
                 </thead>
                 <tbody>
-                  {[
-                    { feature: "Daily Likes", free: "10 per day", premium: "Unlimited" },
-                    { feature: "Messaging (mutual match)", free: "10 messages/day", premium: "Unlimited" },
-                    { feature: "Direct Message anyone", free: false, premium: true },
-                    { feature: "See who liked you", free: false, premium: true },
-                    { feature: "Undo accidental passes", free: false, premium: true },
-                    { feature: "Profile Boost", free: false, premium: true },
-                    { feature: "Advanced filters", free: false, premium: true },
-                    { feature: "Read receipts", free: false, premium: true },
-                    { feature: "Video calls (2 hrs/month)", free: false, premium: "Annual plan" },
-                    { feature: "Priority in Discover", free: false, premium: "3-Month+" },
-                    { feature: "VIP badge", free: false, premium: "Annual plan" },
-                    { feature: "Browse & Discover profiles", free: true, premium: true },
-                    { feature: "Match with mutual likes", free: true, premium: true },
-                    { feature: "Verification badge", free: true, premium: true },
-                    { feature: "Report & block users", free: true, premium: true },
-                  ].map(({ feature, free, premium }, i) => (
-                    <tr key={feature} className={i % 2 === 0 ? "bg-background" : "bg-muted/20"}>
-                      <td className="py-3 px-4 text-left text-foreground font-medium">{feature}</td>
-                      <td className="py-3 px-4 text-center">
-                        {free === true ? (
-                          <Check className="h-5 w-5 text-primary mx-auto" />
-                        ) : free === false ? (
-                          <span className="text-muted-foreground">—</span>
-                        ) : (
-                          <span className="text-muted-foreground">{free}</span>
-                        )}
-                      </td>
-                      <td className="py-3 px-4 text-center">
-                        {premium === true ? (
-                          <Check className="h-5 w-5 text-primary mx-auto" />
-                        ) : (
-                          <span className="text-primary font-semibold">{premium}</span>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
+                  {([
+                    { feature: "Browse & Discover profiles", free: true, monthly: true, quarterly: true, annual: true },
+                    { feature: "Match with mutual likes", free: true, monthly: true, quarterly: true, annual: true },
+                    { feature: "Verification badge", free: true, monthly: true, quarterly: true, annual: true },
+                    { feature: "Report & block users", free: true, monthly: true, quarterly: true, annual: true },
+                    { feature: "Daily Likes", free: "10/day", monthly: "Unlimited", quarterly: "Unlimited", annual: "Unlimited" },
+                    { feature: "Messaging (mutual match)", free: "10/day", monthly: "Unlimited", quarterly: "Unlimited", annual: "Unlimited" },
+                    { feature: "Direct Message anyone", free: false, monthly: true, quarterly: true, annual: true },
+                    { feature: "See who liked you", free: false, monthly: true, quarterly: true, annual: true },
+                    { feature: "Undo accidental passes", free: false, monthly: true, quarterly: true, annual: true },
+                    { feature: "Profile Boost (24h)", free: false, monthly: true, quarterly: true, annual: true },
+                    { feature: "Advanced filters", free: false, monthly: true, quarterly: true, annual: true },
+                    { feature: "Read receipts", free: false, monthly: true, quarterly: true, annual: true },
+                    { feature: "Priority in Discover", free: false, monthly: false, quarterly: true, annual: true },
+                    { feature: "Exclusive badge", free: false, monthly: false, quarterly: true, annual: true },
+                    { feature: "Priority support", free: false, monthly: false, quarterly: true, annual: true },
+                    { feature: "Video calls (2 hrs/month)", free: false, monthly: false, quarterly: false, annual: true },
+                    { feature: "VIP badge", free: false, monthly: false, quarterly: false, annual: true },
+                    { feature: "Early access to features", free: false, monthly: false, quarterly: false, annual: true },
+                  ] as Array<{ feature: string; free: boolean | string; monthly: boolean | string; quarterly: boolean | string; annual: boolean | string }>).map(({ feature, free, monthly, quarterly, annual }, i) => {
+                    const renderCell = (value: boolean | string) => {
+                      if (value === true) return <Check className="h-5 w-5 text-primary mx-auto" />;
+                      if (value === false) return <span className="text-muted-foreground">—</span>;
+                      return <span className="text-primary font-semibold text-xs">{value}</span>;
+                    };
+                    return (
+                      <tr key={feature} className={i % 2 === 0 ? "bg-background" : "bg-muted/20"}>
+                        <td className="py-2.5 px-3 text-left text-foreground font-medium">{feature}</td>
+                        <td className="py-2.5 px-2 text-center">{renderCell(free)}</td>
+                        <td className="py-2.5 px-2 text-center">{renderCell(monthly)}</td>
+                        <td className="py-2.5 px-2 text-center">{renderCell(quarterly)}</td>
+                        <td className="py-2.5 px-2 text-center bg-primary/5">{renderCell(annual)}</td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
