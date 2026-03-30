@@ -203,8 +203,21 @@ const Messages = () => {
       .select("id, full_name, avatar_url, photos, is_verified, age, city, country, is_premium, last_seen")
       .in("id", otherUserIds);
 
+    // Resolve signed URLs for profile photos
+    const resolvedProfiles = await Promise.all(
+      (profilesData || []).map(async (p) => {
+        const photo = getPhoto(p);
+        const signedUrl = await resolvePhoto(photo);
+        return {
+          ...p,
+          avatar_url: signedUrl,
+          photos: p.photos ? [signedUrl].filter(Boolean) as string[] : null,
+        };
+      })
+    );
+
     const profileMap = new Map(
-      (profilesData || []).map((p) => [p.id, p])
+      resolvedProfiles.map((p) => [p.id, p])
     );
 
     const matchList: Match[] = [];
