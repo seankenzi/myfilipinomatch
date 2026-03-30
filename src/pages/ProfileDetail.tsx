@@ -127,6 +127,22 @@ const ProfileDetail = () => {
     if (!error) {
       setLiked(true);
       toast({ title: "Liked!", description: `You liked ${profile.full_name.split(" ")[0]}` });
+      // Send "someone liked you" email to the liked person
+      const { data: likedProfile } = await supabase
+        .from("profiles")
+        .select("email")
+        .eq("id", profile.id)
+        .maybeSingle();
+      if (likedProfile?.email) {
+        supabase.functions.invoke("send-transactional-email", {
+          body: {
+            templateName: "profile-liked",
+            recipientEmail: likedProfile.email,
+            idempotencyKey: `profile-liked-${user.id}-${profile.id}`,
+            templateData: { likerName: user.user_metadata?.full_name?.split(" ")[0] || "" },
+          },
+        }).catch(() => {});
+      }
       // Check for mutual match
       const { data: mutual } = await supabase
         .from("likes")
