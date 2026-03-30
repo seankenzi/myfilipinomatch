@@ -52,9 +52,13 @@ const Navbar = ({ bannerSubtitle }: NavbarProps) => {
           </Link>
         </nav>
         ) : (
-          <p className="hidden md:block text-base font-display font-semibold bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent tracking-wide">
+          <motion.p
+            className="hidden md:block text-lg lg:text-xl font-display font-bold bg-gradient-to-r from-primary via-accent to-primary bg-[length:200%_auto] bg-clip-text text-transparent drop-shadow-sm"
+            animate={{ backgroundPosition: ["0% center", "200% center"] }}
+            transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+          >
             Find Your Perfect Filipino Match 💖
-          </p>
+          </motion.p>
         )}
 
         <div className="flex items-center gap-3">
