@@ -1102,26 +1102,21 @@ const Discover = () => {
                             <div className="absolute top-2 right-2 text-sm">{getFlagEmoji(profile.country)}</div>
                           )}
 
-                          {/* Annual member badge - only for profiles that are premium */}
-                          {(profile as any).is_premium && (
-                            <div className="absolute top-2 left-1/2 -translate-x-1/2 rounded-full bg-accent/90 backdrop-blur-sm px-2 py-0.5 flex items-center gap-1 shadow-sm">
-                              <Gem className="h-2.5 w-2.5 text-primary-foreground" />
-                              <span className="text-[9px] font-bold text-primary-foreground">Annual Member</span>
-                            </div>
-                          )}
-
-                          {/* Verified badge */}
-                          {profile.is_verified && (
-                            <div className="absolute top-2 left-2 rounded-full bg-card/80 backdrop-blur-sm p-1">
-                              <Shield className="h-3 w-3 text-secondary fill-secondary/30" />
-                            </div>
-                          )}
-
-                          {/* Already liked indicator */}
-                          {likedIds.has(profile.id) && (
-                            <div className={`absolute left-1/2 -translate-x-1/2 rounded-full bg-primary/90 backdrop-blur-sm px-2.5 py-1 flex items-center gap-1 shadow-sm ${(profile as any).is_premium ? 'top-10' : 'top-2'}`}>
-                              <Heart className="h-3 w-3 text-primary-foreground fill-primary-foreground" />
-                              <span className="text-[10px] font-semibold text-primary-foreground">Liked</span>
+                          {/* Badges row - positioned above name overlay to avoid covering face */}
+                          {((profile as any).is_premium || likedIds.has(profile.id)) && (
+                            <div className="absolute bottom-12 left-0 right-0 flex justify-center gap-1.5 px-2">
+                              {(profile as any).is_premium && (
+                                <div className="rounded-full bg-accent/90 backdrop-blur-sm px-2 py-0.5 flex items-center gap-1 shadow-sm">
+                                  <Gem className="h-2.5 w-2.5 text-primary-foreground" />
+                                  <span className="text-[9px] font-bold text-primary-foreground">Annual Member</span>
+                                </div>
+                              )}
+                              {likedIds.has(profile.id) && (
+                                <div className="rounded-full bg-primary/90 backdrop-blur-sm px-2.5 py-0.5 flex items-center gap-1 shadow-sm">
+                                  <Heart className="h-3 w-3 text-primary-foreground fill-primary-foreground" />
+                                  <span className="text-[10px] font-semibold text-primary-foreground">Liked</span>
+                                </div>
+                              )}
                             </div>
                           )}
 
