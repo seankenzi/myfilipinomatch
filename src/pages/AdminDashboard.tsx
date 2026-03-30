@@ -122,7 +122,42 @@ const UsersTab = () => {
   };
 
   const handlePremium = async (userId: string, premium: boolean) => {
+    // Update profile
     await supabase.from("profiles").update({ is_premium: premium }).eq("id", userId);
+
+    // Sync subscriptions table
+    const { data: existing } = await supabase
+      .from("subscriptions")
+      .select("id")
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    if (premium) {
+      const periodEnd = new Date(Date.now() + 365 * 86400000).toISOString();
+      if (existing) {
+        await supabase.from("subscriptions").update({
+          plan: "yearly",
+          status: "active",
+          current_period_end: periodEnd,
+          updated_at: new Date().toISOString(),
+        }).eq("id", existing.id);
+      } else {
+        await supabase.from("subscriptions").insert({
+          user_id: userId,
+          plan: "yearly",
+          status: "active",
+          current_period_end: periodEnd,
+        });
+      }
+    } else if (existing) {
+      await supabase.from("subscriptions").update({
+        plan: "free",
+        status: "canceled",
+        current_period_end: null,
+        updated_at: new Date().toISOString(),
+      }).eq("id", existing.id);
+    }
+
     toast({ title: premium ? "Premium granted ⭐" : "Premium removed" });
     fetchUsers();
   };
