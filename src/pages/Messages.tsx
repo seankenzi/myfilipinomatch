@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import {
   Send, ArrowLeft, Shield, Lock, MessageCircle, Sparkles,
-  Flag, Ban, AlertTriangle, MoreVertical, MapPin, Crown, Video, Heart
+  Flag, Ban, AlertTriangle, MoreVertical, MapPin, Crown, Video, Heart,
+  Check, CheckCheck
 } from "lucide-react";
 import VideoCallModal from "@/components/VideoCallModal";
 import { detectContactInfo } from "@/lib/contactFilter";
