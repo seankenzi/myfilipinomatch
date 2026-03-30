@@ -43,9 +43,20 @@ const COUNTRIES = [
 ];
 
 const PH_CITIES = [
-  "Metro Manila", "Cebu City", "Davao City", "Quezon City", "Makati",
-  "Taguig", "Pasig", "Zamboanga", "Cagayan de Oro", "Iloilo City",
-  "Bacolod", "General Santos", "Other",
+  "Angeles City", "Antipolo", "Bacolod", "Bacoor", "Baguio", "Batangas City",
+  "Biñan", "Butuan", "Cabanatuan", "Cabuyao", "Cagayan de Oro", "Calamba",
+  "Calocan", "Caloocan", "Cavite City", "Cebu City", "Cotabato City",
+  "Dagupan", "Dasmarinas", "Davao City", "Dipolog", "Dumaguete",
+  "General Santos", "General Trias", "Ilo-ilo City", "Imus",
+  "Kalookan", "Lapu-Lapu City", "Las Piñas", "Legazpi", "Lipa",
+  "Lucena", "Makati", "Malabon", "Mandaluyong", "Mandaue",
+  "Manila", "Marawi", "Marikina", "Meycauayan", "Muntinlupa",
+  "Naga", "Navotas", "Olongapo", "Ormoc", "Pagadian",
+  "Paranaque", "Pasay", "Pasig", "Puerto Princesa",
+  "Quezon City", "Roxas City", "San Fernando (La Union)", "San Fernando (Pampanga)",
+  "San Jose del Monte", "San Pablo", "San Pedro", "Santa Rosa",
+  "Santiago", "Tacloban", "Taguig", "Tarlac City", "Tayabas",
+  "Tuguegarao", "Valenzuela", "Zamboanga City", "Other",
 ];
 
 const INTERESTS = [
