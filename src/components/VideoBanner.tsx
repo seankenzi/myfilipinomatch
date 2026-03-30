@@ -15,7 +15,7 @@ const VideoBanner = ({ subtitle }: VideoBannerProps) => {
   return (
     <div
       className="w-full cursor-pointer border-b border-primary/10 bg-gradient-to-r from-primary/10 via-accent/10 to-primary/10 transition-colors hover:from-primary/15 hover:via-accent/15 hover:to-primary/15"
-      onClick={() => navigate("/premium")}
+      onClick={() => navigate(user ? "/premium" : "/signup")}
     >
       <div className="container flex items-center gap-3 px-4 py-3">
         <div className="hidden h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-primary/15 sm:flex">
