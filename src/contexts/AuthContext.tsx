@@ -8,6 +8,8 @@ interface AuthContextType {
   session: Session | null;
   user: User | null;
   loading: boolean;
+  isPremium: boolean;
+  premiumLoading: boolean;
   signUp: (email: string, password: string, fullName: string) => Promise<{ error: Error | null }>;
   signIn: (email: string, password: string) => Promise<{ error: Error | null; data: any }>;
   signOut: () => Promise<void>;
@@ -19,6 +21,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isPremium, setIsPremium] = useState(false);
+  const [premiumLoading, setPremiumLoading] = useState(true);
 
   useEffect(() => {
     let mounted = true;
@@ -48,6 +52,36 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       subscription.unsubscribe();
     };
   }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const fetchPremiumStatus = async () => {
+      if (!user) {
+        setIsPremium(false);
+        setPremiumLoading(false);
+        return;
+      }
+
+      setPremiumLoading(true);
+      const { data } = await supabase
+        .from("profiles")
+        .select("is_premium")
+        .eq("id", user.id)
+        .single();
+
+      if (!cancelled) {
+        setIsPremium(data?.is_premium === true);
+        setPremiumLoading(false);
+      }
+    };
+
+    fetchPremiumStatus();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [user]);
 
   // Online heartbeat - update last_seen every minute
   useEffect(() => {
@@ -93,7 +127,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ session, user, loading, signUp, signIn, signOut }}>
+    <AuthContext.Provider value={{ session, user, loading, isPremium, premiumLoading, signUp, signIn, signOut }}>
       {children}
     </AuthContext.Provider>
   );
