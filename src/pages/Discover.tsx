@@ -792,7 +792,6 @@ const Discover = () => {
                   <span className="font-semibold text-foreground">{dailyLikesRemaining}</span>
                   <span className="text-muted-foreground">likes left</span>
                 </div>
-                <span className="text-[10px] text-muted-foreground px-1">🎥 Video calls included in Annual</span>
               </div>
             )}
             <button
