@@ -57,7 +57,7 @@ const Navbar = ({ bannerSubtitle }: NavbarProps) => {
             animate={{ backgroundPosition: ["0% center", "200% center"] }}
             transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
           >
-            Find Your Perfect Filipino Match 💖
+            Connecting Hearts, Bridging Cultures 💕
           </motion.p>
         )}
 
