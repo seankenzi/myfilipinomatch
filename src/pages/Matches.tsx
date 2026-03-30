@@ -1,17 +1,105 @@
+import { useEffect, useState } from "react";
 import { Heart, MessageCircle } from "lucide-react";
 import { Link } from "react-router-dom";
+import { formatDistanceToNow } from "date-fns";
 import { Button } from "@/components/ui/button";
 import BottomNav from "@/components/BottomNav";
 import Navbar from "@/components/Navbar";
-import profile1 from "@/assets/profile-1.jpg";
-import profile3 from "@/assets/profile-3.jpg";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { getSignedPhotoUrl } from "@/lib/storage";
 
-const mockMatches = [
-  { id: 1, name: "Maria", age: 26, city: "Manila", image: profile1, lastActive: "2 min ago", newMatch: true },
-  { id: 2, name: "Jasmine", age: 24, city: "Cebu", image: profile3, lastActive: "1 hour ago", newMatch: false },
-];
+interface DisplayMatch {
+  id: string;
+  name: string;
+  age: number | null;
+  city: string | null;
+  country: string | null;
+  image: string | null;
+  lastActive: string;
+  newMatch: boolean;
+}
+
+const getLastActiveLabel = (lastSeen: string | null) => {
+  if (!lastSeen) return "Recently";
+  const date = new Date(lastSeen);
+  if (Number.isNaN(date.getTime())) return "Recently";
+  return formatDistanceToNow(date, { addSuffix: true });
+};
 
 const Matches = () => {
+  const { user } = useAuth();
+  const [matches, setMatches] = useState<DisplayMatch[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const fetchMatches = async () => {
+      if (!user) {
+        if (!cancelled) {
+          setMatches([]);
+          setLoading(false);
+        }
+        return;
+      }
+
+      setLoading(true);
+
+      const { data: matchesData, error } = await supabase
+        .from("matches")
+        .select("id, user1_id, user2_id, created_at")
+        .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`)
+        .order("created_at", { ascending: false });
+
+      if (error || !matchesData) {
+        if (!cancelled) {
+          setMatches([]);
+          setLoading(false);
+        }
+        return;
+      }
+
+      const resolvedMatches = await Promise.all(
+        matchesData.map(async (match) => {
+          const otherUserId = match.user1_id === user.id ? match.user2_id : match.user1_id;
+
+          const { data: profileData } = await supabase.rpc("get_profile_by_id", {
+            profile_id: otherUserId,
+          });
+
+          const profile = profileData?.[0];
+          if (!profile) return null;
+
+          const rawPhoto = profile.photos?.[0] || profile.avatar_url;
+          const image = rawPhoto ? await getSignedPhotoUrl(rawPhoto) : null;
+
+          return {
+            id: match.id,
+            name: profile.full_name,
+            age: profile.age,
+            city: profile.city,
+            country: profile.country,
+            image,
+            lastActive: getLastActiveLabel(profile.last_seen),
+            newMatch: Date.now() - new Date(match.created_at).getTime() < 24 * 60 * 60 * 1000,
+          } satisfies DisplayMatch;
+        })
+      );
+
+      if (!cancelled) {
+        setMatches(resolvedMatches.filter((match): match is DisplayMatch => match !== null));
+        setLoading(false);
+      }
+    };
+
+    fetchMatches();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [user]);
+
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <Navbar />
@@ -19,10 +107,14 @@ const Matches = () => {
         <div className="mx-auto max-w-2xl">
           <h1 className="mb-6 text-2xl font-bold">Your Matches</h1>
 
-          {/* Matches */}
           <div>
             <h2 className="mb-4 text-lg font-semibold">Mutual Matches</h2>
-            {mockMatches.length === 0 ? (
+
+            {loading ? (
+              <div className="flex items-center justify-center rounded-2xl border border-border bg-card p-12 shadow-card">
+                <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+              </div>
+            ) : matches.length === 0 ? (
               <div className="rounded-2xl border border-border bg-card p-12 text-center shadow-card">
                 <Heart className="mx-auto mb-4 h-12 w-12 text-muted-foreground/30" />
                 <p className="text-muted-foreground">No matches yet. Keep discovering!</p>
@@ -34,33 +126,42 @@ const Matches = () => {
               </div>
             ) : (
               <div className="space-y-3">
-                {mockMatches.map((match) => (
+                {matches.map((match) => (
                   <Link
                     key={match.id}
-                    to="/messages"
+                    to={`/messages?match=${match.id}`}
                     className="flex items-center gap-4 rounded-2xl border border-border bg-card p-4 shadow-card transition-all hover:shadow-card-hover"
                   >
                     <div className="relative">
-                      <img
-                        src={match.image}
-                        alt={match.name}
-                        loading="lazy"
-                        className="h-16 w-16 rounded-xl object-cover"
-                      />
+                      {match.image ? (
+                        <img
+                          src={match.image}
+                          alt={match.name}
+                          loading="lazy"
+                          className="h-16 w-16 rounded-xl object-cover"
+                        />
+                      ) : (
+                        <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-muted text-lg">👤</div>
+                      )}
                       {match.newMatch && (
                         <div className="absolute -right-1 -top-1 h-4 w-4 rounded-full border-2 border-card gradient-hero" />
                       )}
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
-                        <h3 className="font-semibold">{match.name}, {match.age}</h3>
+                        <h3 className="font-semibold">
+                          {match.name}
+                          {match.age ? `, ${match.age}` : ""}
+                        </h3>
                         {match.newMatch && (
                           <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary">
                             New
                           </span>
                         )}
                       </div>
-                      <p className="text-sm text-muted-foreground">{match.city}, Philippines</p>
+                      <p className="text-sm text-muted-foreground">
+                        {[match.city, match.country].filter(Boolean).join(", ") || "Location not set"}
+                      </p>
                     </div>
                     <div className="flex flex-col items-end gap-1">
                       <MessageCircle className="h-5 w-5 text-muted-foreground" />
