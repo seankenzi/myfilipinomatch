@@ -29,11 +29,8 @@ const PhotoUpload = ({ photos, onPhotosChange, maxPhotos = 6 }: PhotoUploadProps
 
     if (error) throw error;
 
-    const { data: { publicUrl } } = supabase.storage
-      .from("profile-photos")
-      .getPublicUrl(fileName);
-
-    return publicUrl;
+    // Store the path, not the public URL
+    return fileName;
   };
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
