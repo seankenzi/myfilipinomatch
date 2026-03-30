@@ -674,7 +674,7 @@ const Messages = () => {
                   <div className="flex items-start gap-2.5 rounded-xl bg-accent/5 border border-accent/15 p-3.5 mb-5">
                     <Shield className="h-4 w-4 text-accent mt-0.5 flex-shrink-0" />
                     <p className="text-xs text-muted-foreground leading-relaxed">
-                      <strong className="text-foreground">Safety reminder:</strong> Sharing contact info (phone numbers, emails, social media) is not allowed. Keep conversations on MyFilipinoMatch.
+                      <strong className="text-foreground">Safety reminder:</strong> For your protection, avoid sharing personal contact details too soon. Keeping conversations here helps us detect suspicious activity and keep you safe.
                     </p>
                   </div>
 
