@@ -30,6 +30,7 @@ const Navbar = ({ bannerSubtitle }: NavbarProps) => {
           </span>
         </Link>
 
+        {user && (
         <nav className="hidden items-center gap-6 md:flex">
           <Link to="/discover" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
             Discover
@@ -49,6 +50,7 @@ const Navbar = ({ bannerSubtitle }: NavbarProps) => {
             Messages
           </Link>
         </nav>
+        )}
 
         <div className="flex items-center gap-3">
           {loading ? null : user ? (
