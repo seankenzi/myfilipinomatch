@@ -307,16 +307,29 @@ const Onboarding = () => {
                 </p>
               </div>
               {userType === "foreigner" ? (
-                <Select value={country} onValueChange={setCountry}>
-                  <SelectTrigger className="w-full text-base h-12 rounded-xl">
-                    <SelectValue placeholder="Select your country" />
-                  </SelectTrigger>
-                  <SelectContent className="max-h-[300px]">
-                    {COUNTRIES.map((c) => (
-                      <SelectItem key={c} value={c}>{c}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Popover open={countryOpen} onOpenChange={setCountryOpen}>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" role="combobox" aria-expanded={countryOpen} className="w-full text-base h-12 rounded-xl justify-between font-normal">
+                      {country || "Select your country..."}
+                      <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                    <Command>
+                      <CommandInput placeholder="Search country..." />
+                      <CommandList>
+                        <CommandEmpty>No country found.</CommandEmpty>
+                        <CommandGroup>
+                          {COUNTRIES.map((c) => (
+                            <CommandItem key={c} value={c} onSelect={(val) => { setCountry(val); setCountryOpen(false); }} className={country === c ? "bg-primary/10" : ""}>
+                              {c}
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
               ) : (
                 <div className="space-y-3">
                   <div className="grid grid-cols-2 gap-2">
