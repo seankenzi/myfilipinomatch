@@ -41,12 +41,13 @@ const RotatingTagline = () => {
         <motion.p
           key={index}
           className="text-lg lg:text-xl font-display font-bold bg-gradient-to-r from-primary via-accent to-primary bg-[length:200%_auto] bg-clip-text text-transparent drop-shadow-sm"
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1, backgroundPosition: ["0% center", "200% center"] }}
-          exit={{ y: -20, opacity: 0 }}
+          initial={{ scale: 0.6, opacity: 0, filter: "blur(8px)" }}
+          animate={{ scale: 1, opacity: 1, filter: "blur(0px)", backgroundPosition: ["0% center", "200% center"] }}
+          exit={{ scale: 0.8, opacity: 0, filter: "blur(4px)" }}
           transition={{
-            y: { duration: 0.4, ease: "easeOut" },
-            opacity: { duration: 0.4 },
+            scale: { type: "spring", stiffness: 300, damping: 20 },
+            opacity: { duration: 0.3 },
+            filter: { duration: 0.3 },
             backgroundPosition: { duration: 4, repeat: Infinity, ease: "linear" },
           }}
         >
