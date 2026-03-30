@@ -34,15 +34,6 @@ const VideoBanner = () => {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Button
-              variant="hero"
-              size="sm"
-              className="gap-1.5 whitespace-nowrap"
-              onClick={() => navigate("/premium")}
-            >
-              <Heart className="h-3.5 w-3.5 fill-primary-foreground" />
-              ❤️ Upgrade to Annual
-            </Button>
             <button
               onClick={() => setDismissed(true)}
               className="rounded-full p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
