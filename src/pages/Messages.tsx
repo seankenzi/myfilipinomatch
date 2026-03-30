@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import {
   Send, ArrowLeft, Shield, Lock, MessageCircle, Sparkles,
-  Flag, Ban, AlertTriangle, MoreVertical, MapPin, Crown, Video, Heart
+  Flag, Ban, AlertTriangle, MoreVertical, MapPin, Crown, Video, Heart,
+  Check, CheckCheck
 } from "lucide-react";
 import VideoCallModal from "@/components/VideoCallModal";
 import { detectContactInfo } from "@/lib/contactFilter";
@@ -98,6 +99,9 @@ const Messages = () => {
   const [reportDetails, setReportDetails] = useState("");
   const [videoCallOpen, setVideoCallOpen] = useState(false);
   const [videoUpgradeOpen, setVideoUpgradeOpen] = useState(false);
+  const [isOtherTyping, setIsOtherTyping] = useState(false);
+  const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastTypingBroadcastRef = useRef<number>(0);
 
   const mySentCount = messages.filter((m) => m.sender_id === user?.id).length;
   const todayStart = new Date();
@@ -281,8 +285,9 @@ const Messages = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  // Realtime: new messages, read updates, and typing indicators
   useEffect(() => {
-    if (!selectedMatch) return;
+    if (!selectedMatch || !user) return;
     const channel = supabase
       .channel(`messages-${selectedMatch.id}`)
       .on("postgres_changes", {
@@ -298,11 +303,47 @@ const Messages = () => {
         });
         if (newMsg.sender_id !== user?.id) {
           supabase.from("messages").update({ read: true }).eq("id", newMsg.id);
+          setIsOtherTyping(false); // They sent a message, so they stopped typing
+        }
+      })
+      .on("postgres_changes", {
+        event: "UPDATE",
+        schema: "public",
+        table: "messages",
+        filter: `match_id=eq.${selectedMatch.id}`,
+      }, (payload) => {
+        const updated = payload.new as Message;
+        setMessages((prev) =>
+          prev.map((m) => (m.id === updated.id ? { ...m, read: updated.read } : m))
+        );
+      })
+      .on("broadcast", { event: "typing" }, (payload) => {
+        if (payload.payload?.user_id !== user.id) {
+          setIsOtherTyping(true);
+          if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+          typingTimeoutRef.current = setTimeout(() => setIsOtherTyping(false), 3000);
         }
       })
       .subscribe();
 
-    return () => { supabase.removeChannel(channel); };
+    return () => {
+      supabase.removeChannel(channel);
+      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+      setIsOtherTyping(false);
+    };
+  }, [selectedMatch, user]);
+
+  // Broadcast typing indicator (throttled to once per 2s)
+  const broadcastTyping = useCallback(() => {
+    if (!selectedMatch || !user) return;
+    const now = Date.now();
+    if (now - lastTypingBroadcastRef.current < 2000) return;
+    lastTypingBroadcastRef.current = now;
+    supabase.channel(`messages-${selectedMatch.id}`).send({
+      type: "broadcast",
+      event: "typing",
+      payload: { user_id: user.id },
+    });
   }, [selectedMatch, user]);
 
   const handleSend = async () => {
@@ -491,11 +532,18 @@ const Messages = () => {
                           </span>
                         )}
                       </div>
-                      <p className={`text-[13px] truncate leading-snug ${match.unread_count > 0 ? "text-foreground font-medium" : "text-muted-foreground"}`}>
-                        {match.last_message
-                          ? `${match.last_message.sender_id === user?.id ? "You: " : ""}${match.last_message.content}`
-                          : "Start a conversation! 👋"}
-                      </p>
+                      <div className="flex items-center gap-1">
+                        {match.last_message && match.last_message.sender_id === user?.id && (
+                          match.last_message.read
+                            ? <CheckCheck className="h-3 w-3 text-primary flex-shrink-0" />
+                            : <Check className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+                        )}
+                        <p className={`text-[13px] truncate leading-snug ${match.unread_count > 0 ? "text-foreground font-medium" : "text-muted-foreground"}`}>
+                          {match.last_message
+                            ? `${match.last_message.sender_id === user?.id ? "You: " : ""}${match.last_message.content}`
+                            : "Start a conversation! 👋"}
+                        </p>
+                      </div>
                     </div>
                   </button>
                 ))}
@@ -641,11 +689,18 @@ const Messages = () => {
                                 }`}
                               >
                                 <p className="text-[14px] leading-relaxed whitespace-pre-wrap break-words">{msg.content}</p>
-                                <p className={`mt-1 text-[10px] ${
-                                  isMe ? "text-primary-foreground/50" : "text-muted-foreground"
-                                }`}>
-                                  {format(new Date(msg.created_at), "h:mm a")}
-                                </p>
+                                <div className={`flex items-center gap-1 mt-1 ${isMe ? "justify-end" : ""}`}>
+                                  <span className={`text-[10px] ${
+                                    isMe ? "text-primary-foreground/50" : "text-muted-foreground"
+                                  }`}>
+                                    {format(new Date(msg.created_at), "h:mm a")}
+                                  </span>
+                                  {isMe && (
+                                    msg.read
+                                      ? <CheckCheck className="h-3.5 w-3.5 text-primary-foreground/70" />
+                                      : <Check className="h-3.5 w-3.5 text-primary-foreground/40" />
+                                  )}
+                                </div>
                               </div>
                             </motion.div>
                           );
@@ -653,6 +708,26 @@ const Messages = () => {
                       </div>
                     </div>
                   ))}
+
+                  {/* Typing indicator */}
+                  <AnimatePresence>
+                    {isOtherTyping && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 8 }}
+                        className="flex justify-start mb-3"
+                      >
+                        <div className="bg-card border border-border rounded-2xl rounded-bl-lg px-4 py-3 shadow-sm">
+                          <div className="flex items-center gap-1">
+                            <span className="h-2 w-2 rounded-full bg-muted-foreground/40 animate-bounce" style={{ animationDelay: "0ms" }} />
+                            <span className="h-2 w-2 rounded-full bg-muted-foreground/40 animate-bounce" style={{ animationDelay: "150ms" }} />
+                            <span className="h-2 w-2 rounded-full bg-muted-foreground/40 animate-bounce" style={{ animationDelay: "300ms" }} />
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
 
                   {/* Video upgrade nudge */}
                   {!isPremium && messages.length >= 5 && (
@@ -720,7 +795,7 @@ const Messages = () => {
                           placeholder="Type a message..."
                           className="w-full rounded-full border border-input bg-muted/30 px-5 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all placeholder:text-muted-foreground/60"
                           value={newMessage}
-                          onChange={(e) => setNewMessage(e.target.value.slice(0, 1000))}
+                          onChange={(e) => { setNewMessage(e.target.value.slice(0, 1000)); broadcastTyping(); }}
                           onKeyDown={handleKeyDown}
                           maxLength={1000}
                         />
