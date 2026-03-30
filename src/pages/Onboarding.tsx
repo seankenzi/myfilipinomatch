@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { detectContactInfo } from "@/lib/contactFilter";
 import { useNavigate } from "react-router-dom";
 import { Heart, Globe, MapPin, User, Camera, Shield, ArrowRight, ArrowLeft, Sparkles, CheckCircle } from "lucide-react";
@@ -12,6 +12,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import PhotoUpload from "@/components/PhotoUpload";
+import { motion, AnimatePresence } from "framer-motion";
 
 const TOTAL_STEPS = 6;
 
@@ -29,6 +30,7 @@ const PH_CITIES = [
 
 const Onboarding = () => {
   const [step, setStep] = useState(1);
+  const [direction, setDirection] = useState(1); // 1 = forward, -1 = back
   const [saving, setSaving] = useState(false);
   const { user, loading } = useAuth();
   const { toast } = useToast();
@@ -126,12 +128,18 @@ const Onboarding = () => {
   };
 
   const next = () => {
-    if (step < TOTAL_STEPS) setStep(step + 1);
+    if (step < TOTAL_STEPS) { setDirection(1); setStep(step + 1); }
     else saveProfile();
   };
 
   const back = () => {
-    if (step > 1) setStep(step - 1);
+    if (step > 1) { setDirection(-1); setStep(step - 1); }
+  };
+
+  const stepVariants = {
+    enter: (dir: number) => ({ x: dir > 0 ? 60 : -60, opacity: 0 }),
+    center: { x: 0, opacity: 1 },
+    exit: (dir: number) => ({ x: dir > 0 ? -60 : 60, opacity: 0 }),
   };
 
   const handleVerifyNow = async () => {
@@ -165,8 +173,18 @@ const Onboarding = () => {
         </div>
       </div>
 
-      <div className="flex flex-1 items-center justify-center px-4 py-8">
-        <div className="w-full max-w-lg animate-scale-in">
+      <div className="flex flex-1 items-center justify-center px-4 py-8 overflow-hidden">
+        <div className="w-full max-w-lg">
+          <AnimatePresence mode="wait" custom={direction}>
+            <motion.div
+              key={step}
+              custom={direction}
+              variants={stepVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={{ duration: 0.3, ease: "easeInOut" }}
+            >
 
           {/* Step 1: Identity */}
           {step === 1 && (
@@ -409,6 +427,8 @@ const Onboarding = () => {
               </Button>
             )}
           </div>
+            </motion.div>
+          </AnimatePresence>
         </div>
       </div>
     </div>
