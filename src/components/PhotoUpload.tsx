@@ -3,6 +3,7 @@ import { Plus, X, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { useSignedPhotos } from "@/hooks/useSignedPhotos";
 
 interface PhotoUploadProps {
   photos: string[];
@@ -28,11 +29,8 @@ const PhotoUpload = ({ photos, onPhotosChange, maxPhotos = 6 }: PhotoUploadProps
 
     if (error) throw error;
 
-    const { data: { publicUrl } } = supabase.storage
-      .from("profile-photos")
-      .getPublicUrl(fileName);
-
-    return publicUrl;
+    // Store the path, not the public URL
+    return fileName;
   };
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -68,24 +66,29 @@ const PhotoUpload = ({ photos, onPhotosChange, maxPhotos = 6 }: PhotoUploadProps
   };
 
   const removePhoto = async (index: number) => {
-    const url = photos[index];
+    const path = photos[index];
     const updated = photos.filter((_, i) => i !== index);
     onPhotosChange(updated);
 
     if (user) {
-      // Extract path from URL for deletion
-      const path = url.split("/profile-photos/")[1];
-      if (path) {
-        await supabase.storage.from("profile-photos").remove([decodeURIComponent(path)]);
+      // Extract path from URL or use path directly for deletion
+      const storagePath = path.includes("/profile-photos/")
+        ? decodeURIComponent(path.split("/profile-photos/")[1])
+        : path;
+      if (storagePath) {
+        await supabase.storage.from("profile-photos").remove([storagePath]);
       }
       await supabase.from("profiles").update({ photos: updated, avatar_url: updated[0] || null }).eq("id", user.id);
     }
   };
 
+  // Get signed URLs for display
+  const signedUrls = useSignedPhotos(photos);
+
   return (
     <div>
       <div className="grid grid-cols-3 gap-2">
-        {photos.map((url, i) => (
+        {signedUrls.map((url, i) => (
           <div key={i} className="relative aspect-square rounded-xl overflow-hidden border border-border">
             <img src={url} alt={`Photo ${i + 1}`} className="h-full w-full object-cover" />
             <button

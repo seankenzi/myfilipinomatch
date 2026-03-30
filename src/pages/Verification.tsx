@@ -103,16 +103,13 @@ const Verification = () => {
 
       if (uploadError) throw uploadError;
 
-      const { data: { publicUrl } } = supabase.storage
-        .from("profile-photos")
-        .getPublicUrl(filePath);
-
+      // Store the path, not the public URL
       const { error: insertError } = await supabase
         .from("verifications")
         .insert({
           user_id: user.id,
           type: "photo",
-          document_url: publicUrl,
+          document_url: filePath,
           status: "pending",
         });
 
