@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import {
-  Shield, CheckCircle, XCircle, Clock, ExternalLink, ArrowLeft, Eye, Camera
+  Shield, CheckCircle, XCircle, Clock, ArrowLeft, Eye, Camera, User
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
@@ -9,7 +9,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
-import { getSignedPhotoUrl } from "@/lib/storage";
+import { getSignedPhotoUrl, getSignedPhotoUrls } from "@/lib/storage";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle
 } from "@/components/ui/dialog";
@@ -26,6 +26,7 @@ interface VerificationRecord {
     full_name: string;
     avatar_url: string | null;
     photos: string[] | null;
+    signedPhotos?: string[];
     email: string | null;
   };
 }
@@ -38,7 +39,7 @@ const AdminVerifications = () => {
   const [records, setRecords] = useState<VerificationRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<"pending" | "approved" | "rejected" | "all">("pending");
-  const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [compareRecord, setCompareRecord] = useState<VerificationRecord | null>(null);
   const [processing, setProcessing] = useState<string | null>(null);
 
   useEffect(() => {
@@ -82,7 +83,8 @@ const AdminVerifications = () => {
     const resolvedProfiles = await Promise.all(
       (profiles || []).map(async (p) => {
         const avatar = p.avatar_url ? await getSignedPhotoUrl(p.avatar_url) : null;
-        return { ...p, avatar_url: avatar };
+        const signedPhotos = p.photos?.length ? await getSignedPhotoUrls(p.photos) : [];
+        return { ...p, avatar_url: avatar, signedPhotos };
       })
     );
     const profileMap = new Map(resolvedProfiles.map((p) => [p.id, p]));
@@ -126,6 +128,7 @@ const AdminVerifications = () => {
     });
 
     setProcessing(null);
+    setCompareRecord(null);
     fetchRecords();
   };
 
@@ -199,7 +202,7 @@ const AdminVerifications = () => {
                   {/* Verification photo thumbnail */}
                   {record.document_url ? (
                     <button
-                      onClick={() => setPreviewImage(record.document_url)}
+                      onClick={() => setCompareRecord(record)}
                       className="relative flex-shrink-0 h-16 w-16 rounded-xl overflow-hidden border border-border hover:opacity-80 transition-opacity"
                     >
                       <img
@@ -236,30 +239,40 @@ const AdminVerifications = () => {
                     </p>
                   </div>
 
-                  {/* Actions */}
-                  {record.status === "pending" && (
-                    <div className="flex gap-2 flex-shrink-0">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="border-destructive text-destructive hover:bg-destructive/10"
-                        onClick={() => handleAction(record.id, record.user_id, "rejected")}
-                        disabled={processing === record.id}
-                      >
-                        <XCircle className="h-3.5 w-3.5 mr-1" />
-                        Reject
-                      </Button>
-                      <Button
-                        size="sm"
-                        className="bg-secondary text-secondary-foreground hover:bg-secondary/90"
-                        onClick={() => handleAction(record.id, record.user_id, "approved")}
-                        disabled={processing === record.id}
-                      >
-                        <CheckCircle className="h-3.5 w-3.5 mr-1" />
-                        Approve
-                      </Button>
-                    </div>
-                  )}
+                  {/* Compare + Actions */}
+                  <div className="flex gap-2 flex-shrink-0">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setCompareRecord(record)}
+                    >
+                      <Eye className="h-3.5 w-3.5 mr-1" />
+                      Compare
+                    </Button>
+                    {record.status === "pending" && (
+                      <>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="border-destructive text-destructive hover:bg-destructive/10"
+                          onClick={() => handleAction(record.id, record.user_id, "rejected")}
+                          disabled={processing === record.id}
+                        >
+                          <XCircle className="h-3.5 w-3.5 mr-1" />
+                          Reject
+                        </Button>
+                        <Button
+                          size="sm"
+                          className="bg-secondary text-secondary-foreground hover:bg-secondary/90"
+                          onClick={() => handleAction(record.id, record.user_id, "approved")}
+                          disabled={processing === record.id}
+                        >
+                          <CheckCircle className="h-3.5 w-3.5 mr-1" />
+                          Approve
+                        </Button>
+                      </>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
@@ -267,18 +280,95 @@ const AdminVerifications = () => {
         </div>
       </main>
 
-      {/* Image Preview Dialog */}
-      <Dialog open={!!previewImage} onOpenChange={() => setPreviewImage(null)}>
-        <DialogContent className="max-w-lg">
+      {/* Side-by-Side Comparison Dialog */}
+      <Dialog open={!!compareRecord} onOpenChange={() => setCompareRecord(null)}>
+        <DialogContent className="max-w-3xl">
           <DialogHeader>
-            <DialogTitle>Verification Photo</DialogTitle>
+            <DialogTitle className="flex items-center gap-2">
+              Verify: {compareRecord?.profile?.full_name || "Unknown User"}
+              <span className={`flex items-center gap-1 text-xs font-normal ${statusColors[compareRecord?.status || "pending"]}`}>
+                {statusIcons[compareRecord?.status || "pending"]}
+                {compareRecord?.status || "pending"}
+              </span>
+            </DialogTitle>
           </DialogHeader>
-          {previewImage && (
-            <img
-              src={previewImage}
-              alt="Verification selfie"
-              className="w-full rounded-xl"
-            />
+
+          <div className="grid grid-cols-2 gap-6">
+            {/* Left: Verification selfie */}
+            <div>
+              <p className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wide flex items-center gap-1.5">
+                <Camera className="h-3.5 w-3.5" />
+                Verification Selfie
+              </p>
+              {compareRecord?.document_url ? (
+                <img
+                  src={compareRecord.document_url}
+                  alt="Verification selfie"
+                  className="w-full rounded-xl border border-border"
+                />
+              ) : (
+                <div className="flex aspect-square items-center justify-center rounded-xl bg-muted border border-border">
+                  <Camera className="h-10 w-10 text-muted-foreground/30" />
+                </div>
+              )}
+              <p className="text-[10px] text-muted-foreground mt-2">
+                Submitted {compareRecord ? format(new Date(compareRecord.created_at), "MMM d, yyyy 'at' h:mm a") : ""}
+              </p>
+            </div>
+
+            {/* Right: Profile photos */}
+            <div>
+              <p className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wide flex items-center gap-1.5">
+                <User className="h-3.5 w-3.5" />
+                Profile Photos
+              </p>
+              {compareRecord?.profile?.signedPhotos?.length ? (
+                <div className="space-y-2">
+                  {compareRecord.profile.signedPhotos.map((url, i) => (
+                    <img
+                      key={i}
+                      src={url}
+                      alt={`Profile photo ${i + 1}`}
+                      className="w-full rounded-xl border border-border"
+                    />
+                  ))}
+                </div>
+              ) : compareRecord?.profile?.avatar_url ? (
+                <img
+                  src={compareRecord.profile.avatar_url}
+                  alt="Profile avatar"
+                  className="w-full rounded-xl border border-border"
+                />
+              ) : (
+                <div className="flex aspect-square items-center justify-center rounded-xl bg-muted border border-border">
+                  <User className="h-10 w-10 text-muted-foreground/30" />
+                  <p className="text-xs text-muted-foreground ml-2">No profile photos</p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Actions in dialog */}
+          {compareRecord?.status === "pending" && (
+            <div className="flex justify-end gap-3 pt-2 border-t border-border mt-2">
+              <Button
+                variant="outline"
+                className="border-destructive text-destructive hover:bg-destructive/10"
+                onClick={() => compareRecord && handleAction(compareRecord.id, compareRecord.user_id, "rejected")}
+                disabled={processing === compareRecord?.id}
+              >
+                <XCircle className="h-4 w-4 mr-1.5" />
+                Reject
+              </Button>
+              <Button
+                className="bg-secondary text-secondary-foreground hover:bg-secondary/90"
+                onClick={() => compareRecord && handleAction(compareRecord.id, compareRecord.user_id, "approved")}
+                disabled={processing === compareRecord?.id}
+              >
+                <CheckCircle className="h-4 w-4 mr-1.5" />
+                Approve
+              </Button>
+            </div>
           )}
         </DialogContent>
       </Dialog>
