@@ -10,6 +10,7 @@ import Navbar from "@/components/Navbar";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useSignedPhotos } from "@/hooks/useSignedPhotos";
 
 interface Profile {
   id: string;
@@ -111,14 +112,16 @@ const ProfileDetail = () => {
     checkPremium();
   }, [id, user]);
 
-  const photos = profile
+  const rawPhotos = profile
     ? [
         ...(profile.photos || []),
         ...(profile.avatar_url && !(profile.photos || []).includes(profile.avatar_url)
           ? [profile.avatar_url]
           : []),
-      ].filter(Boolean)
+      ].filter(Boolean) as string[]
     : [];
+  
+  const photos = useSignedPhotos(rawPhotos);
 
   const handleLike = async () => {
     if (!user || !profile) return;
