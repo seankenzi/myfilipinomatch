@@ -70,17 +70,30 @@ const DashboardTab = () => {
     { label: "Pending Reports", value: stats.pendingReports, icon: AlertTriangle, color: "text-destructive" },
   ];
 
+  const navigate = useNavigate();
+
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-      {cards.map((card) => (
-        <div key={card.label} className="rounded-2xl border border-border bg-card p-5 shadow-sm">
-          <div className="flex items-center gap-3 mb-3">
-            <card.icon className={`h-5 w-5 ${card.color}`} />
-            <span className="text-xs font-medium text-muted-foreground">{card.label}</span>
-          </div>
-          <p className="text-2xl font-bold text-foreground">{card.value.toLocaleString()}</p>
-        </div>
-      ))}
+      {cards.map((card) => {
+        const isVerification = card.label === "Pending Verifications";
+        const Wrapper = isVerification ? "button" : "div";
+        return (
+          <Wrapper
+            key={card.label}
+            className={`rounded-2xl border border-border bg-card p-5 shadow-sm text-left ${
+              isVerification ? "cursor-pointer hover:border-primary/50 transition-colors" : ""
+            }`}
+            {...(isVerification ? { onClick: () => navigate("/admin/verifications") } : {})}
+          >
+            <div className="flex items-center gap-3 mb-3">
+              <card.icon className={`h-5 w-5 ${card.color}`} />
+              <span className="text-xs font-medium text-muted-foreground">{card.label}</span>
+              {isVerification && <Eye className="h-3.5 w-3.5 text-muted-foreground ml-auto" />}
+            </div>
+            <p className="text-2xl font-bold text-foreground">{card.value.toLocaleString()}</p>
+          </Wrapper>
+        );
+      })}
     </div>
   );
 };
