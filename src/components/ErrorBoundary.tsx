@@ -1,6 +1,7 @@
 import { Component, ErrorInfo, ReactNode } from "react";
 import { AlertTriangle, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Props {
   children: ReactNode;
@@ -24,6 +25,36 @@ class ErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error("ErrorBoundary caught:", error, errorInfo);
+    this.sendCrashNotification(error, errorInfo);
+  }
+
+  private async sendCrashNotification(error: Error, errorInfo: ErrorInfo) {
+    try {
+      const errorKey = `${error.message}-${window.location.pathname}`;
+      const storageKey = `crash-notified-${btoa(errorKey).slice(0, 40)}`;
+
+      // Deduplicate: don't send the same crash more than once per session
+      if (sessionStorage.getItem(storageKey)) return;
+      sessionStorage.setItem(storageKey, "1");
+
+      await supabase.functions.invoke("send-transactional-email", {
+        body: {
+          templateName: "app-crash-alert",
+          recipientEmail: "admin",
+          idempotencyKey: `crash-${Date.now()}-${errorKey.slice(0, 50)}`,
+          templateData: {
+            errorMessage: error.message,
+            errorStack: (error.stack || "").slice(0, 800),
+            pageUrl: window.location.href,
+            userAgent: navigator.userAgent,
+            timestamp: new Date().toISOString(),
+          },
+        },
+      });
+    } catch (e) {
+      // Silently fail — don't crash the error boundary itself
+      console.error("Failed to send crash notification:", e);
+    }
   }
 
   handleRetry = () => {

@@ -108,7 +108,7 @@ Deno.serve(async (req) => {
   // Resolve effective recipient: template-level `to` takes precedence over
   // the caller-provided recipientEmail. This allows notification templates
   // to always send to a fixed address (e.g., site owner from env var).
-  const effectiveRecipient = template.to || recipientEmail
+  let effectiveRecipient = template.to || recipientEmail
 
   if (!effectiveRecipient) {
     return new Response(
@@ -124,6 +124,59 @@ Deno.serve(async (req) => {
 
   // Create Supabase client with service role (bypasses RLS)
   const supabase = createClient(supabaseUrl, supabaseServiceKey)
+
+  // Special recipient "admin" — resolve to all admin email addresses
+  if (effectiveRecipient === 'admin') {
+    const { data: adminRoles } = await supabase
+      .from('user_roles')
+      .select('user_id')
+      .eq('role', 'admin')
+
+    if (adminRoles && adminRoles.length > 0) {
+      const adminIds = adminRoles.map((r: any) => r.user_id)
+      const { data: adminProfiles } = await supabase
+        .from('profiles')
+        .select('email')
+        .in('id', adminIds)
+        .not('email', 'is', null)
+
+      const adminEmails = (adminProfiles || []).map((p: any) => p.email).filter(Boolean)
+
+      if (adminEmails.length === 0) {
+        console.warn('No admin emails found')
+        return new Response(
+          JSON.stringify({ error: 'No admin email addresses found' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+
+      // Send to each admin — fan out by re-invoking for each
+      const results = []
+      for (const email of adminEmails) {
+        // Recursively handle each admin email by continuing below with overridden recipient
+        // For simplicity, just invoke ourselves
+        const resp = await supabase.functions.invoke('send-transactional-email', {
+          body: {
+            templateName,
+            recipientEmail: email,
+            idempotencyKey: `${idempotencyKey}-${email}`,
+            templateData,
+          },
+        })
+        results.push({ email, success: !resp.error })
+      }
+
+      return new Response(
+        JSON.stringify({ success: true, adminResults: results }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    return new Response(
+      JSON.stringify({ error: 'No admin users found' }),
+      { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    )
+  }
 
   // 2. Check suppression list (fail-closed: if we can't verify, don't send)
   const { data: suppressed, error: suppressionError } = await supabase
