@@ -16,7 +16,8 @@ const VideoBanner = () => {
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, height: 0 }}
-        className="relative w-full bg-gradient-to-r from-primary/10 via-accent/10 to-primary/10 border-b border-primary/10"
+        className="relative w-full bg-gradient-to-r from-primary/10 via-accent/10 to-primary/10 border-b border-primary/10 cursor-pointer hover:from-primary/15 hover:via-accent/15 hover:to-primary/15 transition-colors"
+        onClick={() => navigate("/premium")}
       >
         <div className="container flex flex-col sm:flex-row items-center justify-between gap-3 py-3 px-4">
           <div className="flex items-center gap-3 text-center sm:text-left">
@@ -33,15 +34,13 @@ const VideoBanner = () => {
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setDismissed(true)}
-              className="rounded-full p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-              aria-label="Dismiss banner"
-            >
-              <X className="h-4 w-4" />
-            </button>
-          </div>
+          <button
+            onClick={(e) => { e.stopPropagation(); setDismissed(true); }}
+            className="rounded-full p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+            aria-label="Dismiss banner"
+          >
+            <X className="h-4 w-4" />
+          </button>
         </div>
       </motion.div>
     </AnimatePresence>
