@@ -53,6 +53,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const now = Date.now();
         // Only send within 2 minutes of account creation (first login)
         if (now - createdAt < 120_000) {
+          // Welcome email to user
           supabase.functions.invoke('send-transactional-email', {
             body: {
               templateName: 'welcome-email',
@@ -61,6 +62,29 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
               templateData: { name: u.user_metadata?.full_name || undefined },
             },
           }).catch(() => { /* non-critical */ });
+
+          // Notify admins about new signup via email
+          supabase.from('user_roles').select('user_id').eq('role', 'admin').then(({ data: admins }) => {
+            if (!admins?.length) return;
+            const adminIds = admins.map(a => a.user_id);
+            supabase.from('profiles').select('email').in('id', adminIds).then(({ data: adminProfiles }) => {
+              adminProfiles?.forEach(admin => {
+                if (admin.email) {
+                  supabase.functions.invoke('send-transactional-email', {
+                    body: {
+                      templateName: 'admin-new-signup',
+                      recipientEmail: admin.email,
+                      idempotencyKey: `admin-new-signup-${u.id}-${admin.email}`,
+                      templateData: {
+                        userName: u.user_metadata?.full_name || undefined,
+                        userEmail: u.email,
+                      },
+                    },
+                  }).catch(() => { /* non-critical */ });
+                }
+              });
+            });
+          });
         }
       }
     });
