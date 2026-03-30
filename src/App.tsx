@@ -64,8 +64,8 @@ const App = () => (
                 <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
                 <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
                 <Route path="/verification" element={<ProtectedRoute><Verification /></ProtectedRoute>} />
-                <Route path="/admin/verifications" element={<AdminRoute><AdminVerifications /></AdminRoute>} />
-                <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
+                <Route path="/admin/verifications" element={<AdminRoute><ErrorBoundary fallbackTitle="Admin panel error"><AdminVerifications /></ErrorBoundary></AdminRoute>} />
+                <Route path="/admin" element={<AdminRoute><ErrorBoundary fallbackTitle="Admin panel error"><AdminDashboard /></ErrorBoundary></AdminRoute>} />
                 <Route path="/premium" element={<ProtectedRoute><Premium /></ProtectedRoute>} />
                 <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
                 <Route path="/who-liked-me" element={<ProtectedRoute><WhoLikedMe /></ProtectedRoute>} />
