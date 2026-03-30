@@ -1,7 +1,7 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { detectContactInfo } from "@/lib/contactFilter";
 import { useNavigate } from "react-router-dom";
-import { Heart, Globe, MapPin, User, Camera, Shield, ArrowRight, ArrowLeft, Sparkles, CheckCircle } from "lucide-react";
+import { Heart, Globe, MapPin, User, Camera, Shield, ArrowRight, ArrowLeft, Sparkles, CheckCircle, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,8 +13,9 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import PhotoUpload from "@/components/PhotoUpload";
 import { motion, AnimatePresence } from "framer-motion";
+import { Slider } from "@/components/ui/slider";
 
-const TOTAL_STEPS = 6;
+const TOTAL_STEPS = 8;
 
 const COUNTRIES = [
   "United States", "United Kingdom", "Canada", "Australia", "Germany", "France",
@@ -28,9 +29,16 @@ const PH_CITIES = [
   "Bacolod", "General Santos", "Other",
 ];
 
+const INTERESTS = [
+  "Travel ✈️", "Cooking 🍳", "Music 🎵", "Movies 🎬", "Fitness 💪",
+  "Reading 📚", "Photography 📷", "Dancing 💃", "Gaming 🎮", "Art 🎨",
+  "Nature 🌿", "Beach 🏖️", "Food 🍕", "Sports ⚽", "Fashion 👗",
+  "Pets 🐾", "Hiking 🥾", "Yoga 🧘", "Coffee ☕", "Karaoke 🎤",
+];
+
 const Onboarding = () => {
   const [step, setStep] = useState(1);
-  const [direction, setDirection] = useState(1); // 1 = forward, -1 = back
+  const [direction, setDirection] = useState(1);
   const [saving, setSaving] = useState(false);
   const { user, loading } = useAuth();
   const { toast } = useToast();
@@ -46,8 +54,13 @@ const Onboarding = () => {
   // Step 4: Basic Profile
   const [fullName, setFullName] = useState("");
   const [age, setAge] = useState("");
+  const [gender, setGender] = useState("");
+  // Step 5: Bio
   const [bio, setBio] = useState("");
-  // Step 5: Photos
+  // Step 6: Interests & Partner Preferences
+  const [interests, setInterests] = useState<string[]>([]);
+  const [preferredAgeRange, setPreferredAgeRange] = useState<[number, number]>([18, 65]);
+  // Step 7: Photos
   const [photos, setPhotos] = useState<string[]>([]);
 
   useEffect(() => {
@@ -79,11 +92,23 @@ const Onboarding = () => {
       case 1: return !!userType;
       case 2: return !!relationshipIntent;
       case 3: return userType === "foreigner" ? !!country : !!city;
-      case 4: return !!fullName.trim() && !!age && parseInt(age) >= 18;
-      case 5: return photos.length >= 1;
-      case 6: return true; // verification prompt — always can proceed
+      case 4: return !!fullName.trim() && !!age && parseInt(age) >= 18 && !!gender;
+      case 5: return true; // bio is optional
+      case 6: return interests.length >= 3;
+      case 7: return photos.length >= 1;
+      case 8: return true; // verification prompt
       default: return false;
     }
+  };
+
+  const toggleInterest = (interest: string) => {
+    setInterests((prev) =>
+      prev.includes(interest)
+        ? prev.filter((i) => i !== interest)
+        : prev.length < 10
+        ? [...prev, interest]
+        : prev
+    );
   };
 
   const saveProfile = async () => {
@@ -103,7 +128,11 @@ const Onboarding = () => {
         city: userType === "philippines" ? city : null,
         full_name: fullName.trim(),
         age: parseInt(age),
+        gender,
         bio: bio.trim(),
+        interests,
+        preferred_min_age: preferredAgeRange[0],
+        preferred_max_age: preferredAgeRange[1],
         international_preference: true,
         relocation_intent: "open-to-discuss",
         photos,
@@ -147,7 +176,7 @@ const Onboarding = () => {
     navigate("/verification");
   };
 
-  const stepLabels = ["Identity", "Intent", "Location", "Profile", "Photos", "Verify"];
+  const stepLabels = ["Identity", "Intent", "Location", "Profile", "Bio", "Interests", "Photos", "Verify"];
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
@@ -159,7 +188,6 @@ const Onboarding = () => {
             <span className="text-xs font-medium text-primary">{progress}%</span>
           </div>
           <Progress value={progress} className="h-2" />
-          {/* Step dots */}
           <div className="flex justify-between mt-2">
             {Array.from({ length: TOTAL_STEPS }).map((_, i) => (
               <div
@@ -298,13 +326,13 @@ const Onboarding = () => {
             </div>
           )}
 
-          {/* Step 4: Basic Profile */}
+          {/* Step 4: Basic Profile with Gender */}
           {step === 4 && (
             <div className="space-y-5">
               <div className="text-center space-y-2">
                 <User className="h-10 w-10 text-primary mx-auto" />
                 <h2 className="text-2xl font-bold font-display">Tell us about yourself</h2>
-                <p className="text-sm text-muted-foreground">Just the basics — you can add more later</p>
+                <p className="text-sm text-muted-foreground">Just the basics to get started</p>
               </div>
 
               <div className="space-y-4">
@@ -320,9 +348,26 @@ const Onboarding = () => {
                   )}
                 </div>
                 <div className="space-y-1.5">
-                  <Label htmlFor="bio">Short Bio <span className="text-muted-foreground font-normal">(optional)</span></Label>
-                  <Textarea id="bio" value={bio} onChange={(e) => setBio(e.target.value)} placeholder="A few words about yourself..." maxLength={300} rows={3} className="text-base resize-none" />
-                  <p className="text-xs text-muted-foreground text-right">{bio.length}/300</p>
+                  <Label>Gender *</Label>
+                  <RadioGroup value={gender} onValueChange={setGender} className="grid grid-cols-3 gap-2">
+                    {[
+                      { value: "male", label: "👨 Male" },
+                      { value: "female", label: "👩 Female" },
+                      { value: "other", label: "🌈 Other" },
+                    ].map((g) => (
+                      <label
+                        key={g.value}
+                        className={`flex items-center justify-center gap-2 rounded-xl border-2 px-3 py-3 cursor-pointer text-sm font-medium transition-all ${
+                          gender === g.value
+                            ? "border-primary bg-primary/5 text-primary shadow-sm"
+                            : "border-border hover:border-muted-foreground/30"
+                        }`}
+                      >
+                        <RadioGroupItem value={g.value} className="sr-only" />
+                        {g.label}
+                      </label>
+                    ))}
+                  </RadioGroup>
                 </div>
               </div>
 
@@ -333,8 +378,90 @@ const Onboarding = () => {
             </div>
           )}
 
-          {/* Step 5: Photo Upload */}
+          {/* Step 5: Bio */}
           {step === 5 && (
+            <div className="space-y-5">
+              <div className="text-center space-y-2">
+                <Sparkles className="h-10 w-10 text-primary mx-auto" />
+                <h2 className="text-2xl font-bold font-display">Write a short bio</h2>
+                <p className="text-sm text-muted-foreground">Help others get to know you — you can skip this for now</p>
+              </div>
+
+              <div className="space-y-1.5">
+                <Textarea
+                  id="bio"
+                  value={bio}
+                  onChange={(e) => setBio(e.target.value)}
+                  placeholder="A few words about yourself... What makes you unique? What are you passionate about?"
+                  maxLength={300}
+                  rows={5}
+                  className="text-base resize-none"
+                />
+                <p className="text-xs text-muted-foreground text-right">{bio.length}/300</p>
+              </div>
+
+              <div className="rounded-xl border border-border bg-card p-3">
+                <p className="text-xs text-muted-foreground">💡 <span className="font-medium text-foreground">Tip:</span> Profiles with a bio get 5× more messages. Share your hobbies, what you're looking for, or a fun fact!</p>
+              </div>
+            </div>
+          )}
+
+          {/* Step 6: Interests & Partner Age Preference */}
+          {step === 6 && (
+            <div className="space-y-5">
+              <div className="text-center space-y-2">
+                <Users className="h-10 w-10 text-primary mx-auto" />
+                <h2 className="text-2xl font-bold font-display">Interests & Preferences</h2>
+                <p className="text-sm text-muted-foreground">Pick at least 3 interests and your preferred partner age range</p>
+              </div>
+
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">Your Interests * <span className="text-muted-foreground font-normal">({interests.length}/10 selected)</span></Label>
+                  <div className="flex flex-wrap gap-2">
+                    {INTERESTS.map((interest) => (
+                      <button
+                        key={interest}
+                        onClick={() => toggleInterest(interest)}
+                        className={`rounded-full border-2 px-3 py-1.5 text-sm font-medium transition-all ${
+                          interests.includes(interest)
+                            ? "border-primary bg-primary/10 text-primary shadow-sm"
+                            : "border-border hover:border-muted-foreground/30"
+                        }`}
+                      >
+                        {interest}
+                      </button>
+                    ))}
+                  </div>
+                  {interests.length < 3 && (
+                    <p className="text-xs text-muted-foreground">Select at least {3 - interests.length} more</p>
+                  )}
+                </div>
+
+                <div className="space-y-3 pt-2">
+                  <Label className="text-sm font-medium">Preferred Partner Age Range</Label>
+                  <div className="px-2">
+                    <Slider
+                      value={preferredAgeRange}
+                      onValueChange={(val) => setPreferredAgeRange(val as [number, number])}
+                      min={18}
+                      max={80}
+                      step={1}
+                      minStepsBetweenThumbs={3}
+                    />
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="rounded-lg border border-border bg-card px-3 py-1 font-medium">{preferredAgeRange[0]} yrs</span>
+                    <span className="text-muted-foreground">to</span>
+                    <span className="rounded-lg border border-border bg-card px-3 py-1 font-medium">{preferredAgeRange[1]} yrs</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Step 7: Photo Upload */}
+          {step === 7 && (
             <div className="space-y-6">
               <div className="text-center space-y-2">
                 <Camera className="h-10 w-10 text-primary mx-auto" />
@@ -348,8 +475,8 @@ const Onboarding = () => {
             </div>
           )}
 
-          {/* Step 6: Verification Prompt */}
-          {step === 6 && (
+          {/* Step 8: Verification Prompt */}
+          {step === 8 && (
             <div className="space-y-6">
               <div className="text-center space-y-3">
                 <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-secondary/10">
@@ -405,7 +532,7 @@ const Onboarding = () => {
                 <ArrowLeft className="mr-2 h-4 w-4" /> Back
               </Button>
             )}
-            {step < 6 ? (
+            {step < TOTAL_STEPS ? (
               <Button
                 variant="hero"
                 size="lg"
