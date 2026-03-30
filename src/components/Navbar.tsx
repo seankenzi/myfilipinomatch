@@ -51,8 +51,7 @@ const RotatingTagline = () => {
     </div>
   );
 };
-
-
+interface NavbarProps {
   bannerSubtitle?: string;
 }
 
