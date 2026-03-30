@@ -388,24 +388,6 @@ const Verification = () => {
                       </div>
                     </button>
 
-                    <div className="flex items-center gap-3">
-                      <div className="h-px flex-1 bg-border" />
-                      <span className="text-xs text-muted-foreground">or</span>
-                      <div className="h-px flex-1 bg-border" />
-                    </div>
-
-                    <button
-                      onClick={() => fileInputRef.current?.click()}
-                      className="flex w-full items-center gap-3 rounded-xl border border-border p-4 transition-colors hover:bg-muted/50"
-                    >
-                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted">
-                        <Upload className="h-5 w-5 text-muted-foreground" />
-                      </div>
-                      <div className="text-left">
-                        <p className="text-sm font-medium text-foreground">Upload from Gallery</p>
-                        <p className="text-xs text-muted-foreground">JPG, PNG • Max 10MB</p>
-                      </div>
-                    </button>
                   </div>
                 )}
               </div>
