@@ -194,7 +194,7 @@ const Messages = () => {
     }
 
     const { data: profilesData } = await supabase
-      .from("profiles")
+      .from("public_profiles")
       .select("id, full_name, avatar_url, photos, is_verified, age, city, country, is_premium, last_seen")
       .in("id", otherUserIds);
 
