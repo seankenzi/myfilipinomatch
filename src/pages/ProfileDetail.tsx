@@ -137,8 +137,7 @@ const ProfileDetail = () => {
         .eq("liker_id", profile.id)
         .eq("liked_id", user.id);
       if (mutual && mutual.length > 0) {
-        const ids = [user.id, profile.id].sort();
-        await supabase.from("matches").insert({ user1_id: ids[0], user2_id: ids[1] });
+        await supabase.rpc("create_match_if_mutual", { other_user_id: profile.id });
         toast({ title: "It's a Match! 🎉", description: `You and ${profile.full_name.split(" ")[0]} liked each other!` });
       }
     }
@@ -316,16 +315,13 @@ const ProfileDetail = () => {
                   if (matchId) {
                     navigate(`/messages?match=${matchId}`);
                   } else if (isPremium) {
-                    // Premium user: create a match so they can message directly
-                    const ids = [user!.id, profile.id].sort();
-                    const { data: newMatch, error } = await supabase
-                      .from("matches")
-                      .insert({ user1_id: ids[0], user2_id: ids[1] })
-                      .select("id")
-                      .single();
-                    if (!error && newMatch) {
-                      setMatchId(newMatch.id);
-                      navigate(`/messages?match=${newMatch.id}`);
+                    // Premium user: create a match via secure function
+                    const { data: newMatchId, error } = await supabase.rpc("create_match_if_mutual", { other_user_id: profile.id });
+                    if (!error && newMatchId) {
+                      setMatchId(newMatchId);
+                      navigate(`/messages?match=${newMatchId}`);
+                    } else {
+                      toast({ title: "Match required", description: "A mutual like is needed before you can message." });
                     }
                   } else {
                     toast({ title: "Match required", description: "Upgrade to Premium to message anyone directly, or wait for a mutual match!" });
