@@ -18,6 +18,11 @@ const taglines = [
   "Where Hearts Meet Across the World 🌏",
   "Your Journey to Love Starts Here ✨",
   "Find Your Perfect Filipino Match 🇵🇭",
+  "True Love Knows No Distance 💗",
+  "Meet Someone Special Today 🌹",
+  "Cross-Cultural Love Stories Start Here 📖",
+  "Your Soulmate Could Be a World Away 🌍",
+  "Building Bridges, One Heart at a Time 💞",
 ];
 
 const RotatingTagline = () => {
