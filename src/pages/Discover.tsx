@@ -1102,6 +1102,13 @@ const Discover = () => {
                             <div className="absolute top-2 right-2 text-sm">{getFlagEmoji(profile.country)}</div>
                           )}
 
+                          {/* Verified badge */}
+                          {profile.is_verified && (
+                            <div className="absolute top-2 left-2 rounded-full bg-card/80 backdrop-blur-sm p-1">
+                              <Shield className="h-3 w-3 text-secondary fill-secondary/30" />
+                            </div>
+                          )}
+
                           {/* Badges row - positioned above name overlay to avoid covering face */}
                           {((profile as any).is_premium || likedIds.has(profile.id)) && (
                             <div className="absolute bottom-12 left-0 right-0 flex justify-center gap-1.5 px-2">
