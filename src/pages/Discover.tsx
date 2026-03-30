@@ -1119,7 +1119,7 @@ const Discover = () => {
 
                           {/* Already liked indicator */}
                           {likedIds.has(profile.id) && (
-                            <div className="absolute top-2 left-1/2 -translate-x-1/2 rounded-full bg-primary/90 backdrop-blur-sm px-2.5 py-1 flex items-center gap-1 shadow-sm">
+                            <div className={`absolute left-1/2 -translate-x-1/2 rounded-full bg-primary/90 backdrop-blur-sm px-2.5 py-1 flex items-center gap-1 shadow-sm ${isPremium ? 'top-10' : 'top-2'}`}>
                               <Heart className="h-3 w-3 text-primary-foreground fill-primary-foreground" />
                               <span className="text-[10px] font-semibold text-primary-foreground">Liked</span>
                             </div>
