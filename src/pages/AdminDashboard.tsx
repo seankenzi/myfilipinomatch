@@ -373,7 +373,7 @@ const PLAN_OPTIONS = [
   { value: "yearly", label: "Annual ($219.99)" },
 ];
 
-const SubscriptionsTab = () => {
+const SubscriptionsTab = ({ refreshKey }: { refreshKey: number }) => {
   const { toast } = useToast();
   const [subs, setSubs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -385,7 +385,14 @@ const SubscriptionsTab = () => {
 
   const fetchSubs = async () => {
     setLoading(true);
-    const { data } = await supabase.from("subscriptions").select("*").order("created_at", { ascending: false }).limit(100);
+    const { data, error } = await supabase.from("subscriptions").select("*").order("created_at", { ascending: false }).limit(100);
+
+    if (error) {
+      console.error("Error fetching subscriptions:", error);
+      setSubs([]);
+      setLoading(false);
+      return;
+    }
 
     if (data && data.length > 0) {
       const userIds = [...new Set(data.map(s => s.user_id))];
@@ -403,7 +410,7 @@ const SubscriptionsTab = () => {
     setLoading(false);
   };
 
-  useEffect(() => { fetchSubs(); }, []);
+  useEffect(() => { fetchSubs(); }, [refreshKey]);
 
   const searchUsers = async (term: string) => {
     if (!term.trim()) { setSearchResults([]); return; }
@@ -768,6 +775,7 @@ const FeatureFlagsTab = () => {
 // ─── Main Admin Dashboard ───
 const AdminDashboard = () => {
   const navigate = useNavigate();
+  const [subsRefreshKey, setSubsRefreshKey] = useState(0);
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
@@ -788,7 +796,7 @@ const AdminDashboard = () => {
             <p className="text-sm text-muted-foreground mt-1">Manage your platform from here</p>
           </div>
 
-          <Tabs defaultValue="dashboard" className="space-y-6">
+          <Tabs defaultValue="dashboard" className="space-y-6" onValueChange={(v) => { if (v === "subscriptions") setSubsRefreshKey(k => k + 1); }}>
             <TabsList className="grid w-full grid-cols-5 max-w-2xl">
               <TabsTrigger value="dashboard" className="text-xs"><TrendingUp className="h-3.5 w-3.5 mr-1" /> Overview</TabsTrigger>
               <TabsTrigger value="users" className="text-xs"><Users className="h-3.5 w-3.5 mr-1" /> Users</TabsTrigger>
@@ -800,7 +808,7 @@ const AdminDashboard = () => {
             <TabsContent value="dashboard"><DashboardTab /></TabsContent>
             <TabsContent value="users"><UsersTab /></TabsContent>
             <TabsContent value="moderation"><ModerationTab /></TabsContent>
-            <TabsContent value="subscriptions"><SubscriptionsTab /></TabsContent>
+            <TabsContent value="subscriptions"><SubscriptionsTab refreshKey={subsRefreshKey} /></TabsContent>
             <TabsContent value="features"><FeatureFlagsTab /></TabsContent>
           </Tabs>
         </div>
