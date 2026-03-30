@@ -7,7 +7,7 @@ import {
 import VideoCallModal from "@/components/VideoCallModal";
 import { detectContactInfo } from "@/lib/contactFilter";
 import OnlineStatus from "@/components/OnlineStatus";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -84,6 +84,8 @@ const Messages = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const requestedMatchId = searchParams.get("match");
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const [matches, setMatches] = useState<Match[]>([]);
@@ -183,34 +185,42 @@ const Messages = () => {
       return !blockedIds.has(otherId);
     });
 
-    const otherUserIds = filteredMatches.map((m) =>
-      m.user1_id === user.id ? m.user2_id : m.user1_id
-    );
-
-    if (otherUserIds.length === 0) {
+    if (filteredMatches.length === 0) {
       setMatches([]);
       setLoading(false);
       return;
     }
 
-    const { data: profilesData } = await supabase
-      .from("public_profiles")
-      .select("id, full_name, avatar_url, photos, is_verified, age, city, country, is_premium, last_seen")
-      .in("id", otherUserIds);
+    const profileEntries = await Promise.all(
+      filteredMatches.map(async (m) => {
+        const otherId = m.user1_id === user.id ? m.user2_id : m.user1_id;
+        const { data } = await supabase.rpc("get_profile_by_id", { profile_id: otherId });
+        const profile = data && data.length > 0 ? data[0] : null;
+        if (!profile) return null;
 
-    const resolvedProfiles = await Promise.all(
-      (profilesData || []).map(async (p) => {
-        const photo = getPhoto(p);
-        const signedUrl = await resolvePhoto(photo);
-        return {
-          ...p,
-          avatar_url: signedUrl,
-          photos: p.photos ? [signedUrl].filter(Boolean) as string[] : null,
-        };
+        const signedPhoto = await resolvePhoto(getPhoto(profile));
+
+        return [
+          otherId,
+          {
+            id: profile.id,
+            full_name: profile.full_name,
+            avatar_url: signedPhoto,
+            photos: signedPhoto ? [signedPhoto] : null,
+            is_verified: profile.is_verified,
+            age: profile.age,
+            city: profile.city,
+            country: profile.country,
+            is_premium: profile.is_premium,
+            last_seen: profile.last_seen,
+          } satisfies MatchProfile,
+        ] as const;
       })
     );
 
-    const profileMap = new Map(resolvedProfiles.map((p) => [p.id, p]));
+    const profileMap = new Map(
+      profileEntries.filter((entry): entry is readonly [string, MatchProfile] => entry !== null)
+    );
 
     const matchList: Match[] = [];
     for (const m of filteredMatches) {
@@ -235,7 +245,7 @@ const Messages = () => {
 
       matchList.push({
         id: m.id,
-        other_user: profile as MatchProfile,
+        other_user: profile,
         last_message: lastMsg || undefined,
         unread_count: count || 0,
       });
@@ -251,11 +261,28 @@ const Messages = () => {
 
     setMatches(matchList);
     setLoading(false);
-  }, [user]);
+  }, [user, toast]);
 
   useEffect(() => {
     fetchMatches();
   }, [fetchMatches]);
+
+  useEffect(() => {
+    if (matches.length === 0) return;
+
+    if (requestedMatchId) {
+      const requestedMatch = matches.find((match) => match.id === requestedMatchId);
+      if (requestedMatch) {
+        setSelectedMatch((current) => current?.id === requestedMatch.id ? current : requestedMatch);
+        return;
+      }
+    }
+
+    setSelectedMatch((current) => {
+      if (!current) return current;
+      return matches.find((match) => match.id === current.id) ?? current;
+    });
+  }, [matches, requestedMatchId]);
 
   const fetchMessages = useCallback(async () => {
     if (!selectedMatch || !user) return;
