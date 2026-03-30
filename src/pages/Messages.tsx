@@ -682,11 +682,18 @@ const Messages = () => {
                                 }`}
                               >
                                 <p className="text-[14px] leading-relaxed whitespace-pre-wrap break-words">{msg.content}</p>
-                                <p className={`mt-1 text-[10px] ${
-                                  isMe ? "text-primary-foreground/50" : "text-muted-foreground"
-                                }`}>
-                                  {format(new Date(msg.created_at), "h:mm a")}
-                                </p>
+                                <div className={`flex items-center gap-1 mt-1 ${isMe ? "justify-end" : ""}`}>
+                                  <span className={`text-[10px] ${
+                                    isMe ? "text-primary-foreground/50" : "text-muted-foreground"
+                                  }`}>
+                                    {format(new Date(msg.created_at), "h:mm a")}
+                                  </span>
+                                  {isMe && (
+                                    msg.read
+                                      ? <CheckCheck className="h-3.5 w-3.5 text-primary-foreground/70" />
+                                      : <Check className="h-3.5 w-3.5 text-primary-foreground/40" />
+                                  )}
+                                </div>
                               </div>
                             </motion.div>
                           );
@@ -694,6 +701,26 @@ const Messages = () => {
                       </div>
                     </div>
                   ))}
+
+                  {/* Typing indicator */}
+                  <AnimatePresence>
+                    {isOtherTyping && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 8 }}
+                        className="flex justify-start mb-3"
+                      >
+                        <div className="bg-card border border-border rounded-2xl rounded-bl-lg px-4 py-3 shadow-sm">
+                          <div className="flex items-center gap-1">
+                            <span className="h-2 w-2 rounded-full bg-muted-foreground/40 animate-bounce" style={{ animationDelay: "0ms" }} />
+                            <span className="h-2 w-2 rounded-full bg-muted-foreground/40 animate-bounce" style={{ animationDelay: "150ms" }} />
+                            <span className="h-2 w-2 rounded-full bg-muted-foreground/40 animate-bounce" style={{ animationDelay: "300ms" }} />
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
 
                   {/* Video upgrade nudge */}
                   {!isPremium && messages.length >= 5 && (
