@@ -17,6 +17,7 @@ import Navbar from "@/components/Navbar";
 
 // ─── Dashboard Tab ───
 const DashboardTab = () => {
+  const navigate = useNavigate();
   const [stats, setStats] = useState({
     totalUsers: 0,
     premiumUsers: 0,
