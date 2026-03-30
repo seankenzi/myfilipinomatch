@@ -88,7 +88,7 @@ const PhotoUpload = ({ photos, onPhotosChange, maxPhotos = 6 }: PhotoUploadProps
   return (
     <div>
       <div className="grid grid-cols-3 gap-2">
-        {photos.map((url, i) => (
+        {signedUrls.map((url, i) => (
           <div key={i} className="relative aspect-square rounded-xl overflow-hidden border border-border">
             <img src={url} alt={`Photo ${i + 1}`} className="h-full w-full object-cover" />
             <button
