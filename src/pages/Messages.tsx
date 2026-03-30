@@ -788,7 +788,7 @@ const Messages = () => {
                           placeholder="Type a message..."
                           className="w-full rounded-full border border-input bg-muted/30 px-5 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all placeholder:text-muted-foreground/60"
                           value={newMessage}
-                          onChange={(e) => setNewMessage(e.target.value.slice(0, 1000))}
+                          onChange={(e) => { setNewMessage(e.target.value.slice(0, 1000)); broadcastTyping(); }}
                           onKeyDown={handleKeyDown}
                           maxLength={1000}
                         />
