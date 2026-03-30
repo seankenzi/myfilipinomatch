@@ -20,7 +20,17 @@ const Navbar = ({ bannerSubtitle }: NavbarProps) => {
   const { user, loading, signOut } = useAuth();
   const navigate = useNavigate();
   const newLikesCount = useNewLikesCount();
+  const [isPremium, setIsPremium] = useState(false);
 
+  useEffect(() => {
+    if (!user) return;
+    supabase
+      .from("profiles")
+      .select("is_premium")
+      .eq("id", user.id)
+      .single()
+      .then(({ data }) => setIsPremium(data?.is_premium === true));
+  }, [user]);
   return (
     <>
     <header className="sticky top-0 z-50 border-b border-border bg-card/90 backdrop-blur-md">
