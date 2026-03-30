@@ -11,6 +11,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { getSignedPhotoUrls } from "@/lib/storage";
 import OnlineStatus from "@/components/OnlineStatus";
+import { markLikesVisited } from "@/hooks/useNewLikesCount";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface LikerProfile {
   id: string;
@@ -42,9 +44,23 @@ const WhoLikedMe = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [likers, setLikers] = useState<LikerProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [isPremium, setIsPremium] = useState(false);
+
+  // Mark visit and reset badge count
+  useEffect(() => {
+    if (!user) return;
+    markLikesVisited(user.id);
+    queryClient.invalidateQueries({ queryKey: ["new-likes-count", user.id] });
+    return () => {
+      if (user) {
+        markLikesVisited(user.id);
+        queryClient.invalidateQueries({ queryKey: ["new-likes-count", user.id] });
+      }
+    };
+  }, [user, queryClient]);
 
   useEffect(() => {
     if (!user) return;
