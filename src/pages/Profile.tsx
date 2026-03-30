@@ -158,6 +158,10 @@ const Profile = () => {
             </div>
           </div>
 
+
+          {/* Profile Completion */}
+          <ProfileCompletion profile={profile} onEditClick={() => setEditing(true)} />
+
           {/* Photos */}
           <div className="mb-6 rounded-2xl border border-border bg-card p-5 shadow-card">
             <h2 className="mb-3 font-semibold">My Photos</h2>
