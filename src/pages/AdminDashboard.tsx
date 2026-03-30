@@ -397,19 +397,29 @@ const SubscriptionsTab = () => {
       .maybeSingle();
 
     if (existing) {
-      await supabase.from("subscriptions").update({
+      const { error } = await supabase.from("subscriptions").update({
         plan: selectedPlan,
         status: isPremium ? "active" : "canceled",
         current_period_end: periodEnd,
         updated_at: new Date().toISOString(),
       }).eq("id", existing.id);
+      if (error) {
+        toast({ title: `Error: ${error.message}`, variant: "destructive" });
+        setSaving(false);
+        return;
+      }
     } else {
-      await supabase.from("subscriptions").insert({
+      const { error } = await supabase.from("subscriptions").insert({
         user_id: selectedUser.id,
         plan: selectedPlan,
         status: isPremium ? "active" : "canceled",
         current_period_end: periodEnd,
       });
+      if (error) {
+        toast({ title: `Error: ${error.message}`, variant: "destructive" });
+        setSaving(false);
+        return;
+      }
     }
 
     // Sync is_premium on profiles
