@@ -305,6 +305,8 @@ export type Database = {
           last_seen: string | null
           onboarding_completed: boolean | null
           photos: string[] | null
+          preferred_max_age: number | null
+          preferred_min_age: number | null
           relationship_intent: string | null
           relationship_status: string | null
           relocation_intent: string | null
@@ -334,6 +336,8 @@ export type Database = {
           last_seen?: string | null
           onboarding_completed?: boolean | null
           photos?: string[] | null
+          preferred_max_age?: number | null
+          preferred_min_age?: number | null
           relationship_intent?: string | null
           relationship_status?: string | null
           relocation_intent?: string | null
@@ -363,6 +367,8 @@ export type Database = {
           last_seen?: string | null
           onboarding_completed?: boolean | null
           photos?: string[] | null
+          preferred_max_age?: number | null
+          preferred_min_age?: number | null
           relationship_intent?: string | null
           relationship_status?: string | null
           relocation_intent?: string | null
