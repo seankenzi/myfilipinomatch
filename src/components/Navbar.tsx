@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import NotificationBell from "@/components/NotificationBell";
+import VideoBanner from "@/components/VideoBanner";
 import {
   Tooltip, TooltipContent, TooltipProvider, TooltipTrigger,
 } from "@/components/ui/tooltip";
@@ -13,6 +14,7 @@ const Navbar = () => {
   const navigate = useNavigate();
 
   return (
+    <>
     <header className="sticky top-0 z-50 border-b border-border bg-card/90 backdrop-blur-md">
       <div className="container flex h-16 items-center justify-between">
         <Link to={user ? "/discover" : "/"} className="flex items-center gap-2">
@@ -92,6 +94,8 @@ const Navbar = () => {
         </div>
       </div>
     </header>
+    <VideoBanner />
+    </>
   );
 };
 
