@@ -302,7 +302,36 @@ const Discover = () => {
       const allProfiles = (data || []) as Profile[];
       const boosted = allProfiles.filter((p) => boostedUserIds.has(p.id));
       const nonBoosted = allProfiles.filter((p) => !boostedUserIds.has(p.id));
-      setProfiles([...boosted, ...nonBoosted]);
+      const sortedProfiles = [...boosted, ...nonBoosted];
+      
+      // Resolve signed URLs for all profile photos
+      const allPhotoPaths: string[] = [];
+      const photoMap = new Map<string, number[]>(); // path -> [profile indices]
+      sortedProfiles.forEach((p) => {
+        const photos = p.photos || [];
+        if (p.avatar_url && !photos.includes(p.avatar_url)) photos.push(p.avatar_url);
+        photos.forEach((photo) => {
+          if (photo) allPhotoPaths.push(photo);
+        });
+      });
+      
+      if (allPhotoPaths.length > 0) {
+        const signedUrls = await getSignedPhotoUrls(allPhotoPaths);
+        const urlMap = new Map<string, string>();
+        allPhotoPaths.forEach((path, i) => urlMap.set(path, signedUrls[i]));
+        
+        // Replace photo paths with signed URLs in profiles
+        sortedProfiles.forEach((p) => {
+          if (p.photos) {
+            p.photos = p.photos.map((photo) => urlMap.get(photo) || photo);
+          }
+          if (p.avatar_url) {
+            p.avatar_url = urlMap.get(p.avatar_url) || p.avatar_url;
+          }
+        });
+      }
+      
+      setProfiles(sortedProfiles);
       setCurrentIndex(0);
     }
     setLoading(false);
