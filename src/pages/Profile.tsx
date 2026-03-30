@@ -114,6 +114,9 @@ const Profile = () => {
     navigate("/");
   };
 
+  const rawAvatarUrl = profile.photos[0] || profile.avatar_url;
+  const avatarUrl = useSignedPhoto(rawAvatarUrl || null);
+
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
@@ -121,9 +124,6 @@ const Profile = () => {
       </div>
     );
   }
-
-  const rawAvatarUrl = profile.photos[0] || profile.avatar_url;
-  const avatarUrl = useSignedPhoto(rawAvatarUrl || null);
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
