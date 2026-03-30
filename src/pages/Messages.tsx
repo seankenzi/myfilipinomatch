@@ -532,11 +532,18 @@ const Messages = () => {
                           </span>
                         )}
                       </div>
-                      <p className={`text-[13px] truncate leading-snug ${match.unread_count > 0 ? "text-foreground font-medium" : "text-muted-foreground"}`}>
-                        {match.last_message
-                          ? `${match.last_message.sender_id === user?.id ? "You: " : ""}${match.last_message.content}`
-                          : "Start a conversation! 👋"}
-                      </p>
+                      <div className="flex items-center gap-1">
+                        {match.last_message && match.last_message.sender_id === user?.id && (
+                          match.last_message.read
+                            ? <CheckCheck className="h-3 w-3 text-primary flex-shrink-0" />
+                            : <Check className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+                        )}
+                        <p className={`text-[13px] truncate leading-snug ${match.unread_count > 0 ? "text-foreground font-medium" : "text-muted-foreground"}`}>
+                          {match.last_message
+                            ? `${match.last_message.sender_id === user?.id ? "You: " : ""}${match.last_message.content}`
+                            : "Start a conversation! 👋"}
+                        </p>
+                      </div>
                     </div>
                   </button>
                 ))}
