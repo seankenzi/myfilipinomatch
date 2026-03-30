@@ -66,19 +66,24 @@ const PhotoUpload = ({ photos, onPhotosChange, maxPhotos = 6 }: PhotoUploadProps
   };
 
   const removePhoto = async (index: number) => {
-    const url = photos[index];
+    const path = photos[index];
     const updated = photos.filter((_, i) => i !== index);
     onPhotosChange(updated);
 
     if (user) {
-      // Extract path from URL for deletion
-      const path = url.split("/profile-photos/")[1];
-      if (path) {
-        await supabase.storage.from("profile-photos").remove([decodeURIComponent(path)]);
+      // Extract path from URL or use path directly for deletion
+      const storagePath = path.includes("/profile-photos/")
+        ? decodeURIComponent(path.split("/profile-photos/")[1])
+        : path;
+      if (storagePath) {
+        await supabase.storage.from("profile-photos").remove([storagePath]);
       }
       await supabase.from("profiles").update({ photos: updated, avatar_url: updated[0] || null }).eq("id", user.id);
     }
   };
+
+  // Get signed URLs for display
+  const signedUrls = useSignedPhotos(photos);
 
   return (
     <div>
