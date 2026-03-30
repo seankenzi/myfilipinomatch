@@ -43,6 +43,7 @@ const App = () => (
       <BrowserRouter>
         <AuthProvider>
           <div className="flex min-h-screen flex-col">
+            <VideoBanner />
             <div className="flex-1">
               <Routes>
                 <Route path="/" element={<Index />} />
