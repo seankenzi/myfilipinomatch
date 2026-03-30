@@ -1,0 +1,2 @@
+-- Drop the overly permissive ALL policy that bypasses match-scoped access
+DROP POLICY IF EXISTS "Authenticated users can use realtime" ON public.messages;
