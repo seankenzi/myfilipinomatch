@@ -492,6 +492,7 @@ export type Database = {
           created_at: string
           document_url: string | null
           id: string
+          pose_instruction: string | null
           reviewed_at: string | null
           status: string | null
           type: string
@@ -501,6 +502,7 @@ export type Database = {
           created_at?: string
           document_url?: string | null
           id?: string
+          pose_instruction?: string | null
           reviewed_at?: string | null
           status?: string | null
           type: string
@@ -510,6 +512,7 @@ export type Database = {
           created_at?: string
           document_url?: string | null
           id?: string
+          pose_instruction?: string | null
           reviewed_at?: string | null
           status?: string | null
           type?: string
