@@ -263,51 +263,39 @@ const Discover = () => {
     const alreadyLiked = new Set((likesData || []).map((l) => l.liked_id));
     setLikedIds(alreadyLiked);
 
-    // Fetch active boosts for sorting
-    const { data: boostsData } = await supabase
-      .from("profile_boosts")
-      .select("user_id")
-      .gt("expires_at", new Date().toISOString());
-    const boostedUserIds = new Set((boostsData || []).map((b) => b.user_id));
+    // Use secure browse_profiles RPC (excludes email, sorts by boosts server-side)
+    const rpcParams: Record<string, any> = {};
+    if (filterCountry !== "all") rpcParams.filter_country = filterCountry;
+    if (filterGender !== "all") rpcParams.filter_gender = filterGender;
+    if (filterAgeRange[0] > 18) rpcParams.filter_min_age = filterAgeRange[0];
+    if (filterAgeRange[1] < 65) rpcParams.filter_max_age = filterAgeRange[1];
 
-    let query = supabase
-      .from("profiles")
-      .select("id, full_name, age, gender, country, city, bio, interests, relationship_intent, relocation_intent, photos, avatar_url, is_verified, user_type, international_preference, created_at, last_seen, education, language, want_children, height_cm, weight_kg, is_premium")
-      .neq("id", user.id)
-      .eq("onboarding_completed", true)
-      .order("created_at", { ascending: false });
-
-    if (filterCountry !== "all") query = query.eq("country", filterCountry);
-    if (filterIntent !== "all") query = query.eq("relationship_intent", filterIntent);
-    if (filterGender !== "all") query = query.eq("gender", filterGender);
-    if (filterCity.trim()) query = query.ilike("city", `%${filterCity.trim()}%`);
-    if (filterAgeRange[0] > 18) query = query.gte("age", filterAgeRange[0]);
-    if (filterAgeRange[1] < 65) query = query.lte("age", filterAgeRange[1]);
-
-    // Advanced filters (premium only - applied regardless, but UI is gated)
-    if (isPremium) {
-      if (filterEducation !== "all") query = query.eq("education", filterEducation);
-      if (filterLanguage !== "all") query = query.eq("language", filterLanguage);
-      if (filterChildren !== "all") query = query.eq("want_children", filterChildren);
-      if (filterHeightRange[0] > 140) query = query.gte("height_cm", filterHeightRange[0]);
-      if (filterHeightRange[1] < 210) query = query.lte("height_cm", filterHeightRange[1]);
-    }
-
-    const { data, error } = await query;
+    const { data, error } = await supabase.rpc("browse_profiles", rpcParams);
 
     if (error) {
       toast({ title: "Error loading profiles", description: error.message, variant: "destructive" });
     } else {
-      // Sort boosted profiles to the top
-      const allProfiles = (data || []) as Profile[];
-      const boosted = allProfiles.filter((p) => boostedUserIds.has(p.id));
-      const nonBoosted = allProfiles.filter((p) => !boostedUserIds.has(p.id));
-      const sortedProfiles = [...boosted, ...nonBoosted];
+      let allProfiles = (data || []) as Profile[];
+
+      // Apply client-side filters not supported by RPC
+      if (filterIntent !== "all") {
+        allProfiles = allProfiles.filter((p) => p.relationship_intent === filterIntent);
+      }
+      if (filterCity.trim()) {
+        const cityLower = filterCity.trim().toLowerCase();
+        allProfiles = allProfiles.filter((p) => p.city?.toLowerCase().includes(cityLower));
+      }
+      if (isPremium) {
+        if (filterEducation !== "all") allProfiles = allProfiles.filter((p) => (p as any).education === filterEducation);
+        if (filterLanguage !== "all") allProfiles = allProfiles.filter((p) => (p as any).language === filterLanguage);
+        if (filterChildren !== "all") allProfiles = allProfiles.filter((p) => (p as any).want_children === filterChildren);
+        if (filterHeightRange[0] > 140) allProfiles = allProfiles.filter((p) => (p as any).height_cm && (p as any).height_cm >= filterHeightRange[0]);
+        if (filterHeightRange[1] < 210) allProfiles = allProfiles.filter((p) => (p as any).height_cm && (p as any).height_cm <= filterHeightRange[1]);
+      }
       
       // Resolve signed URLs for all profile photos
       const allPhotoPaths: string[] = [];
-      const photoMap = new Map<string, number[]>(); // path -> [profile indices]
-      sortedProfiles.forEach((p) => {
+      allProfiles.forEach((p) => {
         const photos = p.photos || [];
         if (p.avatar_url && !photos.includes(p.avatar_url)) photos.push(p.avatar_url);
         photos.forEach((photo) => {
@@ -320,8 +308,7 @@ const Discover = () => {
         const urlMap = new Map<string, string>();
         allPhotoPaths.forEach((path, i) => urlMap.set(path, signedUrls[i]));
         
-        // Replace photo paths with signed URLs in profiles
-        sortedProfiles.forEach((p) => {
+        allProfiles.forEach((p) => {
           if (p.photos) {
             p.photos = p.photos.map((photo) => urlMap.get(photo) || photo);
           }
@@ -331,7 +318,7 @@ const Discover = () => {
         });
       }
       
-      setProfiles(sortedProfiles);
+      setProfiles(allProfiles);
       setCurrentIndex(0);
     }
     setLoading(false);
