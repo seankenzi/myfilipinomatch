@@ -99,6 +99,9 @@ const Messages = () => {
   const [reportDetails, setReportDetails] = useState("");
   const [videoCallOpen, setVideoCallOpen] = useState(false);
   const [videoUpgradeOpen, setVideoUpgradeOpen] = useState(false);
+  const [isOtherTyping, setIsOtherTyping] = useState(false);
+  const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastTypingBroadcastRef = useRef<number>(0);
 
   const mySentCount = messages.filter((m) => m.sender_id === user?.id).length;
   const todayStart = new Date();
