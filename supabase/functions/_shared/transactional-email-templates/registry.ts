@@ -14,6 +14,7 @@ import { template as contactConfirmation } from './contact-confirmation.tsx'
 import { template as matchNotification } from './match-notification.tsx'
 import { template as profileLiked } from './profile-liked.tsx'
 import { template as adminNewSignup } from './admin-new-signup.tsx'
+import { template as appCrashAlert } from './app-crash-alert.tsx'
 
 export const TEMPLATES: Record<string, TemplateEntry> = {
   'welcome-email': welcomeEmail,
@@ -21,4 +22,5 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'match-notification': matchNotification,
   'profile-liked': profileLiked,
   'admin-new-signup': adminNewSignup,
+  'app-crash-alert': appCrashAlert,
 }
