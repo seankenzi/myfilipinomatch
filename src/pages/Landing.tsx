@@ -50,7 +50,7 @@ const Landing = () => {
         <div className="container relative z-10 py-20">
           <div className="max-w-2xl animate-slide-up">
             <h1 className="mb-6 text-4xl font-bold leading-tight text-primary-foreground md:text-6xl lg:text-7xl" style={{ fontFamily: 'var(--font-display)' }}>
-              Find a Real Filipina Relationship
+              Find Your Filipina Soulmate
               <span className="block mt-2 text-primary-foreground/90 text-3xl md:text-4xl lg:text-5xl">— Not Fake Profiles</span>
             </h1>
             <p className="mb-8 max-w-lg text-lg text-primary-foreground/85 md:text-xl leading-relaxed">
