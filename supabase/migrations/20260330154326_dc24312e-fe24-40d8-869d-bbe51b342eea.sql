@@ -1,0 +1,1 @@
+ALTER TABLE public.verifications ADD COLUMN IF NOT EXISTS pose_instruction text;

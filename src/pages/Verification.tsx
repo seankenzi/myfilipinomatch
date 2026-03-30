@@ -184,7 +184,7 @@ const Verification = () => {
 
       const { error: insertError } = await supabase
         .from("verifications")
-        .insert({ user_id: user.id, type: "photo", document_url: filePath, status: "pending" });
+        .insert({ user_id: user.id, type: "photo", document_url: filePath, status: "pending", pose_instruction: poseInstruction } as any);
       if (insertError) throw insertError;
 
       setVerificationStatus("pending");
