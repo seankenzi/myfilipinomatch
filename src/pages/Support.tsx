@@ -8,23 +8,46 @@ import { Label } from "@/components/ui/label";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 
 const Support = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [showFaq, setShowFaq] = useState(false);
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
+  const [sending, setSending] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!subject.trim() || !message.trim()) {
       toast({ title: "Please fill in all fields", variant: "destructive" });
       return;
     }
-    toast({ title: "Message sent!", description: "We'll get back to you within 24 hours." });
+    setSending(true);
+
+    // Send contact confirmation email to the user
+    if (user?.email) {
+      const confirmId = crypto.randomUUID();
+      await supabase.functions.invoke("send-transactional-email", {
+        body: {
+          templateName: "contact-confirmation",
+          recipientEmail: user.email,
+          idempotencyKey: `contact-confirm-${confirmId}`,
+          templateData: {
+            name: user.user_metadata?.full_name || undefined,
+            subject: subject.trim(),
+          },
+        },
+      });
+    }
+
+    toast({ title: "Message sent!", description: "We'll get back to you within 24 hours. Check your email for confirmation." });
     setSubject("");
     setMessage("");
+    setSending(false);
   };
 
   return (
@@ -103,8 +126,8 @@ const Support = () => {
                   onChange={(e) => setMessage(e.target.value)}
                 />
               </div>
-              <Button type="submit" className="gradient-hero text-primary-foreground w-full">
-                Send Message
+              <Button type="submit" className="gradient-hero text-primary-foreground w-full" disabled={sending}>
+                {sending ? "Sending..." : "Send Message"}
               </Button>
             </form>
           </div>

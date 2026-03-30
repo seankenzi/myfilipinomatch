@@ -39,12 +39,30 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     initializeAuth();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       if (!mounted) return;
 
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
+
+      // Send welcome email on first sign-in after email confirmation
+      if (_event === 'SIGNED_IN' && session?.user) {
+        const u = session.user;
+        const createdAt = new Date(u.created_at).getTime();
+        const now = Date.now();
+        // Only send within 2 minutes of account creation (first login)
+        if (now - createdAt < 120_000) {
+          supabase.functions.invoke('send-transactional-email', {
+            body: {
+              templateName: 'welcome-email',
+              recipientEmail: u.email,
+              idempotencyKey: `welcome-${u.id}`,
+              templateData: { name: u.user_metadata?.full_name || undefined },
+            },
+          }).catch(() => { /* non-critical */ });
+        }
+      }
     });
 
     return () => {
