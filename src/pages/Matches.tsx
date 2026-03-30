@@ -1,5 +1,5 @@
-import { Heart, MessageCircle, Crown } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { Heart, MessageCircle } from "lucide-react";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import BottomNav from "@/components/BottomNav";
 import Navbar from "@/components/Navbar";
@@ -11,52 +11,13 @@ const mockMatches = [
   { id: 2, name: "Jasmine", age: 24, city: "Cebu", image: profile3, lastActive: "1 hour ago", newMatch: false },
 ];
 
-const mockLikedYou = [
-  { id: 3, name: "???", image: profile1, blurred: true },
-  { id: 4, name: "???", image: profile3, blurred: true },
-];
-
 const Matches = () => {
-  const navigate = useNavigate();
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <Navbar />
       <main className="flex-1 px-4 py-6 pb-24 md:pb-6">
         <div className="mx-auto max-w-2xl">
           <h1 className="mb-6 text-2xl font-bold">Your Matches</h1>
-
-          {/* Who Liked You - Premium */}
-          <div className="mb-8">
-            <div className="mb-4 flex items-center justify-between">
-              <h2 className="flex items-center gap-2 text-lg font-semibold">
-                <Crown className="h-5 w-5 text-accent" />
-                Who Liked You
-              </h2>
-              <span className="text-sm text-muted-foreground">{mockLikedYou.length} people</span>
-            </div>
-            <div className="flex gap-4 overflow-x-auto pb-2">
-              {mockLikedYou.map((p) => (
-                <div key={p.id} className="relative flex-shrink-0">
-                  <div className="h-28 w-28 overflow-hidden rounded-2xl">
-                    <img
-                      src={p.image}
-                      alt="Hidden profile"
-                      className="h-full w-full object-cover blur-lg"
-                      loading="lazy"
-                    />
-                  </div>
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <Crown className="h-6 w-6 text-accent" />
-                  </div>
-                </div>
-              ))}
-              <div className="flex flex-shrink-0 items-center">
-                <Button variant="hero" size="sm" onClick={() => navigate("/premium")}>
-                  Upgrade to see
-                </Button>
-              </div>
-            </div>
-          </div>
 
           {/* Matches */}
           <div>
