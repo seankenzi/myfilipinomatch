@@ -324,6 +324,63 @@ const Premium = () => {
             </div>
           </div>
 
+          {/* Free vs Premium comparison */}
+          <div className="mt-12">
+            <h2 className="text-2xl font-bold text-foreground mb-6">Free vs Premium</h2>
+            <div className="rounded-2xl border border-border bg-card shadow-card overflow-hidden">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-border bg-muted/50">
+                    <th className="text-left py-3 px-4 font-semibold text-foreground">Feature</th>
+                    <th className="py-3 px-4 font-semibold text-foreground text-center">Free</th>
+                    <th className="py-3 px-4 font-semibold text-primary text-center">
+                      <span className="inline-flex items-center gap-1"><Crown className="h-4 w-4" /> Premium</span>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[
+                    { feature: "Daily Likes", free: "10 per day", premium: "Unlimited" },
+                    { feature: "Messaging (mutual match)", free: "10 messages/day", premium: "Unlimited" },
+                    { feature: "Direct Message anyone", free: false, premium: true },
+                    { feature: "See who liked you", free: false, premium: true },
+                    { feature: "Undo accidental passes", free: false, premium: true },
+                    { feature: "Profile Boost", free: false, premium: true },
+                    { feature: "Advanced filters", free: false, premium: true },
+                    { feature: "Read receipts", free: false, premium: true },
+                    { feature: "Video calls (2 hrs/month)", free: false, premium: "Annual plan" },
+                    { feature: "Priority in Discover", free: false, premium: "3-Month+" },
+                    { feature: "VIP badge", free: false, premium: "Annual plan" },
+                    { feature: "Browse & Discover profiles", free: true, premium: true },
+                    { feature: "Match with mutual likes", free: true, premium: true },
+                    { feature: "Verification badge", free: true, premium: true },
+                    { feature: "Report & block users", free: true, premium: true },
+                  ].map(({ feature, free, premium }, i) => (
+                    <tr key={feature} className={i % 2 === 0 ? "bg-background" : "bg-muted/20"}>
+                      <td className="py-3 px-4 text-left text-foreground font-medium">{feature}</td>
+                      <td className="py-3 px-4 text-center">
+                        {free === true ? (
+                          <Check className="h-5 w-5 text-primary mx-auto" />
+                        ) : free === false ? (
+                          <span className="text-muted-foreground">—</span>
+                        ) : (
+                          <span className="text-muted-foreground">{free}</span>
+                        )}
+                      </td>
+                      <td className="py-3 px-4 text-center">
+                        {premium === true ? (
+                          <Check className="h-5 w-5 text-primary mx-auto" />
+                        ) : (
+                          <span className="text-primary font-semibold">{premium}</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
           {/* Benefits grid */}
           <div className="mt-12 grid gap-4 sm:grid-cols-3 text-center">
             {[
