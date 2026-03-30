@@ -13,6 +13,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
+import { useSignedPhoto } from "@/hooks/useSignedPhotos";
 
 const Profile = () => {
   const { user, signOut } = useAuth();
@@ -121,7 +122,8 @@ const Profile = () => {
     );
   }
 
-  const avatarUrl = profile.photos[0] || profile.avatar_url;
+  const rawAvatarUrl = profile.photos[0] || profile.avatar_url;
+  const avatarUrl = useSignedPhoto(rawAvatarUrl || null);
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
