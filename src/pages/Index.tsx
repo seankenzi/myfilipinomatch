@@ -47,7 +47,7 @@ const Index = () => {
 
   return (
     <>
-      <Navbar />
+      <Navbar bannerSubtitle="See who you're talking to instantly" />
       <Landing />
     </>
   );
