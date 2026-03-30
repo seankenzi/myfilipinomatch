@@ -30,7 +30,7 @@ const Navbar = ({ bannerSubtitle }: NavbarProps) => {
           </span>
         </Link>
 
-        {user && (
+        {user ? (
         <nav className="hidden items-center gap-6 md:flex">
           <Link to="/discover" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
             Discover
@@ -50,6 +50,10 @@ const Navbar = ({ bannerSubtitle }: NavbarProps) => {
             Messages
           </Link>
         </nav>
+        ) : (
+          <p className="hidden md:block text-sm font-medium text-muted-foreground italic tracking-wide">
+            Find Your Perfect Filipino Match 💖
+          </p>
         )}
 
         <div className="flex items-center gap-3">
