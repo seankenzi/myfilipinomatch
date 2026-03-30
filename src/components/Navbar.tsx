@@ -53,13 +53,7 @@ const Navbar = ({ bannerSubtitle }: NavbarProps) => {
           </Link>
         </nav>
         ) : (
-          <motion.p
-            className="hidden md:block text-lg lg:text-xl font-display font-bold bg-gradient-to-r from-primary via-accent to-primary bg-[length:200%_auto] bg-clip-text text-transparent drop-shadow-sm"
-            animate={{ backgroundPosition: ["0% center", "200% center"] }}
-            transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
-          >
-            Connecting Hearts, Bridging Cultures 💕
-          </motion.p>
+          <RotatingTagline />
         )}
 
         <div className="flex items-center gap-3">
