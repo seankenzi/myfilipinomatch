@@ -46,7 +46,7 @@ const plans = [
     features: [
       "Everything in Monthly",
       "Priority in Discover",
-      "Exclusive badge",
+      "Premium badge on your profile",
       "Priority support",
     ],
   },
@@ -362,10 +362,10 @@ const Premium = () => {
                     { feature: "Advanced filters", free: false, monthly: true, quarterly: true, annual: true },
                     { feature: "Read receipts", free: false, monthly: true, quarterly: true, annual: true },
                     { feature: "Priority in Discover", free: false, monthly: false, quarterly: true, annual: true },
-                    { feature: "Exclusive badge", free: false, monthly: false, quarterly: true, annual: true },
+                    { feature: "Premium badge", free: false, monthly: false, quarterly: true, annual: true },
                     { feature: "Priority support", free: false, monthly: false, quarterly: true, annual: true },
                     { feature: "Video calls (2 hrs/month)", free: false, monthly: false, quarterly: false, annual: true },
-                    { feature: "VIP badge", free: false, monthly: false, quarterly: false, annual: true },
+                    { feature: "VIP badge ✦", free: false, monthly: false, quarterly: false, annual: true },
                     { feature: "Early access to features", free: false, monthly: false, quarterly: false, annual: true },
                   ] as Array<{ feature: string; free: boolean | string; monthly: boolean | string; quarterly: boolean | string; annual: boolean | string }>).map(({ feature, free, monthly, quarterly, annual }, i) => {
                     const renderCell = (value: boolean | string) => {
