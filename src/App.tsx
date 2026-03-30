@@ -27,6 +27,7 @@ import Verification from "./pages/Verification.tsx";
 import AdminVerifications from "./pages/AdminVerifications.tsx";
 import AdminDashboard from "./pages/AdminDashboard.tsx";
 import AdminRoute from "@/components/AdminRoute";
+import ScrollToTop from "@/components/ScrollToTop";
 import Premium from "./pages/Premium.tsx";
 import Notifications from "./pages/Notifications.tsx";
 import WhoLikedMe from "./pages/WhoLikedMe.tsx";
