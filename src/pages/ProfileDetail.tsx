@@ -312,13 +312,28 @@ const ProfileDetail = () => {
                   if (matchId) {
                     navigate(`/messages?match=${matchId}`);
                   } else if (isPremium) {
-                    // Premium user: create a match via secure function
-                    const { data: newMatchId, error } = await supabase.rpc("create_match_if_mutual", { other_user_id: profile.id });
-                    if (!error && newMatchId) {
-                      setMatchId(newMatchId);
-                      navigate(`/messages?match=${newMatchId}`);
+                    // Premium user: force-create a match for direct messaging
+                    const { data: insertData, error } = await supabase
+                      .from("matches")
+                      .insert({ user1_id: user.id, user2_id: profile.id })
+                      .select("id")
+                      .single();
+                    if (!error && insertData) {
+                      setMatchId(insertData.id);
+                      navigate(`/messages?match=${insertData.id}`);
+                    } else if (error?.code === "23505") {
+                      // Match already exists, fetch it
+                      const { data: existing } = await supabase
+                        .from("matches")
+                        .select("id")
+                        .or(`and(user1_id.eq.${user.id},user2_id.eq.${profile.id}),and(user1_id.eq.${profile.id},user2_id.eq.${user.id})`)
+                        .single();
+                      if (existing) {
+                        setMatchId(existing.id);
+                        navigate(`/messages?match=${existing.id}`);
+                      }
                     } else {
-                      toast({ title: "Match required", description: "A mutual like is needed before you can message." });
+                      toast({ title: "Error", description: "Could not start conversation. Please try again." });
                     }
                   } else {
                     toast({ title: "Match required", description: "Upgrade to Premium to message anyone directly, or wait for a mutual match!" });
