@@ -799,6 +799,63 @@ const FeatureFlagsTab = () => {
   );
 };
 
+// ─── Crash Logs Tab ───
+const CrashLogsTab = () => {
+  const [logs, setLogs] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchLogs = async () => {
+    setLoading(true);
+    const { data } = await supabase
+      .from("crash_logs" as any)
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(100);
+    setLogs(data || []);
+    setLoading(false);
+  };
+
+  useEffect(() => { fetchLogs(); }, []);
+
+  if (loading) return <div className="flex justify-center py-20"><div className="h-6 w-6 animate-spin rounded-full border-4 border-primary border-t-transparent" /></div>;
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h3 className="text-lg font-semibold flex items-center gap-2"><Bug className="h-5 w-5 text-destructive" /> Crash Logs ({logs.length})</h3>
+        <Button onClick={fetchLogs} variant="outline" size="icon"><RefreshCw className="h-4 w-4" /></Button>
+      </div>
+      {logs.length === 0 ? (
+        <p className="text-sm text-muted-foreground py-10 text-center">No crashes recorded. 🎉</p>
+      ) : (
+        <div className="space-y-3">
+          {logs.map((log: any) => (
+            <div key={log.id} className="rounded-xl border border-border bg-card p-4 space-y-2">
+              <div className="flex items-start justify-between gap-4">
+                <p className="text-sm font-medium text-destructive break-all">{log.error_message}</p>
+                <span className="text-[10px] text-muted-foreground whitespace-nowrap">
+                  {format(new Date(log.created_at), "MMM d, yyyy h:mm a")}
+                </span>
+              </div>
+              {log.page_url && (
+                <p className="text-xs text-muted-foreground">Page: {log.page_url}</p>
+              )}
+              {log.error_stack && (
+                <pre className="text-[11px] bg-muted rounded-lg p-3 overflow-auto max-h-32 text-muted-foreground font-mono whitespace-pre-wrap break-all">
+                  {log.error_stack}
+                </pre>
+              )}
+              {log.user_agent && (
+                <p className="text-[10px] text-muted-foreground/60 truncate">Browser: {log.user_agent}</p>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
 // ─── Main Admin Dashboard ───
 const AdminDashboard = () => {
   const navigate = useNavigate();
