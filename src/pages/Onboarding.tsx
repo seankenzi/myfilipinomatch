@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { detectContactInfo } from "@/lib/contactFilter";
 import { useNavigate } from "react-router-dom";
 import { Heart, Globe, MapPin, User, Camera, Shield, ArrowRight, ArrowLeft, Sparkles, CheckCircle, Users } from "lucide-react";
