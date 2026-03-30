@@ -109,8 +109,11 @@ const Landing = () => {
       </section>
 
       {/* ===== HOW IT WORKS ===== */}
-      <section className="py-20 bg-background">
-        <div className="container">
+      <section className="relative py-20 bg-background overflow-hidden">
+        {/* Decorative blobs */}
+        <div className="absolute -top-20 -left-20 w-72 h-72 rounded-full bg-primary/10 blur-3xl" />
+        <div className="absolute -bottom-20 -right-20 w-80 h-80 rounded-full bg-accent/10 blur-3xl" />
+        <div className="container relative z-10">
           <h2 className="mb-4 text-center text-3xl font-bold md:text-4xl" style={{ fontFamily: 'var(--font-display)' }}>
             How It Works
           </h2>
@@ -124,22 +127,25 @@ const Landing = () => {
                 step: "1",
                 title: "Create Your Free Account",
                 desc: "Sign up in seconds and set up your profile.",
+                gradient: "from-primary to-accent",
               },
               {
                 icon: Search,
                 step: "2",
                 title: "Browse Verified Filipinas",
                 desc: "Every profile is reviewed to ensure authenticity.",
+                gradient: "from-secondary to-primary",
               },
               {
                 icon: MessagesSquare,
                 step: "3",
                 title: "Start Real Conversations",
                 desc: "Chat, connect, and build something meaningful.",
+                gradient: "from-accent to-secondary",
               },
-            ].map(({ icon: Icon, step, title, desc }) => (
+            ].map(({ icon: Icon, step, title, desc, gradient }) => (
               <div key={step} className="text-center group">
-                <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl gradient-hero shadow-card transition-transform group-hover:scale-110">
+                <div className={`mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br ${gradient} shadow-card transition-transform group-hover:scale-110`}>
                   <Icon className="h-7 w-7 text-primary-foreground" />
                 </div>
                 <span className="mb-2 block text-xs font-bold uppercase tracking-widest text-muted-foreground">Step {step}</span>
@@ -152,8 +158,8 @@ const Landing = () => {
       </section>
 
       {/* ===== WHY FILOHEART IS DIFFERENT ===== */}
-      <section className="py-20 bg-card">
-        <div className="container">
+      <section className="relative py-20 overflow-hidden" style={{ background: 'linear-gradient(135deg, hsl(350 65% 55% / 0.06), hsl(35 80% 55% / 0.08), hsl(175 40% 40% / 0.06))' }}>
+        <div className="container relative z-10">
           <h2 className="mb-4 text-center text-3xl font-bold md:text-4xl" style={{ fontFamily: 'var(--font-display)' }}>
             Why <span className="text-gradient">MyFilipinoMatch</span> Is Different
           </h2>
@@ -166,22 +172,28 @@ const Landing = () => {
                 icon: ShieldCheck,
                 title: "100% Profile Verification",
                 desc: "We manually review profiles to reduce fake accounts.",
+                accent: "bg-primary/10 text-primary",
+                border: "border-primary/20 hover:border-primary/40",
               },
               {
                 icon: Ban,
                 title: "No Pay-Per-Message Traps",
                 desc: "We focus on real relationships — not draining your wallet.",
+                accent: "bg-accent/10 text-accent",
+                border: "border-accent/20 hover:border-accent/40",
               },
               {
                 icon: Heart,
                 title: "Built for Serious Connections",
                 desc: "This is not a hookup site. Members are relationship-focused.",
+                accent: "bg-secondary/10 text-secondary",
+                border: "border-secondary/20 hover:border-secondary/40",
               },
-            ].map(({ icon: Icon, title, desc }) => (
-              <Card key={title} className="border-border bg-background shadow-card transition-all duration-300 hover:shadow-card-hover hover:-translate-y-1">
+            ].map(({ icon: Icon, title, desc, accent, border }) => (
+              <Card key={title} className={`border-2 ${border} bg-background/80 backdrop-blur-sm shadow-card transition-all duration-300 hover:shadow-card-hover hover:-translate-y-1`}>
                 <CardContent className="p-6">
-                  <div className="mb-4 inline-flex rounded-xl gradient-hero p-3">
-                    <Icon className="h-6 w-6 text-primary-foreground" />
+                  <div className={`mb-4 inline-flex rounded-xl ${accent} p-3`}>
+                    <Icon className="h-6 w-6" />
                   </div>
                   <h3 className="mb-2 text-lg font-semibold text-foreground">{title}</h3>
                   <p className="text-sm text-muted-foreground">{desc}</p>
@@ -193,8 +205,10 @@ const Landing = () => {
       </section>
 
       {/* ===== TESTIMONIALS ===== */}
-      <section className="py-20 bg-background">
-        <div className="container">
+      <section className="relative py-20 bg-background overflow-hidden">
+        <div className="absolute top-10 right-0 w-64 h-64 rounded-full bg-secondary/8 blur-3xl" />
+        <div className="absolute bottom-0 left-10 w-56 h-56 rounded-full bg-primary/8 blur-3xl" />
+        <div className="container relative z-10">
           <h2 className="mb-4 text-center text-3xl font-bold md:text-4xl" style={{ fontFamily: 'var(--font-display)' }}>
             What Our Members Say
           </h2>
@@ -208,27 +222,30 @@ const Landing = () => {
                 name: "Mark",
                 location: "USA",
                 photo: jamesPhoto,
+                ring: "ring-primary/30",
               },
               {
                 quote: "I felt safe and respected. The platform is different from others.",
                 name: "Ana",
                 location: "Philippines",
                 photo: anaPhoto,
+                ring: "ring-accent/30",
               },
               {
                 quote: "The verification process gave me confidence that profiles are genuine.",
                 name: "David",
                 location: "UK",
                 photo: davidPhoto,
+                ring: "ring-secondary/30",
               },
             ].map((t) => (
-              <Card key={t.name} className="border-border bg-card shadow-card">
+              <Card key={t.name} className="border-border bg-card shadow-card hover:shadow-card-hover transition-all duration-300">
                 <CardContent className="p-6">
                   <div className="flex items-center gap-3 mb-4">
                     <img
                       src={t.photo}
                       alt={t.name}
-                      className="h-12 w-12 rounded-full object-cover border-2 border-primary/20"
+                      className={`h-12 w-12 rounded-full object-cover ring-2 ${t.ring}`}
                       loading="lazy"
                       width={48}
                       height={48}
@@ -237,6 +254,11 @@ const Landing = () => {
                       <p className="font-semibold text-foreground">{t.name}</p>
                       <p className="text-xs text-muted-foreground">{t.location}</p>
                     </div>
+                  </div>
+                  <div className="flex gap-0.5 mb-3">
+                    {[...Array(5)].map((_, i) => (
+                      <Star key={i} className="h-4 w-4 fill-accent text-accent" />
+                    ))}
                   </div>
                   <p className="text-sm text-muted-foreground italic leading-relaxed">"{t.quote}"</p>
                 </CardContent>
@@ -247,12 +269,12 @@ const Landing = () => {
       </section>
 
       {/* ===== TRUST & SAFETY ===== */}
-      <section className="py-20 bg-card">
-        <div className="container">
+      <section className="relative py-20 overflow-hidden" style={{ background: 'linear-gradient(180deg, hsl(175 40% 40% / 0.05), hsl(350 65% 55% / 0.05))' }}>
+        <div className="container relative z-10">
           <div className="mx-auto max-w-5xl grid gap-10 md:grid-cols-2 items-center">
             <div>
-              <div className="mb-6 inline-flex h-14 w-14 items-center justify-center rounded-full bg-secondary/10">
-                <Shield className="h-7 w-7 text-secondary" />
+              <div className="mb-6 inline-flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-secondary to-primary/60">
+                <Shield className="h-7 w-7 text-primary-foreground" />
               </div>
               <h2 className="mb-4 text-3xl font-bold md:text-4xl" style={{ fontFamily: 'var(--font-display)' }}>
                 Safe, Secure, and Built for Real Connections
@@ -262,19 +284,19 @@ const Landing = () => {
               </p>
               <div className="flex flex-col gap-4">
                 {[
-                  { icon: Users, text: "Active moderation team" },
-                  { icon: AlertTriangle, text: "Report & block system" },
-                  { icon: Lock, text: "Secure messaging" },
-                  { icon: Eye, text: "Privacy controls for your data" },
+                  { icon: Users, text: "Active moderation team", color: "text-primary" },
+                  { icon: AlertTriangle, text: "Report & block system", color: "text-accent" },
+                  { icon: Lock, text: "Secure messaging", color: "text-secondary" },
+                  { icon: Eye, text: "Privacy controls for your data", color: "text-primary" },
                 ].map((item) => (
                   <div key={item.text} className="flex items-center gap-3">
-                    <item.icon className="h-5 w-5 text-secondary flex-shrink-0" />
+                    <item.icon className={`h-5 w-5 ${item.color} flex-shrink-0`} />
                     <span className="text-sm font-medium text-foreground">{item.text}</span>
                   </div>
                 ))}
               </div>
             </div>
-            <div className="relative rounded-3xl overflow-hidden shadow-elevated">
+            <div className="relative rounded-3xl overflow-hidden shadow-elevated ring-4 ring-primary/10">
               <img
                 src={coupleGarden}
                 alt="Happy couple in a tropical garden"
