@@ -12,7 +12,47 @@ import {
 } from "@/components/ui/tooltip";
 import logo from "@/assets/myfilipinomatch-logo.png";
 
-interface NavbarProps {
+const taglines = [
+  "Connecting Hearts, Bridging Cultures 💕",
+  "Love Without Borders 💖",
+  "Where Hearts Meet Across the World 🌏",
+  "Your Journey to Love Starts Here ✨",
+  "Find Your Perfect Filipino Match 🇵🇭",
+];
+
+const RotatingTagline = () => {
+  const [index, setIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setIndex((prev) => (prev + 1) % taglines.length);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div className="hidden md:block relative h-7 overflow-hidden">
+      <AnimatePresence mode="wait">
+        <motion.p
+          key={index}
+          className="text-lg lg:text-xl font-display font-bold bg-gradient-to-r from-primary via-accent to-primary bg-[length:200%_auto] bg-clip-text text-transparent drop-shadow-sm"
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1, backgroundPosition: ["0% center", "200% center"] }}
+          exit={{ y: -20, opacity: 0 }}
+          transition={{
+            y: { duration: 0.4, ease: "easeOut" },
+            opacity: { duration: 0.4 },
+            backgroundPosition: { duration: 4, repeat: Infinity, ease: "linear" },
+          }}
+        >
+          {taglines[index]}
+        </motion.p>
+      </AnimatePresence>
+    </div>
+  );
+};
+
+
   bannerSubtitle?: string;
 }
 
