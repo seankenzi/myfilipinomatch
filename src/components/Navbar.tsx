@@ -1,8 +1,9 @@
-import { Heart, LogIn, LogOut, User } from "lucide-react";
+import { Heart, LogIn, LogOut, User, Eye } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import NotificationBell from "@/components/NotificationBell";
+import { useNewLikesCount } from "@/hooks/useNewLikesCount";
 import VideoBanner from "@/components/VideoBanner";
 import {
   Tooltip, TooltipContent, TooltipProvider, TooltipTrigger,
