@@ -45,6 +45,7 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
+          <ScrollToTop />
           <div className="flex min-h-screen flex-col">
             
             <div className="flex-1">
