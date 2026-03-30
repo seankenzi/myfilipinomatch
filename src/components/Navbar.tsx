@@ -9,7 +9,11 @@ import {
 } from "@/components/ui/tooltip";
 import logo from "@/assets/myfilipinomatch-logo.png";
 
-const Navbar = () => {
+interface NavbarProps {
+  bannerSubtitle?: string;
+}
+
+const Navbar = ({ bannerSubtitle }: NavbarProps) => {
   const { user, loading, signOut } = useAuth();
   const navigate = useNavigate();
 
@@ -94,7 +98,7 @@ const Navbar = () => {
         </div>
       </div>
     </header>
-    <VideoBanner />
+    <VideoBanner subtitle={bannerSubtitle} />
     </>
   );
 };
