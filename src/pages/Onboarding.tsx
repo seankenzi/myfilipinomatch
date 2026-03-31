@@ -571,7 +571,7 @@ const Onboarding = () => {
               <Button
                 variant="hero"
                 size="lg"
-                className="w-full"
+                className="w-full min-h-[48px]"
                 onClick={handleVerifyNow}
                 disabled={saving}
               >
