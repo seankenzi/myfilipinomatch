@@ -782,7 +782,7 @@ const Discover = () => {
                   </div>
 
                   <div className="flex gap-2 pt-1">
-                    <Button size="sm" variant="outline" className="flex-1" onClick={() => {
+                    <Button size="sm" variant="outline" className="flex-1 min-h-[44px]" onClick={() => {
                       setFilterCountry("all");
                       setFilterIntent("all");
                       setFilterCity("");
@@ -795,7 +795,7 @@ const Discover = () => {
                     }}>
                       Reset All
                     </Button>
-                    <Button size="sm" className="flex-1 gradient-hero text-primary-foreground" onClick={() => {
+                    <Button size="sm" className="flex-1 min-h-[44px] gradient-hero text-primary-foreground" onClick={() => {
                       setShowFilters(false);
                       fetchProfiles();
                     }}>
