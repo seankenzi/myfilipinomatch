@@ -1,5 +1,5 @@
 import Navbar from "@/components/Navbar";
-
+import SEO from "@/components/SEO";
 import { Shield, Eye, Lock, AlertTriangle, CheckCircle } from "lucide-react";
 
 const Safety = () => {
