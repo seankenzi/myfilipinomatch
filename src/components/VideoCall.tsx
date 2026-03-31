@@ -86,7 +86,11 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
   const endSession = useCallback(async () => {
     // Only the caller (initiator) has a session to end
     if (!sessionId || joinRoomUrl) return;
-    const duration = Math.round((Date.now() - callStartTimeRef.current) / 1000);
+    let duration = callStartTimeRef.current > 0
+      ? Math.round((Date.now() - callStartTimeRef.current) / 1000)
+      : 0;
+    // Safety cap: never report more than 2 hours
+    duration = Math.min(duration, 7200);
     try {
       const { data: sessionData } = await supabase.auth.getSession();
       const token = sessionData?.session?.access_token;
