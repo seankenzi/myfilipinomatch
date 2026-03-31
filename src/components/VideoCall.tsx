@@ -84,7 +84,7 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
       // If joining an existing room (accepted incoming call), skip edge function
       if (joinRoomUrl) {
         const separator = joinRoomUrl.includes("?") ? "&" : "?";
-        setRoomUrl(`${joinRoomUrl}${separator}prejoin=false&showParticipantsBar=false&showUserNameChangeUI=false`);
+        setRoomUrl(`${joinRoomUrl}${separator}prejoin=false&showParticipantsBar=false&showUserNameChangeUI=false&showLeaveButton=false&showFullscreenButton=false`);
         setRemainingSeconds(7200);
         setElapsedSeconds(0);
         callStartTimeRef.current = Date.now();
@@ -129,7 +129,7 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
         return;
       }
 
-      setRoomUrl(`${data.room_url}?t=${data.token}&prejoin=false&showParticipantsBar=false&showUserNameChangeUI=false`);
+      setRoomUrl(`${data.room_url}?t=${data.token}&prejoin=false&showParticipantsBar=false&showUserNameChangeUI=false&showLeaveButton=false&showFullscreenButton=false`);
       setSessionId(data.session_id);
       setRemainingSeconds(data.remaining_seconds || 7200);
       setElapsedSeconds(0);
