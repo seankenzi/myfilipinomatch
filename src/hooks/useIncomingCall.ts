@@ -17,6 +17,46 @@ export interface IncomingCall {
 export const useIncomingCall = () => {
   const { user } = useAuth();
   const [incomingCall, setIncomingCall] = useState<IncomingCall | null>(null);
+  const expireTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const RING_TIMEOUT_MS = 30_000;
+
+  // Auto-expire after 30s → mark as "missed" and create a notification
+  useEffect(() => {
+    if (expireTimerRef.current) {
+      clearTimeout(expireTimerRef.current);
+      expireTimerRef.current = null;
+    }
+
+    if (!incomingCall || !user) return;
+
+    expireTimerRef.current = setTimeout(async () => {
+      // Update signal to missed
+      await supabase
+        .from("video_call_signals")
+        .update({ status: "missed", updated_at: new Date().toISOString() })
+        .eq("id", incomingCall.id);
+
+      // Insert a missed-call notification for the callee
+      await supabase.from("notifications").insert({
+        user_id: user.id,
+        type: "missed_call",
+        title: "Missed Video Call 📞",
+        body: `${incomingCall.caller_name || "Someone"} tried to video call you.`,
+        related_user_id: incomingCall.caller_id,
+        related_match_id: incomingCall.match_id,
+      });
+
+      setIncomingCall(null);
+    }, RING_TIMEOUT_MS);
+
+    return () => {
+      if (expireTimerRef.current) {
+        clearTimeout(expireTimerRef.current);
+        expireTimerRef.current = null;
+      }
+    };
+  }, [incomingCall, user]);
 
   // Start/stop ringtone based on incoming call state
   useEffect(() => {
