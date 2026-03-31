@@ -76,7 +76,7 @@ export const template = {
   displayName: 'App crash alert',
   previewData: {
     errorMessage: "Cannot read properties of undefined (reading 'map')",
-    pageUrl: 'https://myfilipinomatch.lovable.app/admin',
+    pageUrl: 'https://www.myfilipinomatch.com/admin',
     timestamp: '2026-03-30T15:45:00Z',
     errorStack: "TypeError: Cannot read properties of undefined\n    at DashboardTab (AdminDashboard.tsx:73)",
     userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',

@@ -33,7 +33,7 @@ const AdminNewSignupEmail = ({ userName, userEmail }: AdminNewSignupProps) => (
         <Text style={text}>
           Please review their profile and verification status when they complete onboarding.
         </Text>
-        <Button style={button} href="https://myfilipinomatch.lovable.app/admin">
+        <Button style={button} href="https://www.myfilipinomatch.com/admin">
           Go to Admin Dashboard
         </Button>
         <Text style={footer}>
