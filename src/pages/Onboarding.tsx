@@ -406,14 +406,14 @@ const Onboarding = () => {
                 <div className="space-y-1.5">
                   <Label>Gender *</Label>
                   <RadioGroup value={gender} onValueChange={setGender} className="grid grid-cols-3 gap-2">
-                    {[
+                     {[
                       { value: "male", label: "👨 Male" },
                       { value: "female", label: "👩 Female" },
                       { value: "other", label: "🌈 Other" },
                     ].map((g) => (
                       <label
                         key={g.value}
-                        className={`flex items-center justify-center gap-2 rounded-xl border-2 px-3 py-3 cursor-pointer text-sm font-medium transition-all ${
+                        className={`flex items-center justify-center gap-2 rounded-xl border-2 px-3 py-3.5 cursor-pointer text-sm font-medium transition-all min-h-[48px] active:scale-[0.97] ${
                           gender === g.value
                             ? "border-primary bg-primary/5 text-primary shadow-sm"
                             : "border-border hover:border-muted-foreground/30"
