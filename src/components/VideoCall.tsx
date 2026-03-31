@@ -22,7 +22,7 @@ const formatTime = (totalSeconds: number) => {
   return `${m}:${String(s).padStart(2, "0")}`;
 };
 
-const VideoCall = ({ matchId, otherUserName, open, onClose }: VideoCallProps) => {
+const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: VideoCallProps) => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const iframeRef = useRef<HTMLIFrameElement>(null);
