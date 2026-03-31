@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { startRingtone, stopRingtone } from "@/lib/ringtone";
 
 export interface IncomingCall {
   id: string;
@@ -16,6 +17,16 @@ export interface IncomingCall {
 export const useIncomingCall = () => {
   const { user } = useAuth();
   const [incomingCall, setIncomingCall] = useState<IncomingCall | null>(null);
+
+  // Start/stop ringtone based on incoming call state
+  useEffect(() => {
+    if (incomingCall) {
+      startRingtone();
+    } else {
+      stopRingtone();
+    }
+    return () => stopRingtone();
+  }, [incomingCall]);
 
   // Fetch caller profile info
   const enrichCall = useCallback(async (call: IncomingCall) => {
