@@ -1121,7 +1121,7 @@ const Discover = () => {
                         {/* Photo */}
                         <div className="relative aspect-[3/4] cursor-pointer" onClick={() => navigate(`/profile/${profile.id}`)}>
                           {getProfilePhotos(profile).length > 0 ? (
-                            <img src={getProfilePhotos(profile)[0]} alt={profile.full_name} className="h-full w-full object-cover" />
+                            <img src={getProfilePhotos(profile)[0]} alt={`${profile.full_name} profile photo`} className="h-full w-full object-cover" loading="lazy" />
                           ) : (
                             <div className="flex h-full w-full items-center justify-center bg-muted text-3xl">👤</div>
                           )}

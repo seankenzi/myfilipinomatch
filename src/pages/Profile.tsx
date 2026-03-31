@@ -135,7 +135,7 @@ const Profile = () => {
           <div className="relative mb-6">
             <div className="relative mx-auto h-32 w-32">
               {avatarUrl ? (
-                <img src={avatarUrl} alt={profile.full_name} className="h-full w-full rounded-full object-cover border-4 border-card shadow-elevated" />
+                <img src={avatarUrl} alt={`${profile.full_name} profile photo`} loading="lazy" className="h-full w-full rounded-full object-cover border-4 border-card shadow-elevated" />
               ) : (
                 <div className="h-full w-full rounded-full border-4 border-card bg-muted flex items-center justify-center shadow-elevated">
                   <Camera className="h-8 w-8 text-muted-foreground" />

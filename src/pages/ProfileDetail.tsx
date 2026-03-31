@@ -201,8 +201,9 @@ const ProfileDetail = () => {
             <div className="relative w-full max-w-xs mx-auto overflow-hidden rounded-2xl aspect-[3/4] bg-muted">
               <img
                 src={photos[activePhoto]}
-                alt={profile.full_name}
+                alt={`${profile.full_name} photo ${activePhoto + 1}`}
                 className="h-full w-full object-cover"
+                loading={activePhoto === 0 ? "eager" : "lazy"}
               />
               {photos.length > 1 && (
                 <>

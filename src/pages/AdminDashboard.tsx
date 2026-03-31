@@ -333,7 +333,7 @@ const ModerationTab = () => {
             {verifications.map(v => (
               <div key={v.id} className="rounded-xl border border-border bg-card p-4 flex items-center gap-4">
                 {v.document_url && (
-                  <img src={v.document_url} className="h-14 w-14 rounded-lg object-cover border border-border" />
+                  <img src={v.document_url} alt={`Verification document for ${v.user_name}`} loading="lazy" className="h-14 w-14 rounded-lg object-cover border border-border" />
                 )}
                 <div className="flex-1">
                   <p className="font-medium text-sm">{v.user_name}</p>
