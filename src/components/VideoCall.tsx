@@ -52,14 +52,26 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
         timerRef.current = null;
       }
 
+      // Build duration summary
+      const duration = callStartTimeRef.current > 0
+        ? Math.round((Date.now() - callStartTimeRef.current) / 1000)
+        : 0;
+      const durationText = duration > 0 ? `Call lasted ${formatTime(duration)}` : undefined;
+
       setRoomUrl(null);
       setError(null);
       setNeedsUpgrade(false);
       setLimitReached(false);
       setElapsedSeconds(0);
+      setCallEstablished(false);
 
       if (toastMessage) {
-        toast(toastMessage);
+        toast({
+          ...toastMessage,
+          description: [toastMessage.description, durationText].filter(Boolean).join(" · "),
+        });
+      } else if (durationText) {
+        toast({ title: "Call ended", description: durationText });
       }
 
       onClose();
