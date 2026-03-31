@@ -596,16 +596,16 @@ const Discover = () => {
 
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className={`relative flex items-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-medium shadow-card transition-all ${
+              className={`relative flex items-center gap-1.5 rounded-xl border px-4 py-2.5 text-xs font-medium shadow-card transition-all min-h-[44px] ${
                 showFilters || activeFilterCount > 0
                   ? "border-primary bg-primary/5 text-primary"
                   : "border-border bg-card text-muted-foreground hover:border-primary/30"
               }`}
             >
-              <SlidersHorizontal className="h-3.5 w-3.5" />
+              <SlidersHorizontal className="h-4 w-4" />
               Filters
               {activeFilterCount > 0 && (
-                <span className="flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] text-primary-foreground font-bold">
+                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] text-primary-foreground font-bold">
                   {activeFilterCount}
                 </span>
               )}
