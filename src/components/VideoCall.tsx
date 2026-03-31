@@ -466,6 +466,15 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
               title={`Video call with ${otherUserName}`}
             />
 
+            {/* Connection lost overlay */}
+            {connectionLost && (
+              <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-background/80 backdrop-blur-sm gap-3">
+                <WifiOff className="h-10 w-10 text-destructive animate-pulse" />
+                <p className="text-sm font-medium text-foreground">Connection lost</p>
+                <p className="text-xs text-muted-foreground">Attempting to reconnect…</p>
+              </div>
+            )}
+
             {/* Timer overlay */}
             <div
               className={`absolute top-4 right-4 flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium shadow-lg backdrop-blur-sm ${
