@@ -148,7 +148,12 @@ Deno.serve(async (req) => {
         );
       }
 
-      const { session_id, duration_seconds } = parsed.data;
+      let { session_id, duration_seconds } = parsed.data;
+
+      // Safety cap: duration can never exceed 2 hours (7200s)
+      if (duration_seconds > 7200) {
+        duration_seconds = 7200;
+      }
 
       const { error: updateError } = await supabaseAdmin
         .from("video_call_sessions")
