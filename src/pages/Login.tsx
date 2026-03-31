@@ -62,7 +62,7 @@ const Login = () => {
   return (
     <>
       <SEO title="Log In" description="Sign in to your MyFilipinoMatch account to continue connecting with verified Filipino singles." canonical="/login" />
-    <div className="flex min-h-screen items-center justify-center px-4 py-12">
+    <div className="flex min-h-screen items-center justify-center px-5 py-8 md:py-12">
       <div className="w-full max-w-md animate-scale-in">
         <div className="mb-8 text-center">
           <Link to="/" className="inline-flex items-center gap-2 mb-6">
@@ -78,25 +78,25 @@ const Login = () => {
             <Label htmlFor="email">Email</Label>
             <div className="relative">
               <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input id="email" type="email" placeholder="you@example.com" className="pl-10" value={email} onChange={(e) => setEmail(e.target.value)} required />
+              <Input id="email" type="email" placeholder="you@example.com" className="pl-10 h-12 text-base" value={email} onChange={(e) => setEmail(e.target.value)} required />
             </div>
           </div>
 
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <Label htmlFor="password">Password</Label>
-              <Link to="/forgot-password" className="text-xs text-primary hover:underline">Forgot password?</Link>
+              <Link to="/forgot-password" className="text-xs text-primary hover:underline min-h-[44px] flex items-center px-1">Forgot password?</Link>
             </div>
             <div className="relative">
               <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input id="password" type={showPassword ? "text" : "password"} placeholder="••••••••" className="pl-10 pr-10" value={password} onChange={(e) => setPassword(e.target.value)} required />
-              <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
-                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              <Input id="password" type={showPassword ? "text" : "password"} placeholder="••••••••" className="pl-10 pr-12 h-12 text-base" value={password} onChange={(e) => setPassword(e.target.value)} required />
+              <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-1 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground min-w-[44px] min-h-[44px] flex items-center justify-center">
+                {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
               </button>
             </div>
           </div>
 
-          <Button type="submit" variant="hero" size="lg" className="w-full" disabled={loading}>
+          <Button type="submit" variant="hero" size="lg" className="w-full min-h-[48px] text-base" disabled={loading}>
             {loading ? "Signing in..." : "Sign in"}
           </Button>
         </form>
@@ -111,7 +111,7 @@ const Login = () => {
           type="button"
           variant="outline"
           size="lg"
-          className="w-full gap-2"
+          className="w-full gap-2 min-h-[48px] text-base"
           onClick={handleGoogleSignIn}
           disabled={googleLoading}
         >

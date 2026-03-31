@@ -57,11 +57,11 @@ const Signup = () => {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center px-4 py-12 bg-background">
+    <div className="flex min-h-screen items-center justify-center px-5 py-8 md:py-12 bg-background">
       <SEO title="Sign Up Free" description="Create your free MyFilipinoMatch account and start meeting verified Filipino singles looking for serious relationships." canonical="/signup" />
       <div className="w-full max-w-md animate-scale-in">
         {/* Logo & Header */}
-        <div className="mb-8 text-center">
+        <div className="mb-6 md:mb-8 text-center">
           <Link to="/" className="inline-flex items-center gap-2 mb-4">
             <img src={logo} alt="MyFilipinoMatch" className="h-10 w-10" />
             <span className="text-2xl font-display font-bold">MyFilipinoMatch</span>
@@ -71,7 +71,7 @@ const Signup = () => {
         </div>
 
         {/* Trust Badges */}
-        <div className="mb-6 flex items-center justify-center gap-4 text-xs text-muted-foreground">
+        <div className="mb-5 flex items-center justify-center gap-4 text-xs text-muted-foreground">
           <span className="flex items-center gap-1"><Shield className="h-3.5 w-3.5 text-secondary" /> No fake accounts</span>
           <span className="flex items-center gap-1"><Lock className="h-3.5 w-3.5 text-secondary" /> Your info is safe</span>
         </div>
@@ -81,7 +81,7 @@ const Signup = () => {
             <Label htmlFor="email">Email</Label>
             <div className="relative">
               <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input id="email" type="email" placeholder="you@example.com" className="pl-10" value={email} onChange={(e) => setEmail(e.target.value)} required />
+              <Input id="email" type="email" placeholder="you@example.com" className="pl-10 h-12 text-base" value={email} onChange={(e) => setEmail(e.target.value)} required />
             </div>
           </div>
 
@@ -89,14 +89,14 @@ const Signup = () => {
             <Label htmlFor="password">Password</Label>
             <div className="relative">
               <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input id="password" type={showPassword ? "text" : "password"} placeholder="Min. 8 characters" className="pl-10 pr-10" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={8} />
-              <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
-                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              <Input id="password" type={showPassword ? "text" : "password"} placeholder="Min. 8 characters" className="pl-10 pr-12 h-12 text-base" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={8} />
+              <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-1 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground min-w-[44px] min-h-[44px] flex items-center justify-center">
+                {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
               </button>
             </div>
           </div>
 
-          <Button type="submit" variant="hero" size="lg" className="w-full" disabled={loading}>
+          <Button type="submit" variant="hero" size="lg" className="w-full min-h-[48px] text-base" disabled={loading}>
             {loading ? "Creating account..." : "Create Free Account"}
           </Button>
         </form>
@@ -111,7 +111,7 @@ const Signup = () => {
           type="button"
           variant="outline"
           size="lg"
-          className="w-full gap-2"
+          className="w-full gap-2 min-h-[48px] text-base"
           onClick={handleGoogleSignIn}
           disabled={googleLoading}
         >
@@ -125,13 +125,13 @@ const Signup = () => {
         </Button>
 
         {/* Social Proof */}
-        <div className="mt-6 rounded-xl border border-border bg-card p-4 text-center">
-          <div className="flex items-center justify-center gap-3 text-sm text-muted-foreground">
+        <div className="mt-5 rounded-xl border border-border bg-card p-4 text-center">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-3 text-sm text-muted-foreground">
             <div className="flex items-center gap-1.5">
               <Heart className="h-4 w-4 text-primary fill-primary" />
               <span className="font-medium text-foreground">Serious relationships only</span>
             </div>
-            <span className="text-border">•</span>
+            <span className="hidden sm:inline text-border">•</span>
             <div className="flex items-center gap-1.5">
               <Users className="h-4 w-4 text-secondary" />
               <span>100% reviewed profiles</span>
@@ -147,7 +147,7 @@ const Signup = () => {
 
         <div className="mt-5 rounded-xl border border-primary/20 bg-primary/5 p-4 text-center">
           <p className="text-sm text-muted-foreground mb-2">Already have an account?</p>
-          <Button variant="outline" size="lg" className="w-full border-primary/30 text-primary hover:bg-primary/10" asChild>
+          <Button variant="outline" size="lg" className="w-full min-h-[48px] border-primary/30 text-primary hover:bg-primary/10" asChild>
             <Link to="/login">Sign in to your account</Link>
           </Button>
         </div>

@@ -233,7 +233,7 @@ const Onboarding = () => {
         </div>
       </div>
 
-      <div className="flex flex-1 items-center justify-center px-4 py-8 overflow-hidden">
+      <div className="flex flex-1 items-center justify-center px-5 py-6 md:py-8 overflow-hidden">
         <div className="w-full max-w-lg">
           <AnimatePresence mode="wait" custom={direction}>
             <motion.div
@@ -255,14 +255,14 @@ const Onboarding = () => {
                 <p className="text-sm text-muted-foreground">This helps us match you with the right people</p>
               </div>
               <RadioGroup value={userType} onValueChange={setUserType} className="grid gap-3">
-                <label className={`flex items-center gap-4 rounded-xl border-2 p-5 cursor-pointer transition-all ${userType === "foreigner" ? "border-primary bg-primary/5 shadow-sm" : "border-border hover:border-muted-foreground/30"}`}>
+                <label className={`flex items-center gap-4 rounded-xl border-2 p-5 cursor-pointer transition-all min-h-[72px] active:scale-[0.98] ${userType === "foreigner" ? "border-primary bg-primary/5 shadow-sm" : "border-border hover:border-muted-foreground/30"}`}>
                   <RadioGroupItem value="foreigner" />
                   <div>
                     <p className="font-semibold text-lg">🌍 Foreigner</p>
                     <p className="text-sm text-muted-foreground">Looking to connect with someone in the Philippines</p>
                   </div>
                 </label>
-                <label className={`flex items-center gap-4 rounded-xl border-2 p-5 cursor-pointer transition-all ${userType === "philippines" ? "border-primary bg-primary/5 shadow-sm" : "border-border hover:border-muted-foreground/30"}`}>
+                <label className={`flex items-center gap-4 rounded-xl border-2 p-5 cursor-pointer transition-all min-h-[72px] active:scale-[0.98] ${userType === "philippines" ? "border-primary bg-primary/5 shadow-sm" : "border-border hover:border-muted-foreground/30"}`}>
                   <RadioGroupItem value="philippines" />
                   <div>
                     <p className="font-semibold text-lg">🇵🇭 Based in the Philippines</p>
@@ -286,14 +286,14 @@ const Onboarding = () => {
                 <p className="text-sm text-muted-foreground">We're built for serious connections only</p>
               </div>
               <RadioGroup value={relationshipIntent} onValueChange={setRelationshipIntent} className="grid gap-3">
-                <label className={`flex items-center gap-4 rounded-xl border-2 p-5 cursor-pointer transition-all ${relationshipIntent === "long-term" ? "border-primary bg-primary/5 shadow-sm" : "border-border hover:border-muted-foreground/30"}`}>
+                <label className={`flex items-center gap-4 rounded-xl border-2 p-5 cursor-pointer transition-all min-h-[72px] active:scale-[0.98] ${relationshipIntent === "long-term" ? "border-primary bg-primary/5 shadow-sm" : "border-border hover:border-muted-foreground/30"}`}>
                   <RadioGroupItem value="long-term" />
                   <div>
                     <p className="font-semibold text-lg">💕 Serious Relationship</p>
                     <p className="text-sm text-muted-foreground">Looking for a committed, long-term partner</p>
                   </div>
                 </label>
-                <label className={`flex items-center gap-4 rounded-xl border-2 p-5 cursor-pointer transition-all ${relationshipIntent === "marriage" ? "border-primary bg-primary/5 shadow-sm" : "border-border hover:border-muted-foreground/30"}`}>
+                <label className={`flex items-center gap-4 rounded-xl border-2 p-5 cursor-pointer transition-all min-h-[72px] active:scale-[0.98] ${relationshipIntent === "marriage" ? "border-primary bg-primary/5 shadow-sm" : "border-border hover:border-muted-foreground/30"}`}>
                   <RadioGroupItem value="marriage" />
                   <div>
                     <p className="font-semibold text-lg">💍 Marriage</p>
@@ -406,14 +406,14 @@ const Onboarding = () => {
                 <div className="space-y-1.5">
                   <Label>Gender *</Label>
                   <RadioGroup value={gender} onValueChange={setGender} className="grid grid-cols-3 gap-2">
-                    {[
+                     {[
                       { value: "male", label: "👨 Male" },
                       { value: "female", label: "👩 Female" },
                       { value: "other", label: "🌈 Other" },
                     ].map((g) => (
                       <label
                         key={g.value}
-                        className={`flex items-center justify-center gap-2 rounded-xl border-2 px-3 py-3 cursor-pointer text-sm font-medium transition-all ${
+                        className={`flex items-center justify-center gap-2 rounded-xl border-2 px-3 py-3.5 cursor-pointer text-sm font-medium transition-all min-h-[48px] active:scale-[0.97] ${
                           gender === g.value
                             ? "border-primary bg-primary/5 text-primary shadow-sm"
                             : "border-border hover:border-muted-foreground/30"
@@ -479,7 +479,7 @@ const Onboarding = () => {
                       <button
                         key={interest}
                         onClick={() => toggleInterest(interest)}
-                        className={`rounded-full border-2 px-3 py-1.5 text-sm font-medium transition-all ${
+                        className={`rounded-full border-2 px-3.5 py-2 text-sm font-medium transition-all min-h-[44px] active:scale-95 ${
                           interests.includes(interest)
                             ? "border-primary bg-primary/10 text-primary shadow-sm"
                             : "border-border hover:border-muted-foreground/30"
@@ -571,7 +571,7 @@ const Onboarding = () => {
               <Button
                 variant="hero"
                 size="lg"
-                className="w-full"
+                className="w-full min-h-[48px]"
                 onClick={handleVerifyNow}
                 disabled={saving}
               >
@@ -584,7 +584,7 @@ const Onboarding = () => {
           {/* Navigation buttons */}
           <div className="mt-8 flex gap-3">
             {step > 1 && (
-              <Button variant="outline" size="lg" onClick={back} className="flex-1">
+              <Button variant="outline" size="lg" onClick={back} className="flex-1 min-h-[48px]">
                 <ArrowLeft className="mr-2 h-4 w-4" /> Back
               </Button>
             )}
@@ -594,7 +594,7 @@ const Onboarding = () => {
                 size="lg"
                 onClick={next}
                 disabled={!canProceed()}
-                className="flex-1"
+                className="flex-1 min-h-[48px]"
               >
                 Next <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
@@ -604,7 +604,7 @@ const Onboarding = () => {
                 size="lg"
                 onClick={() => saveProfile()}
                 disabled={saving}
-                className="flex-1"
+                className="flex-1 min-h-[48px]"
               >
                 {saving ? "Saving..." : "Skip for Now"}
               </Button>
