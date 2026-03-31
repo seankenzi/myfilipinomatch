@@ -389,7 +389,7 @@ const Landing = () => {
       </section>
 
       {/* ===== FAQ SECTION ===== */}
-      <section className="relative py-20 bg-background overflow-hidden">
+      <section className="relative py-12 md:py-20 bg-background overflow-hidden">
         <div className="absolute -bottom-20 -left-16 w-72 h-72 rounded-full bg-accent/8 blur-3xl" />
         <div className="container relative z-10">
           <h2 className="mb-4 text-center text-3xl font-bold md:text-4xl" style={{ fontFamily: 'var(--font-display)' }}>
