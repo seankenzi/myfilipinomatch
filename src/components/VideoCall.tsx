@@ -200,11 +200,13 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
   }, [open]);
 
   // Listen for signal status changes (ended, declined, missed)
+  const channelIdRef = useRef(0);
   useEffect(() => {
     if (!open) return;
 
+    const thisChannelId = ++channelIdRef.current;
     const channel = supabase
-      .channel(`call-signal-${matchId}`)
+      .channel(`call-signal-${matchId}-${thisChannelId}-${Date.now()}`)
       .on(
         "postgres_changes",
         {
