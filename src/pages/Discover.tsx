@@ -499,35 +499,7 @@ const Discover = () => {
 
     if (!user) return;
 
-    const { data: matchesData, error } = await supabase
-      .from("matches")
-      .select("id, user1_id, user2_id")
-      .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`)
-      .order("created_at", { ascending: false });
-
-    const existingMatch = matchesData?.find((match) => {
-      const otherUserId = match.user1_id === user.id ? match.user2_id : match.user1_id;
-      return otherUserId === profile.id;
-    });
-
-    if (error) {
-      toast({
-        title: "Couldn't open video call",
-        description: "Please try again in a moment.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (existingMatch?.id) {
-      navigate(`/messages?match=${existingMatch.id}`);
-      return;
-    }
-
-    toast({
-      title: "💬 Direct Message first",
-      description: `Use Direct Message ✨ to connect with ${profile.full_name.split(" ")[0]}, then start a video call from Messages.`,
-    });
+    navigate(`/messages?profile=${profile.id}&openVideo=1`);
   };
 
   const sendIntroMessage = async () => {
