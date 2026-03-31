@@ -134,7 +134,7 @@ const Landing = () => {
             </div>
 
             {/* Social proof */}
-            <div className="mt-12 flex items-center gap-4">
+            <div className="mt-8 md:mt-12 flex items-center gap-3 md:gap-4">
               <div className="flex -space-x-3">
                 {[mariaPhoto, jamesPhoto, anaPhoto, kenjiPhoto].map((photo, i) => (
                   <img
