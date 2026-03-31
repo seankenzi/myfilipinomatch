@@ -9,6 +9,20 @@ const About = () => {
         title="About Us"
         description="Learn about MyFilipinoMatch — a trusted dating platform connecting foreigners with verified Filipino singles for genuine, lasting relationships."
         canonical="/about"
+        jsonLd={{
+          "@context": "https://schema.org",
+          "@type": "AboutPage",
+          name: "About MyFilipinoMatch",
+          description: "MyFilipinoMatch is a dating platform dedicated to fostering genuine, meaningful relationships between Filipinos and people from around the world.",
+          url: "https://www.myfilipinomatch.com/about",
+          mainEntity: {
+            "@type": "Organization",
+            name: "MyFilipinoMatch",
+            url: "https://www.myfilipinomatch.com",
+            description: "A trusted dating platform connecting foreigners with verified Filipino singles for serious relationships and marriage.",
+            foundingDate: "2025",
+          },
+        }}
       />
       <Navbar />
       <main className="flex-1 px-4 py-12 pb-24 md:pb-12">
