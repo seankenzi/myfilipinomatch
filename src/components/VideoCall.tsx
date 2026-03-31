@@ -539,12 +539,12 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
               )
             )}
 
-            {/* Custom call controls */}
-            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-3">
+            {/* Custom call controls bar - covers Daily's bottom toolbar */}
+            <div className="absolute bottom-0 left-0 right-0 z-20 flex items-center justify-center gap-3 bg-background/95 backdrop-blur-sm py-4 border-t border-border">
               <Button
                 variant={isMuted ? "secondary" : "outline"}
                 size="icon"
-                className={`h-12 w-12 rounded-full shadow-lg backdrop-blur-sm ${
+                className={`h-12 w-12 rounded-full shadow-lg ${
                   isMuted ? "bg-muted/90 text-destructive" : "bg-card/80 text-foreground"
                 }`}
                 onClick={() => {
@@ -567,7 +567,7 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
               <Button
                 variant={isCameraOff ? "secondary" : "outline"}
                 size="icon"
-                className={`h-12 w-12 rounded-full shadow-lg backdrop-blur-sm ${
+                className={`h-12 w-12 rounded-full shadow-lg ${
                   isCameraOff ? "bg-muted/90 text-destructive" : "bg-card/80 text-foreground"
                 }`}
                 onClick={() => {
