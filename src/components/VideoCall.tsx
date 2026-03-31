@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Video, VideoOff, Mic, MicOff, PhoneOff, Loader2, Crown, Clock, WifiOff } from "lucide-react";
+import { VideoOff, PhoneOff, Loader2, Crown, Clock, WifiOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
@@ -42,6 +42,8 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
   const [connectionLost, setConnectionLost] = useState(false);
   const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const RECONNECT_TIMEOUT_MS = 30000; // 30s before giving up
+  const [callEstablished, setCallEstablished] = useState(false);
+  const remainingSecondsRef = useRef(7200);
 
   const closeUi = useCallback(
     (toastMessage?: { title: string; description?: string }) => {
@@ -111,15 +113,10 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
       if (joinRoomUrl) {
         const separator = joinRoomUrl.includes("?") ? "&" : "?";
         setRoomUrl(`${joinRoomUrl}${separator}prejoin=false&showParticipantsBar=false&showUserNameChangeUI=false&showLeaveButton=false&showFullscreenButton=false&showLocalVideo=true&showChat=false&activeSpeakerMode=false`);
+        remainingSecondsRef.current = 7200;
         setRemainingSeconds(7200);
         setElapsedSeconds(0);
-        callStartTimeRef.current = Date.now();
-
-        if (timerRef.current) clearInterval(timerRef.current);
-        timerRef.current = setInterval(() => {
-          setElapsedSeconds((prev) => prev + 1);
-        }, 1000);
-
+        // Timer will start when "participant-joined" is received from Daily
         setLoading(false);
         return;
       }
@@ -157,33 +154,10 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
 
       setRoomUrl(`${data.room_url}?t=${data.token}&prejoin=false&showParticipantsBar=false&showUserNameChangeUI=false&showLeaveButton=false&showFullscreenButton=false&showLocalVideo=true&showChat=false&activeSpeakerMode=false`);
       setSessionId(data.session_id);
+      remainingSecondsRef.current = data.remaining_seconds || 7200;
       setRemainingSeconds(data.remaining_seconds || 7200);
       setElapsedSeconds(0);
-      callStartTimeRef.current = Date.now();
-
-      // Signaling is now created server-side in the daily-video function
-
-      // Start countdown timer
-      if (timerRef.current) clearInterval(timerRef.current);
-      timerRef.current = setInterval(() => {
-        setElapsedSeconds((prev) => {
-          const next = prev + 1;
-          if (next >= (data.remaining_seconds || 7200)) {
-            handleClose();
-            toast({
-              title: "Time's up!",
-              description: "You've used your 2 free video call hours this month.",
-            });
-          }
-          if ((data.remaining_seconds || 7200) - next === 300) {
-            toast({
-              title: "⏰ 5 minutes remaining",
-              description: "Your monthly video call time is almost up.",
-            });
-          }
-          return next;
-        });
-      }, 1000);
+      // Timer will start when "participant-joined" is received from Daily
     } catch {
       setError("Something went wrong. Please try again.");
     }
@@ -199,8 +173,11 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
   useEffect(() => {
     if (open) {
       isClosingRef.current = false;
+      setCallEstablished(false);
     }
   }, [open]);
+
+  
 
   // Listen for signal status changes (ended, declined, missed)
   const channelIdRef = useRef(0);
@@ -314,6 +291,49 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
     await endSession();
     closeUi();
   }, [endSession, closeUi, matchId]);
+
+  // Start timer only when a second participant joins (call is truly established)
+  useEffect(() => {
+    if (!open || !roomUrl) return;
+
+    const handleDailyMessage = (event: MessageEvent) => {
+      if (typeof event.data !== "object" || !event.data?.action) return;
+      const action = event.data.action as string;
+
+      // "participant-joined" fires when the OTHER person joins the room
+      if (action === "participant-joined" && !event.data?.participant?.local) {
+        if (callEstablished) return;
+        setCallEstablished(true);
+        callStartTimeRef.current = Date.now();
+        setElapsedSeconds(0);
+
+        if (timerRef.current) clearInterval(timerRef.current);
+        const maxSeconds = remainingSecondsRef.current;
+        timerRef.current = setInterval(() => {
+          setElapsedSeconds((prev) => {
+            const next = prev + 1;
+            if (next >= maxSeconds) {
+              handleClose();
+              toast({
+                title: "Time's up!",
+                description: "You've used your 2 free video call hours this month.",
+              });
+            }
+            if (maxSeconds - next === 300) {
+              toast({
+                title: "⏰ 5 minutes remaining",
+                description: "Your monthly video call time is almost up.",
+              });
+            }
+            return next;
+          });
+        }, 1000);
+      }
+    };
+
+    window.addEventListener("message", handleDailyMessage);
+    return () => window.removeEventListener("message", handleDailyMessage);
+  }, [open, roomUrl, callEstablished, toast, handleClose]);
 
   // Monitor connection health via Daily postMessage events & online status
   useEffect(() => {
@@ -475,17 +495,24 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
               </div>
             )}
 
-            {/* Timer overlay */}
-            <div
-              className={`absolute top-4 right-4 flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium shadow-lg backdrop-blur-sm ${
-                isLowTime
-                  ? "bg-destructive/90 text-destructive-foreground animate-pulse"
-                  : "bg-card/80 text-foreground"
-              }`}
-            >
-              <Clock className="h-3.5 w-3.5" />
-              {formatTime(timeRemaining)}
-            </div>
+            {/* Timer overlay - only show once call is established */}
+            {callEstablished ? (
+              <div
+                className={`absolute top-4 right-4 flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium shadow-lg backdrop-blur-sm ${
+                  isLowTime
+                    ? "bg-destructive/90 text-destructive-foreground animate-pulse"
+                    : "bg-card/80 text-foreground"
+                }`}
+              >
+                <Clock className="h-3.5 w-3.5" />
+                {formatTime(timeRemaining)}
+              </div>
+            ) : (
+              <div className="absolute top-4 right-4 flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium shadow-lg backdrop-blur-sm bg-card/80 text-muted-foreground">
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                Waiting for {otherUserName}…
+              </div>
+            )}
 
             <Button
               variant="destructive"
