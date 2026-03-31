@@ -38,6 +38,29 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const callStartTimeRef = useRef<number>(0);
+  const isClosingRef = useRef(false);
+
+  const closeUi = useCallback(
+    (toastMessage?: { title: string; description?: string }) => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+
+      setRoomUrl(null);
+      setError(null);
+      setNeedsUpgrade(false);
+      setLimitReached(false);
+      setElapsedSeconds(0);
+
+      if (toastMessage) {
+        toast(toastMessage);
+      }
+
+      onClose();
+    },
+    [onClose, toast]
+  );
 
   const endSession = useCallback(async () => {
     if (!sessionId) return;
@@ -170,6 +193,12 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
     }
   }, [open]);
 
+  useEffect(() => {
+    if (open) {
+      isClosingRef.current = false;
+    }
+  }, [open]);
+
   // Listen for signal status changes (ended, declined, missed)
   useEffect(() => {
     if (!open) return;
@@ -186,23 +215,20 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
         },
         (payload) => {
           const status = (payload.new as any).status;
+
           if (status === "ended") {
-            // Other participant ended the call
-            if (timerRef.current) {
-              clearInterval(timerRef.current);
-              timerRef.current = null;
-            }
-            endSession();
-            setRoomUrl(null);
-            setElapsedSeconds(0);
-            toast({ title: "Call ended", description: `${otherUserName} ended the call.` });
-            onClose();
+            if (isClosingRef.current) return;
+            isClosingRef.current = true;
+            void endSession();
+            closeUi({ title: "Call ended", description: `${otherUserName} ended the call.` });
           } else if (status === "missed" && !joinRoomUrl) {
-            toast({ title: "No answer", description: "They didn't pick up. Try again later." });
-            onClose();
+            if (isClosingRef.current) return;
+            isClosingRef.current = true;
+            closeUi({ title: "No answer", description: "They didn't pick up. Try again later." });
           } else if (status === "declined" && !joinRoomUrl) {
-            toast({ title: "Call declined", description: "They're not available right now." });
-            onClose();
+            if (isClosingRef.current) return;
+            isClosingRef.current = true;
+            closeUi({ title: "Call declined", description: "They're not available right now." });
           }
         }
       )
@@ -211,13 +237,61 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [open, matchId, joinRoomUrl, toast, endSession, onClose, otherUserName]);
+  }, [open, matchId, joinRoomUrl, otherUserName, endSession, closeUi]);
+
+  // Fallback polling in case realtime update is missed
+  useEffect(() => {
+    if (!open || !roomUrl) return;
+
+    let isCancelled = false;
+
+    const checkSignalStatus = async () => {
+      if (isCancelled || isClosingRef.current) return;
+
+      const {
+        data: { user: currentUser },
+      } = await supabase.auth.getUser();
+
+      if (!currentUser || isCancelled || isClosingRef.current) return;
+
+      const { data: latestSignal } = await supabase
+        .from("video_call_signals")
+        .select("status")
+        .eq("match_id", matchId)
+        .or(`caller_id.eq.${currentUser.id},callee_id.eq.${currentUser.id}`)
+        .order("updated_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (!latestSignal || isCancelled || isClosingRef.current) return;
+
+      if (latestSignal.status === "ended") {
+        isClosingRef.current = true;
+        void endSession();
+        closeUi({ title: "Call ended", description: `${otherUserName} ended the call.` });
+      } else if (latestSignal.status === "missed" && !joinRoomUrl) {
+        isClosingRef.current = true;
+        closeUi({ title: "No answer", description: "They didn't pick up. Try again later." });
+      } else if (latestSignal.status === "declined" && !joinRoomUrl) {
+        isClosingRef.current = true;
+        closeUi({ title: "Call declined", description: "They're not available right now." });
+      }
+    };
+
+    void checkSignalStatus();
+    const pollId = setInterval(() => {
+      void checkSignalStatus();
+    }, 2000);
+
+    return () => {
+      isCancelled = true;
+      clearInterval(pollId);
+    };
+  }, [open, roomUrl, matchId, joinRoomUrl, otherUserName, endSession, closeUi]);
 
   const handleClose = useCallback(async () => {
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-      timerRef.current = null;
-    }
+    if (isClosingRef.current) return;
+    isClosingRef.current = true;
 
     // Update signal to "ended" FIRST so the other participant gets notified
     try {
@@ -247,14 +321,8 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
 
     // End session tracking after signal update
     await endSession();
-
-    setRoomUrl(null);
-    setError(null);
-    setNeedsUpgrade(false);
-    setLimitReached(false);
-    setElapsedSeconds(0);
-    onClose();
-  }, [endSession, onClose, matchId]);
+    closeUi();
+  }, [endSession, closeUi, matchId]);
 
   // Cleanup on unmount
   useEffect(() => {
