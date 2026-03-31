@@ -192,6 +192,36 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
     }
   }, [open]);
 
+  // Listen for signal status changes (callee declined or missed)
+  useEffect(() => {
+    if (!open || joinRoomUrl) return; // Only for the caller side
+
+    const channel = supabase
+      .channel(`call-signal-${matchId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "video_call_signals",
+          filter: `match_id=eq.${matchId}`,
+        },
+        (payload) => {
+          const status = (payload.new as any).status;
+          if (status === "missed") {
+            toast({ title: "No answer", description: "They didn't pick up. Try again later." });
+          } else if (status === "declined") {
+            toast({ title: "Call declined", description: "They're not available right now." });
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [open, matchId, joinRoomUrl, toast]);
+
   const handleClose = useCallback(async () => {
     if (timerRef.current) {
       clearInterval(timerRef.current);
