@@ -30,6 +30,13 @@ const DAILY_EMBED_PARAMS: Record<string, string> = {
   enable_network_ui: "false",
 };
 
+const DAILY_IFRAME_CROP = {
+  top: 56,
+  bottom: 104,
+  topRightHeight: 220,
+  topRightWidth: 320,
+};
+
 const buildDailyEmbedUrl = (baseUrl: string, token?: string) => {
   try {
     const url = new URL(baseUrl);
@@ -542,14 +549,33 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
               ref={iframeRef}
               src={roomUrl}
               allow="camera; microphone; fullscreen; display-capture"
-              className="absolute inset-0 w-full h-full border-0"
+              className="absolute left-0 right-0 w-full border-0"
+              style={{
+                top: `-${DAILY_IFRAME_CROP.top}px`,
+                height: `calc(100% + ${DAILY_IFRAME_CROP.top + DAILY_IFRAME_CROP.bottom}px)`,
+              }}
               title={`Video call with ${otherUserName}`}
             />
 
             {/* Fallback masks for stubborn Daily UI strips */}
-            <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 z-10 h-12 bg-background" />
-            <div aria-hidden className="pointer-events-none absolute top-12 right-0 z-10 hidden md:block h-44 w-56 bg-background" />
-            <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-20 bg-background" />
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-x-0 top-0 z-20 bg-background"
+              style={{ height: DAILY_IFRAME_CROP.top }}
+            />
+            <div
+              aria-hidden
+              className="pointer-events-none absolute top-0 right-0 z-20 hidden md:block bg-background"
+              style={{
+                height: DAILY_IFRAME_CROP.topRightHeight,
+                width: DAILY_IFRAME_CROP.topRightWidth,
+              }}
+            />
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-x-0 bottom-0 z-20 bg-background"
+              style={{ height: DAILY_IFRAME_CROP.bottom }}
+            />
 
             {/* Connection lost overlay */}
             {connectionLost && (
