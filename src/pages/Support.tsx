@@ -1,5 +1,5 @@
 import Navbar from "@/components/Navbar";
-
+import SEO from "@/components/SEO";
 import { Mail, MessageCircle, HelpCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
