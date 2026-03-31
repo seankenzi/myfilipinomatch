@@ -1,7 +1,7 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useState } from "react";
 import useOnlineStatus from "@/hooks/useOnlineStatus";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Route, Routes, useNavigate } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
@@ -12,6 +12,10 @@ import Footer from "@/components/Footer";
 import AdminRoute from "@/components/AdminRoute";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import ScrollToTop from "@/components/ScrollToTop";
+import IncomingCallOverlay from "@/components/IncomingCallOverlay";
+import { useIncomingCall } from "@/hooks/useIncomingCall";
+
+const VideoCallLazy = lazy(() => import("@/components/VideoCall"));
 
 // Eagerly load the landing/index page for fast initial paint
 import Index from "./pages/Index.tsx";
@@ -53,6 +57,51 @@ const LazyFallback = () => (
   </div>
 );
 
+const IncomingCallHandler = () => {
+  const navigate = useNavigate();
+  const { incomingCall, acceptCall, declineCall } = useIncomingCall();
+  const [acceptedCall, setAcceptedCall] = useState<{
+    matchId: string;
+    roomUrl: string;
+    callerName: string;
+  } | null>(null);
+
+  const handleAccept = async () => {
+    const call = await acceptCall();
+    if (call?.room_url) {
+      setAcceptedCall({
+        matchId: call.match_id,
+        roomUrl: call.room_url,
+        callerName: call.caller_name || "Someone",
+      });
+    } else if (call) {
+      // Fallback: navigate to messages with video open
+      navigate(`/messages?match=${call.match_id}&openVideo=1`);
+    }
+  };
+
+  return (
+    <>
+      <IncomingCallOverlay
+        call={incomingCall}
+        onAccept={handleAccept}
+        onDecline={declineCall}
+      />
+      {acceptedCall && (
+        <Suspense fallback={null}>
+          <VideoCallLazy
+            matchId={acceptedCall.matchId}
+            otherUserName={acceptedCall.callerName}
+            open={true}
+            onClose={() => setAcceptedCall(null)}
+            joinRoomUrl={acceptedCall.roomUrl}
+          />
+        </Suspense>
+      )}
+    </>
+  );
+};
+
 const App = () => {
   useOnlineStatus();
   return (
@@ -64,6 +113,7 @@ const App = () => {
       <BrowserRouter>
         <AuthProvider>
           <ScrollToTop />
+          <IncomingCallHandler />
           <div className="flex min-h-screen flex-col">
             
             <div className="flex-1 pb-16 md:pb-0">
