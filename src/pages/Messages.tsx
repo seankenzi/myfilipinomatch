@@ -513,13 +513,13 @@ const Messages = () => {
             ) : (
               <div className="py-1">
                 {matches.map((match) => (
-                  <button
+                   <button
                     key={match.id}
                     onClick={() => setSelectedMatch(match)}
-                    className={`w-full flex items-center gap-3.5 px-5 py-3.5 transition-all text-left relative group ${
+                    className={`w-full flex items-center gap-3.5 px-5 py-4 transition-all text-left relative group min-h-[72px] ${
                       selectedMatch?.id === match.id
                         ? "bg-primary/8 border-l-[3px] border-l-primary"
-                        : "hover:bg-muted/60 border-l-[3px] border-l-transparent"
+                        : "hover:bg-muted/60 border-l-[3px] border-l-transparent active:bg-muted/80"
                     }`}
                   >
                     <div className="relative flex-shrink-0">
@@ -588,7 +588,7 @@ const Messages = () => {
               <div className="flex items-center gap-3 px-4 py-3 border-b border-border bg-card shadow-sm">
                 <button
                   onClick={() => setSelectedMatch(null)}
-                  className="md:hidden rounded-full p-2 hover:bg-muted transition-colors"
+                  className="md:hidden rounded-full p-2.5 hover:bg-muted transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
                 >
                   <ArrowLeft className="h-5 w-5 text-foreground" />
                 </button>
@@ -633,16 +633,16 @@ const Messages = () => {
                 <div className="flex items-center gap-1">
                   <button
                     onClick={() => setVideoCallOpen(true)}
-                    className="rounded-full p-2.5 hover:bg-primary/10 transition-colors"
+                    className="rounded-full p-2.5 hover:bg-primary/10 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
                     title="Video Call"
                   >
-                    <Video className="h-[18px] w-[18px] text-primary" />
+                    <Video className="h-5 w-5 text-primary" />
                   </button>
 
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <button className="rounded-full p-2.5 hover:bg-muted transition-colors">
-                        <MoreVertical className="h-[18px] w-[18px] text-muted-foreground" />
+                      <button className="rounded-full p-2.5 hover:bg-muted transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center">
+                        <MoreVertical className="h-5 w-5 text-muted-foreground" />
                       </button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-44">
@@ -822,7 +822,7 @@ const Messages = () => {
                         <input
                           type="text"
                           placeholder="Type a message..."
-                          className="w-full rounded-full border border-input bg-muted/30 px-5 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all placeholder:text-muted-foreground/60"
+                          className="w-full rounded-full border border-input bg-muted/30 px-5 py-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all placeholder:text-muted-foreground/60 min-h-[48px]"
                           value={newMessage}
                           onChange={(e) => { setNewMessage(e.target.value.slice(0, 1000)); broadcastTyping(); }}
                           onKeyDown={handleKeyDown}
@@ -832,9 +832,9 @@ const Messages = () => {
                       <button
                         onClick={handleSend}
                         disabled={!newMessage.trim() || sending}
-                        className="flex h-11 w-11 items-center justify-center rounded-full gradient-hero text-primary-foreground shadow-md transition-all hover:scale-105 hover:shadow-lg active:scale-95 disabled:opacity-40 disabled:hover:scale-100 disabled:shadow-none"
+                        className="flex h-12 w-12 items-center justify-center rounded-full gradient-hero text-primary-foreground shadow-md transition-all hover:scale-105 hover:shadow-lg active:scale-95 disabled:opacity-40 disabled:hover:scale-100 disabled:shadow-none"
                       >
-                        <Send className="h-4 w-4" />
+                        <Send className="h-5 w-5" />
                       </button>
                     </div>
                   </div>

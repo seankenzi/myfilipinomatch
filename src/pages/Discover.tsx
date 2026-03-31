@@ -568,24 +568,24 @@ const Discover = () => {
             <div className="flex rounded-xl border border-border bg-card p-1 shadow-card">
               <button
                 onClick={() => setViewMode("list")}
-                className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all ${
+                className={`flex items-center gap-1.5 rounded-lg px-4 py-2.5 text-xs font-medium transition-all min-h-[44px] ${
                   viewMode === "list"
                     ? "bg-primary text-primary-foreground shadow-sm"
                     : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                <LayoutGrid className="h-3.5 w-3.5" />
+                <LayoutGrid className="h-4 w-4" />
                 Grid
               </button>
               <button
                 onClick={() => setViewMode("swipe")}
-                className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all ${
+                className={`flex items-center gap-1.5 rounded-lg px-4 py-2.5 text-xs font-medium transition-all min-h-[44px] ${
                   viewMode === "swipe"
                     ? "bg-primary text-primary-foreground shadow-sm"
                     : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                <Layers className="h-3.5 w-3.5" />
+                <Layers className="h-4 w-4" />
                 Cards
               </button>
             </div>
@@ -596,16 +596,16 @@ const Discover = () => {
 
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className={`relative flex items-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-medium shadow-card transition-all ${
+              className={`relative flex items-center gap-1.5 rounded-xl border px-4 py-2.5 text-xs font-medium shadow-card transition-all min-h-[44px] ${
                 showFilters || activeFilterCount > 0
                   ? "border-primary bg-primary/5 text-primary"
                   : "border-border bg-card text-muted-foreground hover:border-primary/30"
               }`}
             >
-              <SlidersHorizontal className="h-3.5 w-3.5" />
+              <SlidersHorizontal className="h-4 w-4" />
               Filters
               {activeFilterCount > 0 && (
-                <span className="flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] text-primary-foreground font-bold">
+                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] text-primary-foreground font-bold">
                   {activeFilterCount}
                 </span>
               )}
@@ -652,7 +652,7 @@ const Discover = () => {
                         <button
                           key={opt.value}
                           onClick={() => setFilterGender(opt.value)}
-                          className={`flex-1 rounded-lg py-2 text-xs font-medium transition-all ${
+                          className={`flex-1 rounded-lg py-2.5 text-xs font-medium transition-all min-h-[44px] ${
                             filterGender === opt.value
                               ? "bg-primary text-primary-foreground shadow-sm"
                               : "bg-muted text-muted-foreground hover:text-foreground"
@@ -782,7 +782,7 @@ const Discover = () => {
                   </div>
 
                   <div className="flex gap-2 pt-1">
-                    <Button size="sm" variant="outline" className="flex-1" onClick={() => {
+                    <Button size="sm" variant="outline" className="flex-1 min-h-[44px]" onClick={() => {
                       setFilterCountry("all");
                       setFilterIntent("all");
                       setFilterCity("");
@@ -795,7 +795,7 @@ const Discover = () => {
                     }}>
                       Reset All
                     </Button>
-                    <Button size="sm" className="flex-1 gradient-hero text-primary-foreground" onClick={() => {
+                    <Button size="sm" className="flex-1 min-h-[44px] gradient-hero text-primary-foreground" onClick={() => {
                       setShowFilters(false);
                       fetchProfiles();
                     }}>
@@ -809,7 +809,7 @@ const Discover = () => {
 
           {/* Status bar: daily likes + boost */}
           <div className="mb-4 flex items-center gap-2 flex-wrap">
-            <div className="flex items-center gap-2 rounded-xl bg-secondary/5 px-3 py-2 flex-1 min-w-0">
+            <div className="flex items-center gap-2 rounded-xl bg-secondary/5 px-3 py-2.5 flex-1 min-w-0 min-h-[44px]">
               <Shield className="h-4 w-4 text-secondary flex-shrink-0" />
               <p className="text-[11px] text-secondary font-medium truncate">
                 All profiles are reviewed for authenticity.
@@ -817,7 +817,7 @@ const Discover = () => {
             </div>
             {!isPremium && (
               <div className="flex flex-col items-end gap-0.5">
-                <div className="flex items-center gap-1.5 rounded-xl border border-border bg-card px-3 py-2 text-xs shadow-card">
+                <div className="flex items-center gap-1.5 rounded-xl border border-border bg-card px-3 py-2.5 text-xs shadow-card min-h-[44px]">
                   <Heart className="h-3.5 w-3.5 text-primary" />
                   <span className="font-semibold text-foreground">{dailyLikesRemaining}</span>
                   <span className="text-muted-foreground">likes left</span>
@@ -826,7 +826,7 @@ const Discover = () => {
             )}
             <button
               onClick={handleBoostProfile}
-              className={`flex items-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-medium shadow-card transition-all ${
+              className={`flex items-center gap-1.5 rounded-xl border px-3 py-2.5 text-xs font-medium shadow-card transition-all min-h-[44px] active:scale-95 ${
                 isBoosted
                   ? "border-accent bg-accent/10 text-accent"
                   : "border-border bg-card text-muted-foreground hover:border-accent/30 hover:text-accent"
@@ -1173,7 +1173,7 @@ const Discover = () => {
                         </div>
 
                         {/* Quick info */}
-                        <div className="p-2.5 space-y-1.5">
+                        <div className="p-2.5 space-y-2">
                           {profile.relationship_intent && (
                             <span className="inline-block rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary">
                               {formatIntent(profile.relationship_intent)}
@@ -1183,15 +1183,15 @@ const Discover = () => {
                           {/* Action buttons */}
                           <div className="flex gap-1.5">
                             {likedIds.has(profile.id) ? (
-                              <div className="flex flex-1 items-center justify-center gap-1 rounded-lg bg-primary/20 py-1.5 text-[11px] font-medium text-primary">
-                                <Heart className="h-3 w-3 fill-primary" /> Liked
+                              <div className="flex flex-1 items-center justify-center gap-1 rounded-lg bg-primary/20 min-h-[44px] text-[11px] font-medium text-primary">
+                                <Heart className="h-3.5 w-3.5 fill-primary" /> Liked
                               </div>
                             ) : (
                               <button
                                 onClick={() => handleListLike(profile)}
-                                className="flex flex-1 items-center justify-center gap-1 rounded-lg bg-primary/10 py-1.5 text-[11px] font-medium text-primary hover:bg-primary/20 transition-colors"
+                                className="flex flex-1 items-center justify-center gap-1 rounded-lg bg-primary/10 min-h-[44px] text-[11px] font-medium text-primary hover:bg-primary/20 transition-colors active:scale-95"
                               >
-                                <Heart className="h-3 w-3" /> Like
+                                <Heart className="h-3.5 w-3.5" /> Like
                               </button>
                             )}
                             <button
@@ -1201,22 +1201,22 @@ const Discover = () => {
                                   setVideoModalOpen(true);
                                 }
                               }}
-                              className="flex items-center justify-center rounded-lg bg-secondary/10 px-2.5 py-1.5 text-secondary hover:bg-secondary/20 transition-colors"
+                              className="flex items-center justify-center rounded-lg bg-secondary/10 min-w-[44px] min-h-[44px] text-secondary hover:bg-secondary/20 transition-colors active:scale-95"
                               title="Video Call"
                             >
-                              <Video className="h-3 w-3" />
+                              <Video className="h-4 w-4" />
                             </button>
                             <button
                               onClick={() => handlePriorityLike(profile)}
-                              className="flex items-center justify-center rounded-lg bg-accent/10 px-2.5 py-1.5 text-accent hover:bg-accent/20 transition-colors"
+                              className="flex items-center justify-center rounded-lg bg-accent/10 min-w-[44px] min-h-[44px] text-accent hover:bg-accent/20 transition-colors active:scale-95"
                             >
-                              <Star className="h-3 w-3 fill-accent" />
+                              <Star className="h-4 w-4 fill-accent" />
                             </button>
                             <button
                               onClick={() => handleReport(profile)}
-                              className="flex items-center justify-center rounded-lg bg-muted px-2.5 py-1.5 text-muted-foreground hover:text-destructive transition-colors"
+                              className="flex items-center justify-center rounded-lg bg-muted min-w-[44px] min-h-[44px] text-muted-foreground hover:text-destructive transition-colors active:scale-95"
                             >
-                              <Flag className="h-3 w-3" />
+                              <Flag className="h-4 w-4" />
                             </button>
                           </div>
 

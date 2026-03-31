@@ -187,8 +187,8 @@ const Profile = () => {
           <div className="mb-6 rounded-2xl border border-border bg-card p-5 shadow-card">
             <div className="mb-3 flex items-center justify-between">
               <h2 className="font-semibold">About Me</h2>
-              <button onClick={() => setEditing(!editing)} className="text-primary">
-                <Edit className="h-4 w-4" />
+              <button onClick={() => setEditing(!editing)} className="text-primary p-2 -mr-2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-primary/10 transition-colors">
+                <Edit className="h-5 w-5" />
               </button>
             </div>
 
@@ -281,7 +281,7 @@ const Profile = () => {
                   </div>
                 </div>
 
-                <Button onClick={saveProfile} disabled={saving} className="w-full" variant="hero">
+                <Button onClick={saveProfile} disabled={saving} className="w-full min-h-[48px]" variant="hero">
                   {saving ? <><span className="animate-spin mr-2">⏳</span>Saving...</> : <><Save className="h-4 w-4 mr-2" />Save Profile</>}
                 </Button>
               </div>
@@ -316,7 +316,7 @@ const Profile = () => {
               <p className="text-sm text-muted-foreground mb-4">
                 Verified profiles get up to 3x more matches. Show others you're real and serious.
               </p>
-              <Button variant="outline" size="sm" onClick={() => navigate("/verification")} className="border-secondary text-secondary hover:bg-secondary/10">
+              <Button variant="outline" size="sm" onClick={() => navigate("/verification")} className="border-secondary text-secondary hover:bg-secondary/10 min-h-[44px] px-5">
                 Get Verified
               </Button>
             </div>
@@ -332,21 +332,21 @@ const Profile = () => {
               <p className="text-sm text-primary-foreground/80 mb-4">
                 Unlock unlimited messaging, see who liked you, and boost your profile visibility.
               </p>
-              <Button variant="secondary" size="sm" onClick={() => navigate("/premium")}>Upgrade Now</Button>
+              <Button variant="secondary" size="sm" onClick={() => navigate("/premium")} className="min-h-[44px] px-5">Upgrade Now</Button>
             </div>
           )}
 
           {/* Actions */}
           <div className="space-y-2">
-            <button onClick={() => navigate("/settings")} className="flex w-full items-center gap-3 rounded-xl border border-border bg-card px-4 py-3 text-sm font-medium shadow-card transition-all hover:shadow-card-hover">
-              <Settings className="h-4 w-4 text-muted-foreground" />
+            <button onClick={() => navigate("/settings")} className="flex w-full items-center gap-3 rounded-xl border border-border bg-card px-4 py-4 text-sm font-medium shadow-card transition-all hover:shadow-card-hover min-h-[52px] active:scale-[0.98]">
+              <Settings className="h-5 w-5 text-muted-foreground" />
               Settings
             </button>
             <button
               onClick={handleSignOut}
-              className="flex w-full items-center gap-3 rounded-xl border border-border bg-card px-4 py-3 text-sm font-medium text-destructive shadow-card transition-all hover:shadow-card-hover"
+              className="flex w-full items-center gap-3 rounded-xl border border-border bg-card px-4 py-4 text-sm font-medium text-destructive shadow-card transition-all hover:shadow-card-hover min-h-[52px] active:scale-[0.98]"
             >
-              <LogOut className="h-4 w-4" />
+              <LogOut className="h-5 w-5" />
               Sign out
             </button>
           </div>
