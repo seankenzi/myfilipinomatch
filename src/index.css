@@ -140,6 +140,13 @@
   }
 }
 
+@keyframes haptic-press {
+  0% { transform: scale(1); }
+  40% { transform: scale(0.95); }
+  70% { transform: scale(1.02); }
+  100% { transform: scale(1); }
+}
+
 @keyframes shimmer {
   0% { transform: translateX(-100%); }
   100% { transform: translateX(100%); }
