@@ -52,7 +52,9 @@ const LazyFallback = () => (
   </div>
 );
 
-const App = () => (
+const App = () => {
+  useOnlineStatus();
+  return (
   <HelmetProvider>
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
