@@ -738,6 +738,7 @@ export type Database = {
           weight_kg: number
         }[]
       }
+      cleanup_stale_video_signals: { Args: never; Returns: undefined }
       create_match_if_mutual: {
         Args: { other_user_id: string }
         Returns: string
