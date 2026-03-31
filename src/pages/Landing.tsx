@@ -96,13 +96,13 @@ const Landing = () => {
         <div className="absolute inset-0 bg-gradient-to-r from-foreground/75 via-foreground/55 to-foreground/30" />
         <div className="absolute inset-0 bg-gradient-to-t from-foreground/60 via-transparent to-foreground/20" />
 
-        <div className="container relative z-10 py-20">
+        <div className="container relative z-10 px-5 py-12 md:py-20">
           <div className="max-w-2xl animate-slide-up">
-            <h1 className="mb-6 text-4xl font-bold leading-tight text-primary-foreground md:text-6xl lg:text-7xl" style={{ fontFamily: 'var(--font-display)' }}>
+            <h1 className="mb-4 md:mb-6 text-3xl font-bold leading-tight text-primary-foreground md:text-6xl lg:text-7xl" style={{ fontFamily: 'var(--font-display)' }}>
               Find Your Filipina Soulmate
-              <span className="block mt-2 text-primary-foreground/90 text-3xl md:text-4xl lg:text-5xl">— Not Fake Profiles</span>
+              <span className="block mt-1 md:mt-2 text-primary-foreground/90 text-xl md:text-4xl lg:text-5xl">— Not Fake Profiles</span>
             </h1>
-            <p className="mb-8 max-w-lg text-lg text-primary-foreground/85 md:text-xl leading-relaxed">
+            <p className="mb-6 md:mb-8 max-w-lg text-base text-primary-foreground/85 md:text-xl leading-relaxed">
               Join a trusted platform where foreign men meet verified Filipinas ready for genuine, long-term connections.
             </p>
 
