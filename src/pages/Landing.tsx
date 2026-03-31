@@ -398,13 +398,16 @@ const Landing = () => {
 
       {/* ===== FINAL CTA ===== */}
       <section className="relative py-16 md:py-24 overflow-hidden">
-        <img
-          src={heroCouple}
-          alt="Happy couple enjoying time together — MyFilipinoMatch"
-          className="absolute inset-0 h-full w-full object-cover"
-          loading="lazy"
-          aria-hidden="true"
-        />
+        <picture>
+          <source media="(max-width: 768px)" srcSet={heroCoupleMobile} />
+          <img
+            src={heroCouple}
+            alt="Happy couple enjoying time together — MyFilipinoMatch"
+            className="absolute inset-0 h-full w-full object-cover"
+            loading="lazy"
+            aria-hidden="true"
+          />
+        </picture>
         <div className="absolute inset-0 gradient-hero opacity-85" />
         <div className="container relative z-10">
           <div className="mx-auto max-w-2xl text-center">
