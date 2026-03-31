@@ -119,15 +119,15 @@ const Landing = () => {
               ))}
             </div>
 
-            <div className="flex flex-wrap gap-4">
-              <Link to="/signup">
-                <Button variant="hero" size="xl">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+              <Link to="/signup" className="w-full sm:w-auto">
+                <Button variant="hero" size="xl" className="w-full sm:w-auto min-h-[48px]">
                   Create Free Account
                   <ArrowRight className="ml-1 h-5 w-5" />
                 </Button>
               </Link>
-              <Link to="/discover">
-                <Button variant="hero-outline" size="xl" className="border-primary-foreground/40 text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground">
+              <Link to="/discover" className="w-full sm:w-auto">
+                <Button variant="hero-outline" size="xl" className="w-full sm:w-auto min-h-[48px] border-primary-foreground/40 text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground">
                   Browse Verified Profiles
                 </Button>
               </Link>
