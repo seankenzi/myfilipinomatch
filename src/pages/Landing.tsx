@@ -106,7 +106,7 @@ const Landing = () => {
               Join a trusted platform where foreign men meet verified Filipinas ready for genuine, long-term connections.
             </p>
 
-            <div className="mb-10 flex flex-col gap-2">
+            <div className="mb-6 md:mb-10 flex flex-col gap-1.5 md:gap-2">
               {[
                 { icon: BadgeCheck, text: "Verified Filipina profiles (ID + selfie checked)" },
                 { icon: Ban, text: "No bots. No fake accounts." },
