@@ -15,7 +15,6 @@ const IncomingCallHandler = () => {
     matchId: string;
     roomUrl: string;
     callerName: string;
-    sessionId?: string;
   } | null>(null);
 
   const handleAccept = async () => {
@@ -50,7 +49,6 @@ const IncomingCallHandler = () => {
           matchId: call.match_id,
           roomUrl: data.full_room_url,
           callerName: call.caller_name || "Someone",
-          sessionId: data.session_id,
         });
         return;
       }
