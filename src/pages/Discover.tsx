@@ -1206,8 +1206,8 @@ const Discover = () => {
                                   setVideoModalOpen(true);
                                 } else {
                                   toast({
-                                    title: "Match first to video call",
-                                    description: `Like ${profile.full_name.split(" ")[0]} and wait for a mutual match to start a video call.`,
+                                    title: "💬 Direct Message first",
+                                    description: `Use Direct Message ✨ to connect with ${profile.full_name.split(" ")[0]}, then start a video call from Messages.`,
                                   });
                                 }
                               }}
