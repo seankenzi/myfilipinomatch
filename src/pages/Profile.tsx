@@ -187,8 +187,8 @@ const Profile = () => {
           <div className="mb-6 rounded-2xl border border-border bg-card p-5 shadow-card">
             <div className="mb-3 flex items-center justify-between">
               <h2 className="font-semibold">About Me</h2>
-              <button onClick={() => setEditing(!editing)} className="text-primary">
-                <Edit className="h-4 w-4" />
+              <button onClick={() => setEditing(!editing)} className="text-primary p-2 -mr-2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-primary/10 transition-colors">
+                <Edit className="h-5 w-5" />
               </button>
             </div>
 
