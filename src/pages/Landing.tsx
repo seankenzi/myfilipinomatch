@@ -87,18 +87,20 @@ const Landing = () => {
       {/* ===== HERO SECTION ===== */}
       <section className="relative min-h-[85vh] md:min-h-[90vh] flex items-center overflow-hidden">
         {heroImages.map((img, i) => (
-          <img
-            key={i}
-            src={img}
-            alt={["Happy interracial couple enjoying time together", "Filipino woman and foreign partner smiling", "Couple in love on a tropical date"][i]}
-            className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-1000 ${
-              i === currentImage ? "opacity-100" : "opacity-0"
-            }`}
-            width={1920}
-            height={1080}
-            fetchPriority={i === 0 ? "high" : "low"}
-            loading={i === 0 ? "eager" : "lazy"}
-          />
+          <picture key={i}>
+            <source media="(max-width: 768px)" srcSet={img.mobile} />
+            <img
+              src={img.desktop}
+              alt={["Happy interracial couple enjoying time together", "Filipino woman and foreign partner smiling", "Couple in love on a tropical date"][i]}
+              className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-1000 ${
+                i === currentImage ? "opacity-100" : "opacity-0"
+              }`}
+              width={1920}
+              height={1080}
+              fetchPriority={i === 0 ? "high" : "low"}
+              loading={i === 0 ? "eager" : "lazy"}
+            />
+          </picture>
         ))}
         <div className="absolute inset-0 bg-gradient-to-r from-foreground/75 via-foreground/55 to-foreground/30" />
         <div className="absolute inset-0 bg-gradient-to-t from-foreground/60 via-transparent to-foreground/20" />
