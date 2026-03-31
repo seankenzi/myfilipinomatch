@@ -44,6 +44,8 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
   const RECONNECT_TIMEOUT_MS = 30000; // 30s before giving up
   const [callEstablished, setCallEstablished] = useState(false);
   const remainingSecondsRef = useRef(7200);
+  const [isMuted, setIsMuted] = useState(false);
+  const [isCameraOff, setIsCameraOff] = useState(false);
 
   const closeUi = useCallback(
     (toastMessage?: { title: string; description?: string }) => {
