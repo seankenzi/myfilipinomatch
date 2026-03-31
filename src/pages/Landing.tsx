@@ -9,6 +9,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import heroCouple from "@/assets/hero-couple.jpg";
 import heroCouple2 from "@/assets/hero-couple-2.jpg";
 import heroCouple3 from "@/assets/hero-couple-3.jpg";
+import heroCoupleMobile from "@/assets/hero-couple-mobile.jpg";
+import heroCouple2Mobile from "@/assets/hero-couple-2-mobile.jpg";
+import heroCouple3Mobile from "@/assets/hero-couple-3-mobile.jpg";
 import coupleCafe from "@/assets/couple-cafe.jpg";
 import coupleGarden from "@/assets/couple-garden.jpg";
 import mariaPhoto from "@/assets/test-profiles/maria.jpg";
@@ -18,7 +21,11 @@ import davidPhoto from "@/assets/test-profiles/david.jpg";
 import sofiaPhoto from "@/assets/test-profiles/sofia.jpg";
 import kenjiPhoto from "@/assets/test-profiles/kenji.jpg";
 
-const heroImages = [heroCouple, heroCouple2, heroCouple3];
+const heroImages = [
+  { desktop: heroCouple, mobile: heroCoupleMobile },
+  { desktop: heroCouple2, mobile: heroCouple2Mobile },
+  { desktop: heroCouple3, mobile: heroCouple3Mobile },
+];
 
 const faqs = [
   { question: "Is MyFilipinoMatch free to join?", answer: "Yes! Creating an account is completely free. You can set up your profile, browse verified members, and receive matches at no cost. Premium features like unlimited messaging and video calls are available with an upgrade." },
