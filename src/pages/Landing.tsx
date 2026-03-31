@@ -56,10 +56,10 @@ const Landing = () => {
             "@context": "https://schema.org",
             "@type": "WebSite",
             name: "MyFilipinoMatch",
-            url: "https://myfilipinomatch.lovable.app",
+            url: "https://www.myfilipinomatch.com",
             potentialAction: {
               "@type": "SearchAction",
-              target: "https://myfilipinomatch.lovable.app/discover?q={search_term_string}",
+              target: "https://www.myfilipinomatch.com/discover?q={search_term_string}",
               "query-input": "required name=search_term_string",
             },
           },
