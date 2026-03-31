@@ -83,7 +83,7 @@ const Landing = () => {
           <img
             key={i}
             src={img}
-            alt={`Happy interracial couple ${i + 1}`}
+            alt={["Happy interracial couple enjoying time together", "Filipino woman and foreign partner smiling", "Couple in love on a tropical date"][i]}
             className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-1000 ${
               i === currentImage ? "opacity-100" : "opacity-0"
             }`}
