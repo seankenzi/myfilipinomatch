@@ -18,6 +18,16 @@ export const useIncomingCall = () => {
   const { user } = useAuth();
   const [incomingCall, setIncomingCall] = useState<IncomingCall | null>(null);
 
+  // Start/stop ringtone based on incoming call state
+  useEffect(() => {
+    if (incomingCall) {
+      startRingtone();
+    } else {
+      stopRingtone();
+    }
+    return () => stopRingtone();
+  }, [incomingCall]);
+
   // Fetch caller profile info
   const enrichCall = useCallback(async (call: IncomingCall) => {
     const { data } = await supabase.rpc("get_profile_by_id", { profile_id: call.caller_id });
