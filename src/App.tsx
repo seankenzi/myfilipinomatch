@@ -1,4 +1,5 @@
 import { lazy, Suspense } from "react";
+import useOnlineStatus from "@/hooks/useOnlineStatus";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
@@ -51,7 +52,9 @@ const LazyFallback = () => (
   </div>
 );
 
-const App = () => (
+const App = () => {
+  useOnlineStatus();
+  return (
   <HelmetProvider>
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -104,6 +107,7 @@ const App = () => (
     </TooltipProvider>
   </QueryClientProvider>
   </HelmetProvider>
-);
+  );
+};
 
 export default App;
