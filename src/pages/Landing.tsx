@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
-import { Heart, Shield, Globe, MessageSquare, Star, CheckCircle, ArrowRight, UserPlus, Search, MessagesSquare, ShieldCheck, Ban, Lock, Video, Eye, BadgeCheck, Users, AlertTriangle } from "lucide-react";
+import { Heart, Shield, ArrowRight, UserPlus, Search, MessagesSquare, ShieldCheck, Ban, Lock, Eye, BadgeCheck, Users, AlertTriangle, Star } from "lucide-react";
 import { Link } from "react-router-dom";
 import SEO from "@/components/SEO";
+import LazySection from "@/components/LazySection";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
 import { Button } from "@/components/ui/button";
@@ -166,7 +167,7 @@ const Landing = () => {
         </div>
       </section>
 
-      {/* ===== HOW IT WORKS ===== */}
+      <LazySection>
       <section className="relative py-12 md:py-20 bg-background overflow-hidden">
         {/* Decorative blobs */}
         <div className="absolute -top-20 -left-20 w-72 h-72 rounded-full bg-primary/10 blur-3xl" />
@@ -214,8 +215,9 @@ const Landing = () => {
           </div>
         </div>
       </section>
+      </LazySection>
 
-      {/* ===== WHY FILOHEART IS DIFFERENT ===== */}
+      <LazySection>
       <section className="relative py-12 md:py-20 overflow-hidden" style={{ background: 'linear-gradient(135deg, hsl(350 65% 55% / 0.06), hsl(35 80% 55% / 0.08), hsl(175 40% 40% / 0.06))' }}>
         <div className="container relative z-10">
           <h2 className="mb-4 text-center text-3xl font-bold md:text-4xl" style={{ fontFamily: 'var(--font-display)' }}>
@@ -261,8 +263,9 @@ const Landing = () => {
           </div>
         </div>
       </section>
+      </LazySection>
 
-      {/* ===== TESTIMONIALS ===== */}
+      <LazySection>
       <section className="relative py-12 md:py-20 bg-background overflow-hidden">
         <div className="absolute top-10 right-0 w-64 h-64 rounded-full bg-secondary/8 blur-3xl" />
         <div className="absolute bottom-0 left-10 w-56 h-56 rounded-full bg-primary/8 blur-3xl" />
@@ -325,8 +328,9 @@ const Landing = () => {
           </div>
         </div>
       </section>
+      </LazySection>
 
-      {/* ===== TRUST & SAFETY ===== */}
+      <LazySection>
       <section className="relative py-12 md:py-20 overflow-hidden" style={{ background: 'linear-gradient(180deg, hsl(175 40% 40% / 0.05), hsl(350 65% 55% / 0.05))' }}>
         <div className="container relative z-10">
           <div className="mx-auto max-w-5xl grid gap-10 md:grid-cols-2 items-center">
@@ -367,8 +371,9 @@ const Landing = () => {
           </div>
         </div>
       </section>
+      </LazySection>
 
-      {/* ===== FAQ SECTION ===== */}
+      <LazySection>
       <section className="relative py-12 md:py-20 bg-background overflow-hidden">
         <div className="absolute -bottom-20 -left-16 w-72 h-72 rounded-full bg-accent/8 blur-3xl" />
         <div className="container relative z-10">
@@ -394,9 +399,9 @@ const Landing = () => {
           </div>
         </div>
       </section>
+      </LazySection>
 
-
-      {/* ===== FINAL CTA ===== */}
+      <LazySection>
       <section className="relative py-16 md:py-24 overflow-hidden">
         <picture>
           <source media="(max-width: 768px)" srcSet={heroCoupleMobile} />
@@ -426,6 +431,7 @@ const Landing = () => {
           </div>
         </div>
       </section>
+      </LazySection>
     </div>
   );
 };
