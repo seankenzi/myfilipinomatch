@@ -63,6 +63,89 @@ Deno.serve(async (req) => {
     const url = new URL(req.url);
     const action = url.searchParams.get("action");
 
+    // Handle join action – callee gets their own unique meeting token
+    if (action === "join") {
+      const JoinSchema = z.object({ match_id: z.string().uuid() });
+      const joinParsed = JoinSchema.safeParse(await req.json());
+      if (!joinParsed.success) {
+        return new Response(
+          JSON.stringify({ error: joinParsed.error.flatten().fieldErrors }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      const { match_id: joinMatchId } = joinParsed.data;
+
+      // Verify user is part of this match
+      const { data: joinMatch } = await supabase
+        .from("matches")
+        .select("id, user1_id, user2_id")
+        .eq("id", joinMatchId)
+        .single();
+
+      if (!joinMatch || (joinMatch.user1_id !== user.id && joinMatch.user2_id !== user.id)) {
+        return new Response(JSON.stringify({ error: "Not authorized" }), {
+          status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      const joinRoomName = `match-${joinMatchId}`;
+
+      // Get the existing room to confirm it exists
+      const roomCheck = await fetch(`${DAILY_API_URL}/rooms/${joinRoomName}`, {
+        headers: { Authorization: `Bearer ${DAILY_API_KEY}` },
+      });
+
+      if (!roomCheck.ok) {
+        return new Response(JSON.stringify({ error: "Room not found – the call may have ended" }), {
+          status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      const roomInfo = await roomCheck.json();
+
+      // Create a unique meeting token for the callee
+      const calleeTokenRes = await fetch(`${DAILY_API_URL}/meeting-tokens`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${DAILY_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          properties: {
+            room_name: joinRoomName,
+            user_name: user.id,
+            exp: Math.floor(Date.now() / 1000) + 3600,
+            is_owner: false,
+          },
+        }),
+      });
+
+      if (!calleeTokenRes.ok) {
+        const errBody = await calleeTokenRes.text();
+        throw new Error(`Daily token creation failed: ${errBody}`);
+      }
+
+      const calleeTokenData = await calleeTokenRes.json();
+
+      // Record session for callee
+      const { data: calleeSession } = await supabaseAdmin
+        .from("video_call_sessions")
+        .insert({ user_id: user.id, match_id: joinMatchId })
+        .select("id")
+        .single();
+
+      return new Response(
+        JSON.stringify({
+          room_url: roomInfo.url,
+          token: calleeTokenData.token,
+          full_room_url: `${roomInfo.url}?t=${calleeTokenData.token}`,
+          session_id: calleeSession?.id,
+        }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     // Handle end-session action
     if (action === "end-session") {
       const parsed = EndSessionSchema.safeParse(await req.json());
