@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Video, VideoOff, Mic, MicOff, PhoneOff, Loader2, Crown, Clock } from "lucide-react";
+import { Video, VideoOff, Mic, MicOff, PhoneOff, Loader2, Crown, Clock, WifiOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
