@@ -9,11 +9,11 @@ const SITE_NAME = "myfilipinomatch"
 // SENDER_DOMAIN is the verified sender subdomain FQDN (e.g., "notify.example.com").
 // It MUST match the subdomain delegated to Lovable's nameservers — never the root domain.
 // The email API looks up this exact domain; a mismatch causes "No email domain record found".
-const SENDER_DOMAIN = "notify.www.myfilipinomatch.com"
+const SENDER_DOMAIN = "notify.myfilipinomatch.com"
 // FROM_DOMAIN is the domain shown in the From: header (e.g., "example.com").
 // When display_from_root is enabled, this can be the root domain for cleaner branding,
 // even though actual sending uses the subdomain above.
-const FROM_DOMAIN = "www.myfilipinomatch.com"
+const FROM_DOMAIN = "myfilipinomatch.com"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -108,7 +108,7 @@ Deno.serve(async (req) => {
   // Resolve effective recipient: template-level `to` takes precedence over
   // the caller-provided recipientEmail. This allows notification templates
   // to always send to a fixed address (e.g., site owner from env var).
-  let effectiveRecipient = template.to || recipientEmail
+  const effectiveRecipient = template.to || recipientEmail
 
   if (!effectiveRecipient) {
     return new Response(
@@ -124,59 +124,6 @@ Deno.serve(async (req) => {
 
   // Create Supabase client with service role (bypasses RLS)
   const supabase = createClient(supabaseUrl, supabaseServiceKey)
-
-  // Special recipient "admin" — resolve to all admin email addresses
-  if (effectiveRecipient === 'admin') {
-    const { data: adminRoles } = await supabase
-      .from('user_roles')
-      .select('user_id')
-      .eq('role', 'admin')
-
-    if (adminRoles && adminRoles.length > 0) {
-      const adminIds = adminRoles.map((r: any) => r.user_id)
-      const { data: adminProfiles } = await supabase
-        .from('profiles')
-        .select('email')
-        .in('id', adminIds)
-        .not('email', 'is', null)
-
-      const adminEmails = (adminProfiles || []).map((p: any) => p.email).filter(Boolean)
-
-      if (adminEmails.length === 0) {
-        console.warn('No admin emails found')
-        return new Response(
-          JSON.stringify({ error: 'No admin email addresses found' }),
-          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        )
-      }
-
-      // Send to each admin — fan out by re-invoking for each
-      const results = []
-      for (const email of adminEmails) {
-        // Recursively handle each admin email by continuing below with overridden recipient
-        // For simplicity, just invoke ourselves
-        const resp = await supabase.functions.invoke('send-transactional-email', {
-          body: {
-            templateName,
-            recipientEmail: email,
-            idempotencyKey: `${idempotencyKey}-${email}`,
-            templateData,
-          },
-        })
-        results.push({ email, success: !resp.error })
-      }
-
-      return new Response(
-        JSON.stringify({ success: true, adminResults: results }),
-        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
-    }
-
-    return new Response(
-      JSON.stringify({ error: 'No admin users found' }),
-      { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    )
-  }
 
   // 2. Check suppression list (fail-closed: if we can't verify, don't send)
   const { data: suppressed, error: suppressionError } = await supabase
