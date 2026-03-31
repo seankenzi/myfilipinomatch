@@ -399,9 +399,9 @@ const Landing = () => {
           </div>
         </div>
       </section>
+      </LazySection>
 
-
-      {/* ===== FINAL CTA ===== */}
+      <LazySection>
       <section className="relative py-16 md:py-24 overflow-hidden">
         <picture>
           <source media="(max-width: 768px)" srcSet={heroCoupleMobile} />
