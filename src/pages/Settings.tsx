@@ -1,4 +1,4 @@
-import { ArrowLeft, Lock, Trash2, Mail, Crown } from "lucide-react";
+import { ArrowLeft, Lock, Trash2, Mail, Crown, Video } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
+import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import Navbar from "@/components/Navbar";
@@ -25,6 +26,8 @@ const Settings = () => {
     current_period_end: string | null;
   } | null>(null);
   const [loadingSub, setLoadingSub] = useState(true);
+  const [videoUsedSeconds, setVideoUsedSeconds] = useState(0);
+  const [loadingVideo, setLoadingVideo] = useState(true);
 
   useEffect(() => {
     const fetchSubscription = async () => {
@@ -39,7 +42,14 @@ const Settings = () => {
       setSubscription(data);
       setLoadingSub(false);
     };
+    const fetchVideoUsage = async () => {
+      if (!user) return;
+      const { data, error } = await supabase.rpc("get_monthly_video_usage", { p_user_id: user.id });
+      if (!error && data !== null) setVideoUsedSeconds(data as number);
+      setLoadingVideo(false);
+    };
     fetchSubscription();
+    fetchVideoUsage();
   }, [user]);
 
   const handleChangePassword = async () => {
@@ -121,7 +131,34 @@ const Settings = () => {
             )}
           </div>
 
-          {/* Account */}
+          {/* Video Call Usage — only show for yearly subscribers */}
+          {subscription?.plan === "yearly" && subscription?.status === "active" && (
+            <div className="mb-4 rounded-2xl border border-border bg-card p-5 shadow-card">
+              <h2 className="mb-4 font-semibold flex items-center gap-2">
+                <Video className="h-4 w-4 text-primary" />
+                Video Call Usage
+              </h2>
+              {loadingVideo ? (
+                <p className="text-sm text-muted-foreground">Loading...</p>
+              ) : (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">Used this month</span>
+                    <span className="font-medium">
+                      {Math.floor(videoUsedSeconds / 60)}m / 120m
+                    </span>
+                  </div>
+                  <Progress value={Math.min(100, (videoUsedSeconds / 7200) * 100)} className="h-2" />
+                  <p className="text-xs text-muted-foreground">
+                    {videoUsedSeconds >= 7200
+                      ? "Monthly limit reached — resets next month."
+                      : `${Math.floor((7200 - videoUsedSeconds) / 60)} minutes remaining`}
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+
           <div className="mb-4 rounded-2xl border border-border bg-card p-5 shadow-card">
             <h2 className="mb-4 font-semibold flex items-center gap-2">
               <Mail className="h-4 w-4 text-primary" />
