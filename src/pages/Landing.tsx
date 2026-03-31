@@ -78,7 +78,7 @@ const Landing = () => {
         ]}
       />
       {/* ===== HERO SECTION ===== */}
-      <section className="relative min-h-[90vh] flex items-center overflow-hidden">
+      <section className="relative min-h-[85vh] md:min-h-[90vh] flex items-center overflow-hidden">
         {heroImages.map((img, i) => (
           <img
             key={i}
@@ -96,17 +96,17 @@ const Landing = () => {
         <div className="absolute inset-0 bg-gradient-to-r from-foreground/75 via-foreground/55 to-foreground/30" />
         <div className="absolute inset-0 bg-gradient-to-t from-foreground/60 via-transparent to-foreground/20" />
 
-        <div className="container relative z-10 py-20">
+        <div className="container relative z-10 px-5 py-12 md:py-20">
           <div className="max-w-2xl animate-slide-up">
-            <h1 className="mb-6 text-4xl font-bold leading-tight text-primary-foreground md:text-6xl lg:text-7xl" style={{ fontFamily: 'var(--font-display)' }}>
+            <h1 className="mb-4 md:mb-6 text-3xl font-bold leading-tight text-primary-foreground md:text-6xl lg:text-7xl" style={{ fontFamily: 'var(--font-display)' }}>
               Find Your Filipina Soulmate
-              <span className="block mt-2 text-primary-foreground/90 text-3xl md:text-4xl lg:text-5xl">— Not Fake Profiles</span>
+              <span className="block mt-1 md:mt-2 text-primary-foreground/90 text-xl md:text-4xl lg:text-5xl">— Not Fake Profiles</span>
             </h1>
-            <p className="mb-8 max-w-lg text-lg text-primary-foreground/85 md:text-xl leading-relaxed">
+            <p className="mb-6 md:mb-8 max-w-lg text-base text-primary-foreground/85 md:text-xl leading-relaxed">
               Join a trusted platform where foreign men meet verified Filipinas ready for genuine, long-term connections.
             </p>
 
-            <div className="mb-10 flex flex-col gap-2">
+            <div className="mb-6 md:mb-10 flex flex-col gap-1.5 md:gap-2">
               {[
                 { icon: BadgeCheck, text: "Verified Filipina profiles (ID + selfie checked)" },
                 { icon: Ban, text: "No bots. No fake accounts." },
@@ -119,22 +119,22 @@ const Landing = () => {
               ))}
             </div>
 
-            <div className="flex flex-wrap gap-4">
-              <Link to="/signup">
-                <Button variant="hero" size="xl">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+              <Link to="/signup" className="w-full sm:w-auto">
+                <Button variant="hero" size="xl" className="w-full sm:w-auto min-h-[48px]">
                   Create Free Account
                   <ArrowRight className="ml-1 h-5 w-5" />
                 </Button>
               </Link>
-              <Link to="/discover">
-                <Button variant="hero-outline" size="xl" className="border-primary-foreground/40 text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground">
+              <Link to="/discover" className="w-full sm:w-auto">
+                <Button variant="hero-outline" size="xl" className="w-full sm:w-auto min-h-[48px] border-primary-foreground/40 text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground">
                   Browse Verified Profiles
                 </Button>
               </Link>
             </div>
 
             {/* Social proof */}
-            <div className="mt-12 flex items-center gap-4">
+            <div className="mt-8 md:mt-12 flex items-center gap-3 md:gap-4">
               <div className="flex -space-x-3">
                 {[mariaPhoto, jamesPhoto, anaPhoto, kenjiPhoto].map((photo, i) => (
                   <img
@@ -158,7 +158,7 @@ const Landing = () => {
       </section>
 
       {/* ===== HOW IT WORKS ===== */}
-      <section className="relative py-20 bg-background overflow-hidden">
+      <section className="relative py-12 md:py-20 bg-background overflow-hidden">
         {/* Decorative blobs */}
         <div className="absolute -top-20 -left-20 w-72 h-72 rounded-full bg-primary/10 blur-3xl" />
         <div className="absolute -bottom-20 -right-20 w-80 h-80 rounded-full bg-accent/10 blur-3xl" />
@@ -166,7 +166,7 @@ const Landing = () => {
           <h2 className="mb-4 text-center text-3xl font-bold md:text-4xl" style={{ fontFamily: 'var(--font-display)' }}>
             How It Works
           </h2>
-          <p className="text-center text-muted-foreground mb-16 max-w-md mx-auto">
+          <p className="text-center text-muted-foreground mb-10 md:mb-16 max-w-md mx-auto">
             Three simple steps to finding your match
           </p>
           <div className="mx-auto max-w-4xl grid gap-10 md:grid-cols-3">
@@ -207,7 +207,7 @@ const Landing = () => {
       </section>
 
       {/* ===== WHY FILOHEART IS DIFFERENT ===== */}
-      <section className="relative py-20 overflow-hidden" style={{ background: 'linear-gradient(135deg, hsl(350 65% 55% / 0.06), hsl(35 80% 55% / 0.08), hsl(175 40% 40% / 0.06))' }}>
+      <section className="relative py-12 md:py-20 overflow-hidden" style={{ background: 'linear-gradient(135deg, hsl(350 65% 55% / 0.06), hsl(35 80% 55% / 0.08), hsl(175 40% 40% / 0.06))' }}>
         <div className="container relative z-10">
           <h2 className="mb-4 text-center text-3xl font-bold md:text-4xl" style={{ fontFamily: 'var(--font-display)' }}>
             Why <span className="text-gradient">MyFilipinoMatch</span> Is Different
@@ -254,7 +254,7 @@ const Landing = () => {
       </section>
 
       {/* ===== TESTIMONIALS ===== */}
-      <section className="relative py-20 bg-background overflow-hidden">
+      <section className="relative py-12 md:py-20 bg-background overflow-hidden">
         <div className="absolute top-10 right-0 w-64 h-64 rounded-full bg-secondary/8 blur-3xl" />
         <div className="absolute bottom-0 left-10 w-56 h-56 rounded-full bg-primary/8 blur-3xl" />
         <div className="container relative z-10">
@@ -318,7 +318,7 @@ const Landing = () => {
       </section>
 
       {/* ===== TRUST & SAFETY ===== */}
-      <section className="relative py-20 overflow-hidden" style={{ background: 'linear-gradient(180deg, hsl(175 40% 40% / 0.05), hsl(350 65% 55% / 0.05))' }}>
+      <section className="relative py-12 md:py-20 overflow-hidden" style={{ background: 'linear-gradient(180deg, hsl(175 40% 40% / 0.05), hsl(350 65% 55% / 0.05))' }}>
         <div className="container relative z-10">
           <div className="mx-auto max-w-5xl grid gap-10 md:grid-cols-2 items-center">
             <div>
@@ -360,7 +360,7 @@ const Landing = () => {
       </section>
 
       {/* ===== CONTENT SECTION FOR SEO ===== */}
-      <section className="py-20 bg-background">
+      <section className="py-12 md:py-20 bg-background">
         <div className="container">
           <div className="mx-auto max-w-3xl">
             <h2 className="mb-6 text-3xl font-bold md:text-4xl text-center" style={{ fontFamily: 'var(--font-display)' }}>
@@ -389,7 +389,7 @@ const Landing = () => {
       </section>
 
       {/* ===== FAQ SECTION ===== */}
-      <section className="relative py-20 bg-background overflow-hidden">
+      <section className="relative py-12 md:py-20 bg-background overflow-hidden">
         <div className="absolute -bottom-20 -left-16 w-72 h-72 rounded-full bg-accent/8 blur-3xl" />
         <div className="container relative z-10">
           <h2 className="mb-4 text-center text-3xl font-bold md:text-4xl" style={{ fontFamily: 'var(--font-display)' }}>
@@ -417,7 +417,7 @@ const Landing = () => {
 
 
       {/* ===== FINAL CTA ===== */}
-      <section className="relative py-24 overflow-hidden">
+      <section className="relative py-16 md:py-24 overflow-hidden">
         <img
           src={heroCouple}
           alt="Happy couple enjoying time together — MyFilipinoMatch"
@@ -435,7 +435,7 @@ const Landing = () => {
               Start your real connection today.
             </p>
             <Link to="/signup">
-              <Button variant="default" size="xl" className="bg-primary-foreground text-foreground hover:bg-primary-foreground/90 font-semibold shadow-elevated">
+              <Button variant="default" size="xl" className="w-full sm:w-auto min-h-[48px] bg-primary-foreground text-foreground hover:bg-primary-foreground/90 font-semibold shadow-elevated">
                 Create Your Free Account
                 <ArrowRight className="ml-1 h-5 w-5" />
               </Button>
