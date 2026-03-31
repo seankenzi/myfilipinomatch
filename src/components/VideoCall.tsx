@@ -129,7 +129,7 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
         return;
       }
 
-      setRoomUrl(`${data.room_url}?t=${data.token}`);
+      setRoomUrl(`${data.room_url}?t=${data.token}&prejoin=false`);
       setSessionId(data.session_id);
       setRemainingSeconds(data.remaining_seconds || 7200);
       setElapsedSeconds(0);
