@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Heart, Shield, Globe, MessageSquare, Star, CheckCircle, ArrowRight, UserPlus, Search, MessagesSquare, ShieldCheck, Ban, Lock, Video, Eye, BadgeCheck, Users, AlertTriangle } from "lucide-react";
 import { Link } from "react-router-dom";
+import SEO from "@/components/SEO";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -30,6 +31,30 @@ const Landing = () => {
 
   return (
     <div className="flex flex-col">
+      <SEO
+        canonical="/"
+        jsonLd={[
+          {
+            "@context": "https://schema.org",
+            "@type": "Organization",
+            name: "MyFilipinoMatch",
+            url: "https://myfilipinomatch.lovable.app",
+            description: "The most trusted international dating platform connecting foreigners with Filipino singles for serious, long-term relationships and marriage.",
+            sameAs: [],
+          },
+          {
+            "@context": "https://schema.org",
+            "@type": "WebSite",
+            name: "MyFilipinoMatch",
+            url: "https://myfilipinomatch.lovable.app",
+            potentialAction: {
+              "@type": "SearchAction",
+              target: "https://myfilipinomatch.lovable.app/discover?q={search_term_string}",
+              "query-input": "required name=search_term_string",
+            },
+          },
+        ]}
+      />
       {/* ===== HERO SECTION ===== */}
       <section className="relative min-h-[90vh] flex items-center overflow-hidden">
         {heroImages.map((img, i) => (

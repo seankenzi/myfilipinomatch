@@ -1,9 +1,10 @@
 import Navbar from "@/components/Navbar";
-
+import SEO from "@/components/SEO";
 
 const Terms = () => {
   return (
     <div className="flex min-h-screen flex-col bg-background">
+      <SEO title="Terms of Service" description="Review the terms and conditions for using MyFilipinoMatch, including account rules, user conduct, and membership policies." canonical="/terms" />
       <Navbar />
       <main className="flex-1 px-4 py-12 pb-24 md:pb-12">
         <div className="mx-auto max-w-3xl prose prose-sm">

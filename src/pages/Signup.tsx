@@ -1,4 +1,5 @@
 import { useState } from "react";
+import SEO from "@/components/SEO";
 import { Link, useNavigate } from "react-router-dom";
 import { Mail, Lock, Eye, EyeOff, Shield, Heart, Users } from "lucide-react";
 import { lovable } from "@/integrations/lovable/index";
@@ -57,6 +58,7 @@ const Signup = () => {
 
   return (
     <div className="flex min-h-screen items-center justify-center px-4 py-12 bg-background">
+      <SEO title="Sign Up Free" description="Create your free MyFilipinoMatch account and start meeting verified Filipino singles looking for serious relationships." canonical="/signup" />
       <div className="w-full max-w-md animate-scale-in">
         {/* Logo & Header */}
         <div className="mb-8 text-center">

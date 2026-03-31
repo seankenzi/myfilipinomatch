@@ -1,9 +1,10 @@
 import Navbar from "@/components/Navbar";
-
+import SEO from "@/components/SEO";
 
 const Privacy = () => {
   return (
     <div className="flex min-h-screen flex-col bg-background">
+      <SEO title="Privacy Policy" description="Read our privacy policy to understand how MyFilipinoMatch collects, uses, and protects your personal data." canonical="/privacy" />
       <Navbar />
       <main className="flex-1 px-4 py-12 pb-24 md:pb-12">
         <div className="mx-auto max-w-3xl prose prose-sm">
