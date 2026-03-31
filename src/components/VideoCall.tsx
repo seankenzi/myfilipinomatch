@@ -154,33 +154,10 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
 
       setRoomUrl(`${data.room_url}?t=${data.token}&prejoin=false&showParticipantsBar=false&showUserNameChangeUI=false&showLeaveButton=false&showFullscreenButton=false&showLocalVideo=true&showChat=false&activeSpeakerMode=false`);
       setSessionId(data.session_id);
+      remainingSecondsRef.current = data.remaining_seconds || 7200;
       setRemainingSeconds(data.remaining_seconds || 7200);
       setElapsedSeconds(0);
-      callStartTimeRef.current = Date.now();
-
-      // Signaling is now created server-side in the daily-video function
-
-      // Start countdown timer
-      if (timerRef.current) clearInterval(timerRef.current);
-      timerRef.current = setInterval(() => {
-        setElapsedSeconds((prev) => {
-          const next = prev + 1;
-          if (next >= (data.remaining_seconds || 7200)) {
-            handleClose();
-            toast({
-              title: "Time's up!",
-              description: "You've used your 2 free video call hours this month.",
-            });
-          }
-          if ((data.remaining_seconds || 7200) - next === 300) {
-            toast({
-              title: "⏰ 5 minutes remaining",
-              description: "Your monthly video call time is almost up.",
-            });
-          }
-          return next;
-        });
-      }, 1000);
+      // Timer will start when "participant-joined" is received from Daily
     } catch {
       setError("Something went wrong. Please try again.");
     }
