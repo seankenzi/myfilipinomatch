@@ -316,7 +316,7 @@ const Profile = () => {
               <p className="text-sm text-muted-foreground mb-4">
                 Verified profiles get up to 3x more matches. Show others you're real and serious.
               </p>
-              <Button variant="outline" size="sm" onClick={() => navigate("/verification")} className="border-secondary text-secondary hover:bg-secondary/10">
+              <Button variant="outline" size="sm" onClick={() => navigate("/verification")} className="border-secondary text-secondary hover:bg-secondary/10 min-h-[44px] px-5">
                 Get Verified
               </Button>
             </div>
