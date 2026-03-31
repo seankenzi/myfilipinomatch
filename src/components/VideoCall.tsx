@@ -113,15 +113,10 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
       if (joinRoomUrl) {
         const separator = joinRoomUrl.includes("?") ? "&" : "?";
         setRoomUrl(`${joinRoomUrl}${separator}prejoin=false&showParticipantsBar=false&showUserNameChangeUI=false&showLeaveButton=false&showFullscreenButton=false&showLocalVideo=true&showChat=false&activeSpeakerMode=false`);
+        remainingSecondsRef.current = 7200;
         setRemainingSeconds(7200);
         setElapsedSeconds(0);
-        callStartTimeRef.current = Date.now();
-
-        if (timerRef.current) clearInterval(timerRef.current);
-        timerRef.current = setInterval(() => {
-          setElapsedSeconds((prev) => prev + 1);
-        }, 1000);
-
+        // Timer will start when "participant-joined" is received from Daily
         setLoading(false);
         return;
       }
