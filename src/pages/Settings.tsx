@@ -26,6 +26,8 @@ const Settings = () => {
     current_period_end: string | null;
   } | null>(null);
   const [loadingSub, setLoadingSub] = useState(true);
+  const [videoUsedSeconds, setVideoUsedSeconds] = useState(0);
+  const [loadingVideo, setLoadingVideo] = useState(true);
 
   useEffect(() => {
     const fetchSubscription = async () => {
