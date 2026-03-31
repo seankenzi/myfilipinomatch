@@ -537,14 +537,45 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
               )
             )}
 
-            <Button
-              variant="destructive"
-              size="icon"
-              className="absolute bottom-6 left-1/2 -translate-x-1/2 h-14 w-14 rounded-full shadow-lg"
-              onClick={handleClose}
-            >
-              <PhoneOff className="h-6 w-6" />
-            </Button>
+            {/* Custom call controls */}
+            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-3">
+              <Button
+                variant={isMuted ? "secondary" : "outline"}
+                size="icon"
+                className={`h-12 w-12 rounded-full shadow-lg backdrop-blur-sm ${
+                  isMuted ? "bg-muted/90 text-destructive" : "bg-card/80 text-foreground"
+                }`}
+                onClick={() => {
+                  iframeRef.current?.contentWindow?.postMessage({ action: "toggle-audio" }, "*");
+                  setIsMuted((prev) => !prev);
+                }}
+              >
+                {isMuted ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
+              </Button>
+
+              <Button
+                variant="destructive"
+                size="icon"
+                className="h-14 w-14 rounded-full shadow-lg"
+                onClick={handleClose}
+              >
+                <PhoneOff className="h-6 w-6" />
+              </Button>
+
+              <Button
+                variant={isCameraOff ? "secondary" : "outline"}
+                size="icon"
+                className={`h-12 w-12 rounded-full shadow-lg backdrop-blur-sm ${
+                  isCameraOff ? "bg-muted/90 text-destructive" : "bg-card/80 text-foreground"
+                }`}
+                onClick={() => {
+                  iframeRef.current?.contentWindow?.postMessage({ action: "toggle-video" }, "*");
+                  setIsCameraOff((prev) => !prev);
+                }}
+              >
+                {isCameraOff ? <VideoOff className="h-5 w-5" /> : <Video className="h-5 w-5" />}
+              </Button>
+            </div>
           </div>
         )}
       </DialogContent>
