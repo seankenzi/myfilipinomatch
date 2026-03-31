@@ -66,6 +66,8 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
       setLimitReached(false);
       setElapsedSeconds(0);
       setCallEstablished(false);
+      setIsMuted(false);
+      setIsCameraOff(false);
 
       if (toastMessage) {
         toast({
