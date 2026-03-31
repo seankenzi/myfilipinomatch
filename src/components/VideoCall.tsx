@@ -14,6 +14,39 @@ interface VideoCallProps {
   joinRoomUrl?: string; // If provided, skip room creation and join directly
 }
 
+const DAILY_EMBED_PARAMS: Record<string, string> = {
+  prejoin: "false",
+  showParticipantsBar: "false",
+  showUserNameChangeUI: "false",
+  showLeaveButton: "false",
+  showFullscreenButton: "false",
+  showLocalVideo: "true",
+  showChat: "false",
+  activeSpeakerMode: "false",
+  showHeader: "false",
+  showControls: "false",
+  enable_prejoin_ui: "false",
+  enable_people_ui: "false",
+  enable_network_ui: "false",
+};
+
+const buildDailyEmbedUrl = (baseUrl: string, token?: string) => {
+  try {
+    const url = new URL(baseUrl);
+    if (token) url.searchParams.set("t", token);
+    Object.entries(DAILY_EMBED_PARAMS).forEach(([key, value]) => {
+      url.searchParams.set(key, value);
+    });
+    return url.toString();
+  } catch {
+    const withToken = token
+      ? `${baseUrl}${baseUrl.includes("?") ? "&" : "?"}t=${encodeURIComponent(token)}`
+      : baseUrl;
+    const params = new URLSearchParams(DAILY_EMBED_PARAMS).toString();
+    return `${withToken}${withToken.includes("?") ? "&" : "?"}${params}`;
+  }
+};
+
 const formatTime = (totalSeconds: number) => {
   const h = Math.floor(totalSeconds / 3600);
   const m = Math.floor((totalSeconds % 3600) / 60);
@@ -132,8 +165,7 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
 
       // If joining an existing room (accepted incoming call), skip edge function
       if (joinRoomUrl) {
-        const separator = joinRoomUrl.includes("?") ? "&" : "?";
-        setRoomUrl(`${joinRoomUrl}${separator}prejoin=false&showParticipantsBar=false&showUserNameChangeUI=false&showLeaveButton=false&showFullscreenButton=false&showLocalVideo=true&showChat=false&activeSpeakerMode=false&showHeader=false&showControls=false`);
+        setRoomUrl(buildDailyEmbedUrl(joinRoomUrl));
         remainingSecondsRef.current = 7200;
         setRemainingSeconds(7200);
         setElapsedSeconds(0);
@@ -173,7 +205,7 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
         return;
       }
 
-      setRoomUrl(`${data.room_url}?t=${data.token}&prejoin=false&showParticipantsBar=false&showUserNameChangeUI=false&showLeaveButton=false&showFullscreenButton=false&showLocalVideo=true&showChat=false&activeSpeakerMode=false&showHeader=false&showControls=false`);
+      setRoomUrl(buildDailyEmbedUrl(data.room_url, data.token));
       setSessionId(data.session_id);
       remainingSecondsRef.current = data.remaining_seconds || 7200;
       setRemainingSeconds(data.remaining_seconds || 7200);
@@ -505,18 +537,23 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
         )}
 
         {roomUrl && (
-          <div className="relative w-full h-full">
+          <div className="relative w-full h-full overflow-hidden">
             <iframe
               ref={iframeRef}
               src={roomUrl}
               allow="camera; microphone; fullscreen; display-capture"
-              className="w-full h-full border-0"
+              className="absolute inset-0 w-full h-full border-0"
               title={`Video call with ${otherUserName}`}
             />
 
+            {/* Fallback masks for stubborn Daily UI strips */}
+            <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 z-10 h-12 bg-background" />
+            <div aria-hidden className="pointer-events-none absolute top-12 right-0 z-10 hidden md:block h-44 w-56 bg-background" />
+            <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-20 bg-background" />
+
             {/* Connection lost overlay */}
             {connectionLost && (
-              <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-background/80 backdrop-blur-sm gap-3">
+              <div className="absolute inset-0 z-40 flex flex-col items-center justify-center bg-background/80 backdrop-blur-sm gap-3">
                 <WifiOff className="h-10 w-10 text-destructive animate-pulse" />
                 <p className="text-sm font-medium text-foreground">Connection lost</p>
                 <p className="text-xs text-muted-foreground">Attempting to reconnect…</p>
@@ -527,7 +564,7 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
             {!joinRoomUrl && (
               callEstablished ? (
                 <div
-                  className={`absolute top-4 right-4 flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium shadow-lg backdrop-blur-sm ${
+                  className={`absolute top-14 right-4 z-20 flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium shadow-lg backdrop-blur-sm ${
                     isLowTime
                       ? "bg-destructive/90 text-destructive-foreground animate-pulse"
                       : "bg-card/80 text-foreground"
@@ -537,7 +574,7 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
                   {formatTime(timeRemaining)}
                 </div>
               ) : (
-                <div className="absolute top-4 right-4 flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium shadow-lg backdrop-blur-sm bg-card/80 text-muted-foreground">
+                <div className="absolute top-14 right-4 z-20 flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium shadow-lg backdrop-blur-sm bg-card/80 text-muted-foreground">
                   <Loader2 className="h-3.5 w-3.5 animate-spin" />
                   Waiting for {otherUserName}…
                 </div>
@@ -545,7 +582,7 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
             )}
 
             {/* Custom call controls bar - covers Daily's bottom toolbar */}
-            <div className="absolute bottom-0 left-0 right-0 z-20 flex items-center justify-center gap-3 bg-background/95 backdrop-blur-sm py-4 border-t border-border">
+            <div className="absolute bottom-0 left-0 right-0 z-30 flex items-center justify-center gap-3 bg-background/95 backdrop-blur-sm py-5 border-t border-border">
               <Button
                 variant={isMuted ? "secondary" : "outline"}
                 size="icon"
