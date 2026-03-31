@@ -88,6 +88,12 @@ export default {
           from: { opacity: "0", transform: "scale(0.95)" },
           to: { opacity: "1", transform: "scale(1)" },
         },
+        "haptic-press": {
+          "0%": { transform: "scale(1)" },
+          "40%": { transform: "scale(0.95)" },
+          "70%": { transform: "scale(1.02)" },
+          "100%": { transform: "scale(1)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -95,6 +101,7 @@ export default {
         "slide-up": "slide-up 0.5s ease-out",
         "fade-in": "fade-in 0.4s ease-out",
         "scale-in": "scale-in 0.3s ease-out",
+        "haptic-press": "haptic-press 0.2s cubic-bezier(0.36, 0.07, 0.19, 0.97)",
       },
     },
   },

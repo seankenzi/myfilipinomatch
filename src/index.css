@@ -129,6 +129,15 @@
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
+
+  .haptic-tap {
+    @apply transition-transform duration-100 will-change-transform;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .haptic-tap:active {
+    animation: haptic-press 0.2s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+  }
 }
 
 @keyframes shimmer {
