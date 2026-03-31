@@ -167,7 +167,7 @@ const Landing = () => {
         </div>
       </section>
 
-      {/* ===== HOW IT WORKS ===== */}
+      <LazySection>
       <section className="relative py-12 md:py-20 bg-background overflow-hidden">
         {/* Decorative blobs */}
         <div className="absolute -top-20 -left-20 w-72 h-72 rounded-full bg-primary/10 blur-3xl" />
