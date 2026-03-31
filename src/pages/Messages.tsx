@@ -86,6 +86,8 @@ const Messages = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const requestedMatchId = searchParams.get("match");
+  const requestedProfileId = searchParams.get("profile");
+  const shouldAutoOpenVideo = searchParams.get("openVideo") === "1";
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const [matches, setMatches] = useState<Match[]>([]);
@@ -101,6 +103,7 @@ const Messages = () => {
   const [reportDetails, setReportDetails] = useState("");
   const [videoCallOpen, setVideoCallOpen] = useState(false);
   const [videoUpgradeOpen, setVideoUpgradeOpen] = useState(false);
+  const [pendingVideoOpen, setPendingVideoOpen] = useState(shouldAutoOpenVideo);
   const [isOtherTyping, setIsOtherTyping] = useState(false);
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastTypingBroadcastRef = useRef<number>(0);
@@ -268,6 +271,10 @@ const Messages = () => {
   }, [fetchMatches]);
 
   useEffect(() => {
+    setPendingVideoOpen(shouldAutoOpenVideo);
+  }, [shouldAutoOpenVideo]);
+
+  useEffect(() => {
     if (matches.length === 0) return;
 
     if (requestedMatchId) {
@@ -278,11 +285,34 @@ const Messages = () => {
       }
     }
 
+    if (requestedProfileId) {
+      const requestedMatch = matches.find((match) => match.other_user.id === requestedProfileId);
+      if (requestedMatch) {
+        setSelectedMatch((current) => current?.id === requestedMatch.id ? current : requestedMatch);
+        return;
+      }
+    }
+
     setSelectedMatch((current) => {
       if (!current) return current;
       return matches.find((match) => match.id === current.id) ?? current;
     });
-  }, [matches, requestedMatchId]);
+  }, [matches, requestedMatchId, requestedProfileId]);
+
+  useEffect(() => {
+    if (!pendingVideoOpen || !selectedMatch) return;
+
+    const matchesRequestedTarget = requestedMatchId
+      ? selectedMatch.id === requestedMatchId
+      : requestedProfileId
+        ? selectedMatch.other_user.id === requestedProfileId
+        : false;
+
+    if (!matchesRequestedTarget) return;
+
+    setVideoCallOpen(true);
+    setPendingVideoOpen(false);
+  }, [pendingVideoOpen, requestedMatchId, requestedProfileId, selectedMatch]);
 
   const fetchMessages = useCallback(async () => {
     if (!selectedMatch || !user) return;
