@@ -52,6 +52,7 @@ const Support = () => {
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
+      <SEO title="Support & Help" description="Get help with your MyFilipinoMatch account. Contact our support team, browse FAQs, and find answers." canonical="/support" />
       <Navbar />
       <main className="flex-1 px-4 py-12 pb-24 md:pb-12">
         <div className="mx-auto max-w-2xl">
