@@ -328,8 +328,9 @@ const Landing = () => {
           </div>
         </div>
       </section>
+      </LazySection>
 
-      {/* ===== TRUST & SAFETY ===== */}
+      <LazySection>
       <section className="relative py-12 md:py-20 overflow-hidden" style={{ background: 'linear-gradient(180deg, hsl(175 40% 40% / 0.05), hsl(350 65% 55% / 0.05))' }}>
         <div className="container relative z-10">
           <div className="mx-auto max-w-5xl grid gap-10 md:grid-cols-2 items-center">
