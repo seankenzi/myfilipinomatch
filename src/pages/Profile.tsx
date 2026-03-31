@@ -281,7 +281,7 @@ const Profile = () => {
                   </div>
                 </div>
 
-                <Button onClick={saveProfile} disabled={saving} className="w-full" variant="hero">
+                <Button onClick={saveProfile} disabled={saving} className="w-full min-h-[48px]" variant="hero">
                   {saving ? <><span className="animate-spin mr-2">⏳</span>Saving...</> : <><Save className="h-4 w-4 mr-2" />Save Profile</>}
                 </Button>
               </div>
