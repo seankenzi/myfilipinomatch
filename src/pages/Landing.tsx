@@ -22,7 +22,7 @@ const heroImages = [heroCouple, heroCouple2, heroCouple3];
 
 const faqs = [
   { question: "Is MyFilipinoMatch free to join?", answer: "Yes! Creating an account is completely free. You can set up your profile, browse verified members, and receive matches at no cost. Premium features like unlimited messaging and video calls are available with an upgrade." },
-  { question: "How does profile verification work?", answer: "Every member goes through a verification process that includes government ID upload and a live selfie check. Our moderation team manually reviews each submission to ensure profiles are authentic — no bots, no fakes." },
+  { question: "How does profile verification work?", answer: "Every member goes through a verification process that includes a live selfie pose challenge. Our moderation team manually reviews each submission to ensure profiles are authentic — no bots, no fakes." },
   { question: "Is MyFilipinoMatch a scam site?", answer: "Absolutely not. We are a legitimate dating platform focused on genuine, long-term relationships. Unlike pay-per-message sites, we don't charge you to send individual messages or use fake operators. Our verified profiles and active moderation keep the community safe." },
   { question: "Who is MyFilipinoMatch for?", answer: "MyFilipinoMatch is designed for foreign men seeking serious relationships with Filipino women, and for Filipinas looking to connect with international partners for long-term commitment or marriage." },
   { question: "Can I video call my matches?", answer: "Yes! Premium members get access to in-app video calling so you can see and talk to your matches face-to-face before meeting in person — building trust and real connection." },
