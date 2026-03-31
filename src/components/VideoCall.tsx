@@ -169,9 +169,9 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
     }
   }, [open]);
 
-  // Listen for signal status changes (callee declined or missed)
+  // Listen for signal status changes (ended, declined, missed)
   useEffect(() => {
-    if (!open || joinRoomUrl) return; // Only for the caller side
+    if (!open) return;
 
     const channel = supabase
       .channel(`call-signal-${matchId}`)
@@ -185,10 +185,21 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
         },
         (payload) => {
           const status = (payload.new as any).status;
-          if (status === "missed") {
+          if (status === "ended") {
+            // Other participant ended the call
+            if (timerRef.current) {
+              clearInterval(timerRef.current);
+              timerRef.current = null;
+            }
+            endSession();
+            setRoomUrl(null);
+            setElapsedSeconds(0);
+            toast({ title: "Call ended", description: `${otherUserName} ended the call.` });
+            onClose();
+          } else if (status === "missed" && !joinRoomUrl) {
             toast({ title: "No answer", description: "They didn't pick up. Try again later." });
             onClose();
-          } else if (status === "declined") {
+          } else if (status === "declined" && !joinRoomUrl) {
             toast({ title: "Call declined", description: "They're not available right now." });
             onClose();
           }
@@ -199,7 +210,7 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [open, matchId, joinRoomUrl, toast]);
+  }, [open, matchId, joinRoomUrl, toast, endSession, onClose, otherUserName]);
 
   const handleClose = useCallback(async () => {
     if (timerRef.current) {
