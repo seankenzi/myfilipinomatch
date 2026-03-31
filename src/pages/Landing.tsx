@@ -359,35 +359,6 @@ const Landing = () => {
         </div>
       </section>
 
-      {/* ===== CONTENT SECTION FOR SEO ===== */}
-      <section className="py-12 md:py-20 bg-background">
-        <div className="container">
-          <div className="mx-auto max-w-3xl">
-            <h2 className="mb-6 text-3xl font-bold md:text-4xl text-center" style={{ fontFamily: 'var(--font-display)' }}>
-              Find Your Filipina Soulmate the Safe Way
-            </h2>
-            <p className="mb-4 text-muted-foreground leading-relaxed">
-              Finding a genuine Filipina soulmate online can feel overwhelming when so many dating sites are filled with fake profiles, bots, and pay-per-message scams. MyFilipinoMatch was built to change that. We are a trusted international dating platform that connects foreign men with verified Filipino women who are genuinely looking for serious, long-term relationships and marriage.
-            </p>
-            <p className="mb-4 text-muted-foreground leading-relaxed">
-              Unlike other Filipino dating sites, we don't rely on automated systems to verify our members. Every profile on MyFilipinoMatch goes through a manual verification process that includes a government ID check and a live selfie pose challenge. This means you can browse with confidence, knowing you're connecting with real Filipinas — not fake profiles created to waste your time or steal your money.
-            </p>
-            <p className="mb-4 text-muted-foreground leading-relaxed">
-              Our platform is designed for men from the United States, United Kingdom, Canada, Australia, Europe, and other countries who want to meet Filipino singles for meaningful connections. Whether you're looking for a life partner, a serious girlfriend, or a future wife, MyFilipinoMatch gives you the tools to find your soulmate without the risks that come with unverified dating sites.
-            </p>
-            <p className="mb-4 text-muted-foreground leading-relaxed">
-              We believe that real relationships are built on trust, which is why we invest heavily in safety features. Our active moderation team monitors the platform around the clock, and every member has access to a report-and-block system. All messaging is encrypted, and we never charge per message — so you can have genuine conversations without worrying about hidden fees or fake operators.
-            </p>
-            <p className="mb-4 text-muted-foreground leading-relaxed">
-              Premium members can also enjoy in-app video calls, allowing you to see and speak with your Filipina match face-to-face before booking a flight to the Philippines. Video calling builds trust and helps you confirm that the person behind the profile is exactly who they say they are — an essential step in any long-distance relationship.
-            </p>
-            <p className="text-muted-foreground leading-relaxed">
-              Whether you're just starting your search or you've been looking for a Filipina soulmate for years, MyFilipinoMatch is the platform built for you. Join thousands of verified members today and take the first step toward a genuine, lasting relationship — free from fake profiles and empty promises.
-            </p>
-          </div>
-        </div>
-      </section>
-
       {/* ===== FAQ SECTION ===== */}
       <section className="relative py-12 md:py-20 bg-background overflow-hidden">
         <div className="absolute -bottom-20 -left-16 w-72 h-72 rounded-full bg-accent/8 blur-3xl" />
