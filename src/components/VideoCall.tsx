@@ -227,7 +227,7 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
           .update({ status: "ended", updated_at: new Date().toISOString() })
           .eq("match_id", matchId)
           .or(`caller_id.eq.${currentUser.id},callee_id.eq.${currentUser.id}`)
-          .eq("status", "ringing");
+          .in("status", ["ringing", "accepted"]);
       }
     } catch {
       // Best effort cleanup
