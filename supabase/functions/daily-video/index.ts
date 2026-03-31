@@ -326,6 +326,7 @@ Deno.serve(async (req) => {
     }
 
     const tokenData = await tokenRes.json();
+    const fullRoomUrl = `${roomUrl}?t=${tokenData.token}`;
 
     // Record session start
     const { data: session } = await supabaseAdmin
