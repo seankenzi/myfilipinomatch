@@ -286,14 +286,14 @@ const Onboarding = () => {
                 <p className="text-sm text-muted-foreground">We're built for serious connections only</p>
               </div>
               <RadioGroup value={relationshipIntent} onValueChange={setRelationshipIntent} className="grid gap-3">
-                <label className={`flex items-center gap-4 rounded-xl border-2 p-5 cursor-pointer transition-all ${relationshipIntent === "long-term" ? "border-primary bg-primary/5 shadow-sm" : "border-border hover:border-muted-foreground/30"}`}>
+                <label className={`flex items-center gap-4 rounded-xl border-2 p-5 cursor-pointer transition-all min-h-[72px] active:scale-[0.98] ${relationshipIntent === "long-term" ? "border-primary bg-primary/5 shadow-sm" : "border-border hover:border-muted-foreground/30"}`}>
                   <RadioGroupItem value="long-term" />
                   <div>
                     <p className="font-semibold text-lg">💕 Serious Relationship</p>
                     <p className="text-sm text-muted-foreground">Looking for a committed, long-term partner</p>
                   </div>
                 </label>
-                <label className={`flex items-center gap-4 rounded-xl border-2 p-5 cursor-pointer transition-all ${relationshipIntent === "marriage" ? "border-primary bg-primary/5 shadow-sm" : "border-border hover:border-muted-foreground/30"}`}>
+                <label className={`flex items-center gap-4 rounded-xl border-2 p-5 cursor-pointer transition-all min-h-[72px] active:scale-[0.98] ${relationshipIntent === "marriage" ? "border-primary bg-primary/5 shadow-sm" : "border-border hover:border-muted-foreground/30"}`}>
                   <RadioGroupItem value="marriage" />
                   <div>
                     <p className="font-semibold text-lg">💍 Marriage</p>
