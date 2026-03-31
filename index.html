@@ -2,16 +2,27 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <!-- Google Analytics -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-YSD4Q86MPZ"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'G-YSD4Q86MPZ');
-    </script>
-    <link rel="icon" href="/favicon.png" type="image/png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="/favicon.png" type="image/png" />
+    <!-- Preconnect to critical origins -->
+    <link rel="preconnect" href="https://qxxehbdtfxbapxanqefv.supabase.co" crossorigin />
+    <link rel="dns-prefetch" href="https://qxxehbdtfxbapxanqefv.supabase.co" />
+    <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
+    <!-- Google Analytics (deferred) -->
+    <script>
+      window.addEventListener('load', function() {
+        var s = document.createElement('script');
+        s.src = 'https://www.googletagmanager.com/gtag/js?id=G-YSD4Q86MPZ';
+        s.async = true;
+        document.head.appendChild(s);
+        s.onload = function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-YSD4Q86MPZ');
+        };
+      });
+    </script>
     <meta name="author" content="MyFilipinoMatch" />
     <meta property="og:type" content="website" />
     <meta property="og:image" content="https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/017a55af-afd2-4091-a6e6-373b9e2fac21/id-preview-9d7f156a--d7e8e2e6-0b61-4c99-bb95-51ec2800fd55.lovable.app-1774621161903.png" />
