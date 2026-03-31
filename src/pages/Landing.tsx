@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Heart, Shield, Globe, MessageSquare, Star, CheckCircle, ArrowRight, UserPlus, Search, MessagesSquare, ShieldCheck, Ban, Lock, Video, Eye, BadgeCheck, Users, AlertTriangle } from "lucide-react";
 import { Link } from "react-router-dom";
 import SEO from "@/components/SEO";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -18,6 +19,15 @@ import sofiaPhoto from "@/assets/test-profiles/sofia.jpg";
 import kenjiPhoto from "@/assets/test-profiles/kenji.jpg";
 
 const heroImages = [heroCouple, heroCouple2, heroCouple3];
+
+const faqs = [
+  { question: "Is MyFilipinoMatch free to join?", answer: "Yes! Creating an account is completely free. You can set up your profile, browse verified members, and receive matches at no cost. Premium features like unlimited messaging and video calls are available with an upgrade." },
+  { question: "How does profile verification work?", answer: "Every member goes through a verification process that includes government ID upload and a live selfie check. Our moderation team manually reviews each submission to ensure profiles are authentic — no bots, no fakes." },
+  { question: "Is MyFilipinoMatch a scam site?", answer: "Absolutely not. We are a legitimate dating platform focused on genuine, long-term relationships. Unlike pay-per-message sites, we don't charge you to send individual messages or use fake operators. Our verified profiles and active moderation keep the community safe." },
+  { question: "Who is MyFilipinoMatch for?", answer: "MyFilipinoMatch is designed for foreign men seeking serious relationships with Filipino women, and for Filipinas looking to connect with international partners for long-term commitment or marriage." },
+  { question: "Can I video call my matches?", answer: "Yes! Premium members get access to in-app video calling so you can see and talk to your matches face-to-face before meeting in person — building trust and real connection." },
+  { question: "How do you keep members safe?", answer: "We invest heavily in safety: manual profile verification, an active moderation team, a report-and-block system, secure encrypted messaging, and strict community guidelines. Your privacy and security are our top priorities." },
+];
 
 const Landing = () => {
   const [currentImage, setCurrentImage] = useState(0);
@@ -52,6 +62,18 @@ const Landing = () => {
               target: "https://myfilipinomatch.lovable.app/discover?q={search_term_string}",
               "query-input": "required name=search_term_string",
             },
+          },
+          {
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            mainEntity: faqs.map((faq) => ({
+              "@type": "Question",
+              name: faq.question,
+              acceptedAnswer: {
+                "@type": "Answer",
+                text: faq.answer,
+              },
+            })),
           },
         ]}
       />
@@ -335,7 +357,32 @@ const Landing = () => {
         </div>
       </section>
 
-
+      {/* ===== FAQ SECTION ===== */}
+      <section className="relative py-20 bg-background overflow-hidden">
+        <div className="absolute -bottom-20 -left-16 w-72 h-72 rounded-full bg-accent/8 blur-3xl" />
+        <div className="container relative z-10">
+          <h2 className="mb-4 text-center text-3xl font-bold md:text-4xl" style={{ fontFamily: 'var(--font-display)' }}>
+            Frequently Asked Questions
+          </h2>
+          <p className="text-center text-muted-foreground mb-12 max-w-md mx-auto">
+            Everything you need to know before getting started
+          </p>
+          <div className="mx-auto max-w-2xl">
+            <Accordion type="single" collapsible className="space-y-3">
+              {faqs.map((faq, i) => (
+                <AccordionItem key={i} value={`faq-${i}`} className="rounded-2xl border border-border bg-card px-6 shadow-card data-[state=open]:shadow-card-hover transition-shadow">
+                  <AccordionTrigger className="text-left text-sm font-semibold text-foreground hover:no-underline py-5">
+                    {faq.question}
+                  </AccordionTrigger>
+                  <AccordionContent className="text-sm text-muted-foreground leading-relaxed pb-5">
+                    {faq.answer}
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
+          </div>
+        </div>
+      </section>
 
 
       {/* ===== FINAL CTA ===== */}
