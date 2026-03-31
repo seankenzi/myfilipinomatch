@@ -96,6 +96,7 @@ const App = () => {
                 <Route path="/blog" element={<Blog />} />
                 <Route path="/blog/:slug" element={<BlogPost />} />
                 <Route path="/unsubscribe" element={<Unsubscribe />} />
+                <Route path="/email-unsubscribe" element={<EmailUnsubscribe />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
               </Suspense>
