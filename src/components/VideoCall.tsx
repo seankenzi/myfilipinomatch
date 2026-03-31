@@ -11,6 +11,7 @@ interface VideoCallProps {
   otherUserName: string;
   open: boolean;
   onClose: () => void;
+  joinRoomUrl?: string; // If provided, skip room creation and join directly
 }
 
 const formatTime = (totalSeconds: number) => {
