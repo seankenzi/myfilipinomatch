@@ -652,7 +652,7 @@ const Discover = () => {
                         <button
                           key={opt.value}
                           onClick={() => setFilterGender(opt.value)}
-                          className={`flex-1 rounded-lg py-2 text-xs font-medium transition-all ${
+                          className={`flex-1 rounded-lg py-2.5 text-xs font-medium transition-all min-h-[44px] ${
                             filterGender === opt.value
                               ? "bg-primary text-primary-foreground shadow-sm"
                               : "bg-muted text-muted-foreground hover:text-foreground"
