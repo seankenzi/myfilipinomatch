@@ -292,6 +292,49 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
     closeUi();
   }, [endSession, closeUi, matchId]);
 
+  // Start timer only when a second participant joins (call is truly established)
+  useEffect(() => {
+    if (!open || !roomUrl) return;
+
+    const handleDailyMessage = (event: MessageEvent) => {
+      if (typeof event.data !== "object" || !event.data?.action) return;
+      const action = event.data.action as string;
+
+      // "participant-joined" fires when the OTHER person joins the room
+      if (action === "participant-joined" && !event.data?.participant?.local) {
+        if (callEstablished) return;
+        setCallEstablished(true);
+        callStartTimeRef.current = Date.now();
+        setElapsedSeconds(0);
+
+        if (timerRef.current) clearInterval(timerRef.current);
+        const maxSeconds = remainingSecondsRef.current;
+        timerRef.current = setInterval(() => {
+          setElapsedSeconds((prev) => {
+            const next = prev + 1;
+            if (next >= maxSeconds) {
+              handleClose();
+              toast({
+                title: "Time's up!",
+                description: "You've used your 2 free video call hours this month.",
+              });
+            }
+            if (maxSeconds - next === 300) {
+              toast({
+                title: "⏰ 5 minutes remaining",
+                description: "Your monthly video call time is almost up.",
+              });
+            }
+            return next;
+          });
+        }, 1000);
+      }
+    };
+
+    window.addEventListener("message", handleDailyMessage);
+    return () => window.removeEventListener("message", handleDailyMessage);
+  }, [open, roomUrl, callEstablished, toast, handleClose]);
+
   // Monitor connection health via Daily postMessage events & online status
   useEffect(() => {
     if (!open || !roomUrl) return;
