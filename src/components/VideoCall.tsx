@@ -187,8 +187,10 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
           const status = (payload.new as any).status;
           if (status === "missed") {
             toast({ title: "No answer", description: "They didn't pick up. Try again later." });
+            onClose();
           } else if (status === "declined") {
             toast({ title: "Call declined", description: "They're not available right now." });
+            onClose();
           }
         }
       )
