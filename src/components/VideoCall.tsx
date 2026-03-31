@@ -315,10 +315,80 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
     closeUi();
   }, [endSession, closeUi, matchId]);
 
+  // Monitor connection health via Daily postMessage events & online status
+  useEffect(() => {
+    if (!open || !roomUrl) return;
+
+    const handleOnline = () => {
+      if (!connectionLost) return;
+      setConnectionLost(false);
+      if (reconnectTimerRef.current) {
+        clearTimeout(reconnectTimerRef.current);
+        reconnectTimerRef.current = null;
+      }
+      toast({ title: "Reconnected", description: "Your connection has been restored." });
+    };
+
+    const handleOffline = () => {
+      if (isClosingRef.current) return;
+      setConnectionLost(true);
+      toast({
+        title: "Connection lost",
+        description: "Trying to reconnect… The call will end if connection isn't restored in 30 seconds.",
+        variant: "destructive",
+      });
+      reconnectTimerRef.current = setTimeout(() => {
+        if (isClosingRef.current) return;
+        isClosingRef.current = true;
+        void endSession();
+        closeUi({
+          title: "Call disconnected",
+          description: "The connection couldn't be restored. Please try calling again.",
+        });
+      }, RECONNECT_TIMEOUT_MS);
+    };
+
+    // Listen for Daily iframe error events
+    const handleMessage = (event: MessageEvent) => {
+      if (typeof event.data !== "object" || !event.data?.action) return;
+      const action = event.data.action as string;
+
+      if (action === "error" || action === "network-connection") {
+        if (event.data?.errorMsg?.includes("disconnected") || event.data?.type === "disconnected") {
+          handleOffline();
+        } else if (event.data?.type === "connected") {
+          handleOnline();
+        }
+      }
+
+      // Daily sends "left-meeting" when participant is kicked/disconnected
+      if (action === "left-meeting" && !isClosingRef.current) {
+        isClosingRef.current = true;
+        void endSession();
+        closeUi({ title: "Call ended", description: "You were disconnected from the call." });
+      }
+    };
+
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+    window.addEventListener("message", handleMessage);
+
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+      window.removeEventListener("message", handleMessage);
+      if (reconnectTimerRef.current) {
+        clearTimeout(reconnectTimerRef.current);
+        reconnectTimerRef.current = null;
+      }
+    };
+  }, [open, roomUrl, connectionLost, endSession, closeUi, toast]);
+
   // Cleanup on unmount
   useEffect(() => {
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
+      if (reconnectTimerRef.current) clearTimeout(reconnectTimerRef.current);
     };
   }, []);
 
