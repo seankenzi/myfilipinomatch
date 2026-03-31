@@ -809,7 +809,7 @@ const Discover = () => {
 
           {/* Status bar: daily likes + boost */}
           <div className="mb-4 flex items-center gap-2 flex-wrap">
-            <div className="flex items-center gap-2 rounded-xl bg-secondary/5 px-3 py-2 flex-1 min-w-0">
+            <div className="flex items-center gap-2 rounded-xl bg-secondary/5 px-3 py-2.5 flex-1 min-w-0 min-h-[44px]">
               <Shield className="h-4 w-4 text-secondary flex-shrink-0" />
               <p className="text-[11px] text-secondary font-medium truncate">
                 All profiles are reviewed for authenticity.
@@ -817,7 +817,7 @@ const Discover = () => {
             </div>
             {!isPremium && (
               <div className="flex flex-col items-end gap-0.5">
-                <div className="flex items-center gap-1.5 rounded-xl border border-border bg-card px-3 py-2 text-xs shadow-card">
+                <div className="flex items-center gap-1.5 rounded-xl border border-border bg-card px-3 py-2.5 text-xs shadow-card min-h-[44px]">
                   <Heart className="h-3.5 w-3.5 text-primary" />
                   <span className="font-semibold text-foreground">{dailyLikesRemaining}</span>
                   <span className="text-muted-foreground">likes left</span>
@@ -826,7 +826,7 @@ const Discover = () => {
             )}
             <button
               onClick={handleBoostProfile}
-              className={`flex items-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-medium shadow-card transition-all ${
+              className={`flex items-center gap-1.5 rounded-xl border px-3 py-2.5 text-xs font-medium shadow-card transition-all min-h-[44px] active:scale-95 ${
                 isBoosted
                   ? "border-accent bg-accent/10 text-accent"
                   : "border-border bg-card text-muted-foreground hover:border-accent/30 hover:text-accent"
