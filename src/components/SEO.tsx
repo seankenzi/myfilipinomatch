@@ -26,7 +26,7 @@ const SEO = ({
   noIndex = false,
   jsonLd,
 }: SEOProps) => {
-  const fullTitle = title ? `${title} | ${SITE_NAME}` : `${SITE_NAME} — Find Your Filipino Soulmate`;
+  const fullTitle = title ? `${title} | ${SITE_NAME}` : `${SITE_NAME} — Real Verified Profiles, No Fake Accounts`;
   const canonicalUrl = canonical ? `${BASE_URL}${canonical}` : undefined;
 
   return (
