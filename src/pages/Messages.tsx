@@ -633,16 +633,16 @@ const Messages = () => {
                 <div className="flex items-center gap-1">
                   <button
                     onClick={() => setVideoCallOpen(true)}
-                    className="rounded-full p-2.5 hover:bg-primary/10 transition-colors"
+                    className="rounded-full p-2.5 hover:bg-primary/10 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
                     title="Video Call"
                   >
-                    <Video className="h-[18px] w-[18px] text-primary" />
+                    <Video className="h-5 w-5 text-primary" />
                   </button>
 
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <button className="rounded-full p-2.5 hover:bg-muted transition-colors">
-                        <MoreVertical className="h-[18px] w-[18px] text-muted-foreground" />
+                      <button className="rounded-full p-2.5 hover:bg-muted transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center">
+                        <MoreVertical className="h-5 w-5 text-muted-foreground" />
                       </button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-44">
