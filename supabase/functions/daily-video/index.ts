@@ -150,15 +150,53 @@ Deno.serve(async (req) => {
 
       let { session_id, duration_seconds } = parsed.data;
 
+      const { data: existingSession, error: sessionLookupError } = await supabaseAdmin
+        .from("video_call_sessions")
+        .select("started_at, ended_at")
+        .eq("id", session_id)
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      if (sessionLookupError) {
+        console.error("Error loading session before ending:", sessionLookupError);
+        return new Response(JSON.stringify({ error: "Failed to load session" }), {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      if (!existingSession?.started_at) {
+        return new Response(JSON.stringify({ error: "Session not found" }), {
+          status: 404,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      // Keep the first ended_at we ever recorded (if already ended)
+      const finalizedEndedAt = existingSession.ended_at ?? new Date().toISOString();
+
+      const actualSeconds = Math.max(
+        0,
+        Math.floor(
+          (new Date(finalizedEndedAt).getTime() - new Date(existingSession.started_at).getTime()) /
+            1000
+        )
+      );
+
       // Safety cap: duration can never exceed 2 hours (7200s)
       if (duration_seconds > 7200) {
         duration_seconds = 7200;
       }
 
+      // Guard against corrupted client values (e.g. unix timestamp treated as duration)
+      // Allow up to 2 minutes drift between client-reported duration and DB timestamps.
+      const maxReasonableSeconds = Math.min(7200, actualSeconds + 120);
+      duration_seconds = Math.max(0, Math.min(duration_seconds, maxReasonableSeconds));
+
       const { error: updateError } = await supabaseAdmin
         .from("video_call_sessions")
         .update({
-          ended_at: new Date().toISOString(),
+          ended_at: finalizedEndedAt,
           duration_seconds,
         })
         .eq("id", session_id)
