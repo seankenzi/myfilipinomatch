@@ -89,6 +89,8 @@ const Landing = () => {
             }`}
             width={1920}
             height={1080}
+            fetchPriority={i === 0 ? "high" : "low"}
+            loading={i === 0 ? "eager" : "lazy"}
           />
         ))}
         <div className="absolute inset-0 bg-gradient-to-r from-foreground/75 via-foreground/55 to-foreground/30" />

@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
@@ -7,38 +8,47 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Footer from "@/components/Footer";
-import VideoBanner from "@/components/VideoBanner";
-import { useAuth } from "@/contexts/AuthContext";
-import Index from "./pages/Index.tsx";
-import Login from "./pages/Login.tsx";
-import Signup from "./pages/Signup.tsx";
-import Discover from "./pages/Discover.tsx";
-import Matches from "./pages/Matches.tsx";
-import Messages from "./pages/Messages.tsx";
-import Profile from "./pages/Profile.tsx";
-import ProfileDetail from "./pages/ProfileDetail.tsx";
-import Onboarding from "./pages/Onboarding.tsx";
-import Settings from "./pages/Settings.tsx";
-import About from "./pages/About.tsx";
-import Safety from "./pages/Safety.tsx";
-import Privacy from "./pages/Privacy.tsx";
-import Terms from "./pages/Terms.tsx";
-import Support from "./pages/Support.tsx";
-import Verification from "./pages/Verification.tsx";
-import AdminVerifications from "./pages/AdminVerifications.tsx";
-import AdminDashboard from "./pages/AdminDashboard.tsx";
 import AdminRoute from "@/components/AdminRoute";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import ScrollToTop from "@/components/ScrollToTop";
-import Premium from "./pages/Premium.tsx";
-import Notifications from "./pages/Notifications.tsx";
-import WhoLikedMe from "./pages/WhoLikedMe.tsx";
-import ForgotPassword from "./pages/ForgotPassword.tsx";
-import ResetPassword from "./pages/ResetPassword.tsx";
-import NotFound from "./pages/NotFound.tsx";
-import Unsubscribe from "./pages/Unsubscribe.tsx";
+
+// Eagerly load the landing/index page for fast initial paint
+import Index from "./pages/Index.tsx";
+
+// Lazy-load all other pages to reduce initial bundle size
+const Login = lazy(() => import("./pages/Login.tsx"));
+const Signup = lazy(() => import("./pages/Signup.tsx"));
+const ForgotPassword = lazy(() => import("./pages/ForgotPassword.tsx"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword.tsx"));
+const Onboarding = lazy(() => import("./pages/Onboarding.tsx"));
+const Discover = lazy(() => import("./pages/Discover.tsx"));
+const ProfileDetail = lazy(() => import("./pages/ProfileDetail.tsx"));
+const Matches = lazy(() => import("./pages/Matches.tsx"));
+const Messages = lazy(() => import("./pages/Messages.tsx"));
+const Profile = lazy(() => import("./pages/Profile.tsx"));
+const Settings = lazy(() => import("./pages/Settings.tsx"));
+const Verification = lazy(() => import("./pages/Verification.tsx"));
+const AdminVerifications = lazy(() => import("./pages/AdminVerifications.tsx"));
+const AdminDashboard = lazy(() => import("./pages/AdminDashboard.tsx"));
+const Premium = lazy(() => import("./pages/Premium.tsx"));
+const Notifications = lazy(() => import("./pages/Notifications.tsx"));
+const WhoLikedMe = lazy(() => import("./pages/WhoLikedMe.tsx"));
+const About = lazy(() => import("./pages/About.tsx"));
+const Safety = lazy(() => import("./pages/Safety.tsx"));
+const Privacy = lazy(() => import("./pages/Privacy.tsx"));
+const Terms = lazy(() => import("./pages/Terms.tsx"));
+const Support = lazy(() => import("./pages/Support.tsx"));
+const Unsubscribe = lazy(() => import("./pages/Unsubscribe.tsx"));
+const NotFound = lazy(() => import("./pages/NotFound.tsx"));
+const Blog = lazy(() => import("./pages/Blog.tsx"));
 
 const queryClient = new QueryClient();
+
+const LazyFallback = () => (
+  <div className="flex min-h-[50vh] items-center justify-center">
+    <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+  </div>
+);
 
 const App = () => (
   <HelmetProvider>
@@ -53,6 +63,7 @@ const App = () => (
             
             <div className="flex-1">
               <ErrorBoundary>
+              <Suspense fallback={<LazyFallback />}>
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/login" element={<Login />} />
@@ -77,9 +88,11 @@ const App = () => (
                 <Route path="/privacy" element={<Privacy />} />
                 <Route path="/terms" element={<Terms />} />
                 <Route path="/support" element={<Support />} />
+                <Route path="/blog" element={<Blog />} />
                 <Route path="/unsubscribe" element={<Unsubscribe />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
+              </Suspense>
               </ErrorBoundary>
             </div>
             <Footer />
