@@ -588,7 +588,7 @@ const Messages = () => {
               <div className="flex items-center gap-3 px-4 py-3 border-b border-border bg-card shadow-sm">
                 <button
                   onClick={() => setSelectedMatch(null)}
-                  className="md:hidden rounded-full p-2 hover:bg-muted transition-colors"
+                  className="md:hidden rounded-full p-2.5 hover:bg-muted transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
                 >
                   <ArrowLeft className="h-5 w-5 text-foreground" />
                 </button>
