@@ -479,7 +479,7 @@ const Onboarding = () => {
                       <button
                         key={interest}
                         onClick={() => toggleInterest(interest)}
-                        className={`rounded-full border-2 px-3 py-1.5 text-sm font-medium transition-all ${
+                        className={`rounded-full border-2 px-3.5 py-2 text-sm font-medium transition-all min-h-[44px] active:scale-95 ${
                           interests.includes(interest)
                             ? "border-primary bg-primary/10 text-primary shadow-sm"
                             : "border-border hover:border-muted-foreground/30"
