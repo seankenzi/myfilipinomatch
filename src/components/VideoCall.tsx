@@ -192,19 +192,33 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
     }
   }, [open]);
 
-  const handleClose = useCallback(() => {
+  const handleClose = useCallback(async () => {
     if (timerRef.current) {
       clearInterval(timerRef.current);
       timerRef.current = null;
     }
     endSession();
+    // Clean up call signal
+    try {
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
+      if (currentUser) {
+        await supabase
+          .from("video_call_signals")
+          .update({ status: "ended", updated_at: new Date().toISOString() })
+          .eq("match_id", matchId)
+          .or(`caller_id.eq.${currentUser.id},callee_id.eq.${currentUser.id}`)
+          .eq("status", "ringing");
+      }
+    } catch {
+      // Best effort cleanup
+    }
     setRoomUrl(null);
     setError(null);
     setNeedsUpgrade(false);
     setLimitReached(false);
     setElapsedSeconds(0);
     onClose();
-  }, [endSession, onClose]);
+  }, [endSession, onClose, matchId]);
 
   // Cleanup on unmount
   useEffect(() => {
