@@ -105,7 +105,7 @@ const BlogPost = () => {
           publisher: {
             "@type": "Organization",
             name: "MyFilipinoMatch",
-            url: "https://myfilipinomatch.lovable.app",
+            url: "https://www.myfilipinomatch.com",
           },
         }}
       />

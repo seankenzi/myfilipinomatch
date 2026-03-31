@@ -20,11 +20,11 @@ const Blog = () => {
           name: "MyFilipinoMatch Blog",
           description:
             "Expert advice on international dating, Filipino culture, relationship tips, and online safety.",
-          url: "https://myfilipinomatch.lovable.app/blog",
+          url: "https://www.myfilipinomatch.com/blog",
           publisher: {
             "@type": "Organization",
             name: "MyFilipinoMatch",
-            url: "https://myfilipinomatch.lovable.app",
+            url: "https://www.myfilipinomatch.com",
           },
           blogPost: blogPosts.map((post) => ({
             "@type": "BlogPosting",
