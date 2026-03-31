@@ -346,15 +346,13 @@ Deno.serve(async (req) => {
       .eq("match_id", match_id)
       .in("status", ["ringing", "missed", "declined", "ended"]);
 
-    const fullRoomUrl = `${roomUrl}?t=${tokenData.token}`;
-
     await supabaseAdmin
       .from("video_call_signals")
       .insert({
         match_id,
         caller_id: user.id,
         callee_id: calleeId,
-        room_url: fullRoomUrl,
+        room_url: roomUrl,
         status: "ringing",
       });
 
