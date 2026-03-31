@@ -12,7 +12,7 @@ interface SEOProps {
 
 const SITE_NAME = "MyFilipinoMatch";
 const DEFAULT_DESCRIPTION =
-  "The most trusted international dating platform connecting foreigners with Filipino singles for serious, long-term relationships and marriage.";
+  "MyFilipinoMatch is a trusted dating platform with verified Filipina profiles — no fake accounts. Meet real Filipino singles for serious relationships and marriage.";
 const DEFAULT_IMAGE =
   "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/017a55af-afd2-4091-a6e6-373b9e2fac21/id-preview-9d7f156a--d7e8e2e6-0b61-4c99-bb95-51ec2800fd55.lovable.app-1774621161903.png";
 const BASE_URL = "https://myfilipinomatch.lovable.app";
@@ -26,7 +26,7 @@ const SEO = ({
   noIndex = false,
   jsonLd,
 }: SEOProps) => {
-  const fullTitle = title ? `${title} | ${SITE_NAME}` : `${SITE_NAME} — Find Your Filipino Soulmate`;
+  const fullTitle = title ? `${title} | ${SITE_NAME}` : `${SITE_NAME} — Real Verified Profiles, No Fake Accounts`;
   const canonicalUrl = canonical ? `${BASE_URL}${canonical}` : undefined;
 
   return (
