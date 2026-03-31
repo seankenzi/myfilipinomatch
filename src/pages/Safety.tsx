@@ -5,6 +5,11 @@ import { Shield, Eye, Lock, AlertTriangle, CheckCircle } from "lucide-react";
 const Safety = () => {
   return (
     <div className="flex min-h-screen flex-col bg-background">
+      <SEO
+        title="Safety Center"
+        description="Your safety is our priority. Learn how MyFilipinoMatch protects members with profile verification, moderation, and secure messaging."
+        canonical="/safety"
+      />
       <Navbar />
       <main className="flex-1 px-4 py-12 pb-24 md:pb-12">
         <div className="mx-auto max-w-3xl">

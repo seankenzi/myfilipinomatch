@@ -5,6 +5,11 @@ import { Heart, Users, Award, Globe } from "lucide-react";
 const About = () => {
   return (
     <div className="flex min-h-screen flex-col bg-background">
+      <SEO
+        title="About Us"
+        description="Learn about MyFilipinoMatch — a trusted dating platform connecting foreigners with verified Filipino singles for genuine, lasting relationships."
+        canonical="/about"
+      />
       <Navbar />
       <main className="flex-1 px-4 py-12 pb-24 md:pb-12">
         <div className="mx-auto max-w-3xl">
