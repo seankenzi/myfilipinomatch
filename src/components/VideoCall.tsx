@@ -81,6 +81,22 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
         return;
       }
 
+      // If joining an existing room (accepted incoming call), skip edge function
+      if (joinRoomUrl) {
+        setRoomUrl(joinRoomUrl);
+        setRemainingSeconds(7200);
+        setElapsedSeconds(0);
+        callStartTimeRef.current = Date.now();
+
+        if (timerRef.current) clearInterval(timerRef.current);
+        timerRef.current = setInterval(() => {
+          setElapsedSeconds((prev) => prev + 1);
+        }, 1000);
+
+        setLoading(false);
+        return;
+      }
+
       const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
       const res = await fetch(
         `https://${projectId}.supabase.co/functions/v1/daily-video`,
@@ -118,12 +134,36 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
       setElapsedSeconds(0);
       callStartTimeRef.current = Date.now();
 
+      // Create a call signal for the other user
+      try {
+        // Find the other user in this match
+        const { data: matchData } = await supabase
+          .from("matches")
+          .select("user1_id, user2_id")
+          .eq("id", matchId)
+          .single();
+
+        if (matchData && sessionData?.session?.user?.id) {
+          const callerId = sessionData.session.user.id;
+          const calleeId = matchData.user1_id === callerId ? matchData.user2_id : matchData.user1_id;
+
+          await supabase.from("video_call_signals").insert({
+            match_id: matchId,
+            caller_id: callerId,
+            callee_id: calleeId,
+            room_url: `${data.room_url}?t=${data.token}`,
+            status: "ringing",
+          });
+        }
+      } catch {
+        // Signal creation is best-effort
+      }
+
       // Start countdown timer
       if (timerRef.current) clearInterval(timerRef.current);
       timerRef.current = setInterval(() => {
         setElapsedSeconds((prev) => {
           const next = prev + 1;
-          // Auto-end call when time runs out
           if (next >= (data.remaining_seconds || 7200)) {
             handleClose();
             toast({
@@ -131,7 +171,6 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
               description: "You've used your 2 free video call hours this month.",
             });
           }
-          // Warn at 5 minutes remaining
           if ((data.remaining_seconds || 7200) - next === 300) {
             toast({
               title: "⏰ 5 minutes remaining",
