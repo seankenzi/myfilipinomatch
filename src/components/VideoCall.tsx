@@ -39,6 +39,9 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const callStartTimeRef = useRef<number>(0);
   const isClosingRef = useRef(false);
+  const [connectionLost, setConnectionLost] = useState(false);
+  const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const RECONNECT_TIMEOUT_MS = 30000; // 30s before giving up
 
   const closeUi = useCallback(
     (toastMessage?: { title: string; description?: string }) => {
