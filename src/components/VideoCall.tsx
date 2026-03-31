@@ -218,21 +218,36 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
       clearInterval(timerRef.current);
       timerRef.current = null;
     }
-    endSession();
-    // Clean up call signal
+
+    // Update signal to "ended" FIRST so the other participant gets notified
     try {
       const { data: { user: currentUser } } = await supabase.auth.getUser();
       if (currentUser) {
-        await supabase
+        // Find the active signal for this match
+        const { data: signals } = await supabase
           .from("video_call_signals")
-          .update({ status: "ended", updated_at: new Date().toISOString() })
+          .select("id")
           .eq("match_id", matchId)
           .or(`caller_id.eq.${currentUser.id},callee_id.eq.${currentUser.id}`)
           .in("status", ["ringing", "accepted"]);
+
+        if (signals && signals.length > 0) {
+          // Update each signal individually to ensure it works
+          for (const signal of signals) {
+            await supabase
+              .from("video_call_signals")
+              .update({ status: "ended", updated_at: new Date().toISOString() })
+              .eq("id", signal.id);
+          }
+        }
       }
-    } catch {
-      // Best effort cleanup
+    } catch (e) {
+      console.error("Error updating call signal:", e);
     }
+
+    // End session tracking after signal update
+    await endSession();
+
     setRoomUrl(null);
     setError(null);
     setNeedsUpgrade(false);
