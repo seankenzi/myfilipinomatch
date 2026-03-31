@@ -4,7 +4,7 @@ import {
   Users, Heart, MessageSquare, Shield, CreditCard, TrendingUp,
   BarChart3, ArrowLeft, Search, Ban, CheckCircle, XCircle,
   Clock, Eye, Star, AlertTriangle, RefreshCw, ToggleLeft, ToggleRight,
-  Plus, Trash2, Bug
+  Plus, Trash2, Bug, Video
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -856,6 +856,149 @@ const CrashLogsTab = () => {
   );
 };
 
+// ─── Video Usage Tab ───
+const VideoUsageTab = () => {
+  const [rows, setRows] = useState<any[]>([]);
+  const [anomalies, setAnomalies] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchData = async () => {
+    setLoading(true);
+
+    // 1) Per-user monthly totals
+    const { data: sessions } = await supabase
+      .from("video_call_sessions")
+      .select("user_id, started_at, ended_at, duration_seconds")
+      .gte("started_at", new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString())
+      .order("started_at", { ascending: false });
+
+    if (!sessions) { setLoading(false); return; }
+
+    // aggregate per user
+    const userMap = new Map<string, { total: number; sessions: number }>();
+    const anomalyList: any[] = [];
+
+    for (const s of sessions) {
+      const elapsed = s.ended_at
+        ? Math.max(0, Math.floor((new Date(s.ended_at).getTime() - new Date(s.started_at).getTime()) / 1000))
+        : null;
+      const effective = s.duration_seconds ?? elapsed ?? 0;
+
+      const prev = userMap.get(s.user_id) ?? { total: 0, sessions: 0 };
+      userMap.set(s.user_id, { total: prev.total + effective, sessions: prev.sessions + 1 });
+
+      // Flag anomalies:
+      // 1. duration_seconds wildly exceeds actual elapsed (>2 min gap)
+      const isInflated = s.duration_seconds != null && elapsed != null && s.duration_seconds > elapsed + 120;
+      // 2. Orphaned: no ended_at at all and older than 10 minutes
+      const isOrphaned = !s.ended_at && (Date.now() - new Date(s.started_at).getTime()) > 600_000;
+
+      if (isInflated || isOrphaned) {
+        anomalyList.push({
+          ...s,
+          elapsed,
+          flag: isInflated ? "Inflated duration" : "Orphaned session",
+        });
+      }
+    }
+
+    // Fetch profile names
+    const userIds = [...userMap.keys()];
+    const { data: profiles } = await supabase
+      .from("profiles")
+      .select("id, full_name")
+      .in("id", userIds);
+    const nameMap = new Map((profiles || []).map((p: any) => [p.id, p.full_name]));
+
+    const aggregated = [...userMap.entries()]
+      .map(([uid, d]) => ({ user_id: uid, name: nameMap.get(uid) || uid.slice(0, 8), ...d }))
+      .sort((a, b) => b.total - a.total);
+
+    setRows(aggregated);
+    setAnomalies(anomalyList.map(a => ({ ...a, name: nameMap.get(a.user_id) || a.user_id.slice(0, 8) })));
+    setLoading(false);
+  };
+
+  useEffect(() => { fetchData(); }, []);
+
+  const fmt = (sec: number) => {
+    const m = Math.floor(sec / 60);
+    const s = sec % 60;
+    return `${m}m ${s}s`;
+  };
+
+  if (loading) return <div className="flex justify-center py-20"><div className="h-6 w-6 animate-spin rounded-full border-4 border-primary border-t-transparent" /></div>;
+
+  return (
+    <div className="space-y-8">
+      {/* Anomalies */}
+      {anomalies.length > 0 && (
+        <div>
+          <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+            <AlertTriangle className="h-5 w-5 text-destructive" /> Anomalous Sessions ({anomalies.length})
+          </h3>
+          <div className="space-y-2">
+            {anomalies.map((a, i) => (
+              <div key={i} className="rounded-xl border border-destructive/30 bg-destructive/5 p-4 flex items-center gap-4 text-sm">
+                <div className="flex-1 space-y-0.5">
+                  <p className="font-medium">{a.name}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {format(new Date(a.started_at), "MMM d h:mm a")} ·
+                    Recorded: {a.duration_seconds != null ? fmt(a.duration_seconds) : "—"} ·
+                    Actual: {a.elapsed != null ? fmt(a.elapsed) : "—"}
+                  </p>
+                </div>
+                <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-destructive/10 text-destructive whitespace-nowrap">{a.flag}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Per-user usage table */}
+      <div>
+        <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+          <Video className="h-5 w-5 text-primary" /> Monthly Usage by User
+        </h3>
+        <div className="rounded-xl border border-border overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-muted/50">
+                <tr>
+                  <th className="text-left p-3 font-medium text-muted-foreground">User</th>
+                  <th className="text-right p-3 font-medium text-muted-foreground">Sessions</th>
+                  <th className="text-right p-3 font-medium text-muted-foreground">Total Used</th>
+                  <th className="text-right p-3 font-medium text-muted-foreground">% of 2 hr</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {rows.map((r) => {
+                  const pct = Math.min(100, Math.round((r.total / 7200) * 100));
+                  return (
+                    <tr key={r.user_id} className="hover:bg-muted/30 transition-colors">
+                      <td className="p-3 font-medium truncate max-w-[200px]">{r.name}</td>
+                      <td className="p-3 text-right text-muted-foreground">{r.sessions}</td>
+                      <td className="p-3 text-right">{fmt(r.total)}</td>
+                      <td className="p-3 text-right">
+                        <span className={`font-medium ${pct >= 90 ? "text-destructive" : pct >= 70 ? "text-accent" : "text-foreground"}`}>
+                          {pct}%
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+          {rows.length === 0 && (
+            <div className="p-10 text-center text-muted-foreground">No video call sessions this month.</div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // ─── Main Admin Dashboard ───
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -881,12 +1024,13 @@ const AdminDashboard = () => {
           </div>
 
           <Tabs defaultValue="dashboard" className="space-y-6" onValueChange={(v) => { if (v === "subscriptions") setSubsRefreshKey(k => k + 1); }}>
-            <TabsList className="grid w-full grid-cols-6 max-w-3xl">
+            <TabsList className="grid w-full grid-cols-7 max-w-4xl">
               <TabsTrigger value="dashboard" className="text-xs"><TrendingUp className="h-3.5 w-3.5 mr-1" /> Overview</TabsTrigger>
               <TabsTrigger value="users" className="text-xs"><Users className="h-3.5 w-3.5 mr-1" /> Users</TabsTrigger>
               <TabsTrigger value="moderation" className="text-xs"><Shield className="h-3.5 w-3.5 mr-1" /> Moderation</TabsTrigger>
               <TabsTrigger value="subscriptions" className="text-xs"><CreditCard className="h-3.5 w-3.5 mr-1" /> Subs</TabsTrigger>
               <TabsTrigger value="features" className="text-xs"><ToggleRight className="h-3.5 w-3.5 mr-1" /> Features</TabsTrigger>
+              <TabsTrigger value="video" className="text-xs"><Video className="h-3.5 w-3.5 mr-1" /> Video</TabsTrigger>
               <TabsTrigger value="crashes" className="text-xs"><Bug className="h-3.5 w-3.5 mr-1" /> Crashes</TabsTrigger>
             </TabsList>
 
@@ -895,6 +1039,7 @@ const AdminDashboard = () => {
             <TabsContent value="moderation"><ModerationTab /></TabsContent>
             <TabsContent value="subscriptions"><SubscriptionsTab refreshKey={subsRefreshKey} /></TabsContent>
             <TabsContent value="features"><FeatureFlagsTab /></TabsContent>
+            <TabsContent value="video"><VideoUsageTab /></TabsContent>
             <TabsContent value="crashes"><CrashLogsTab /></TabsContent>
           </Tabs>
         </div>
