@@ -31,7 +31,7 @@ const ProfileLikedEmail = ({ likerName }: ProfileLikedProps) => (
           Could this be the start of something special? Check out who liked you
           and see if you feel the same way.
         </Text>
-        <Button style={button} href="https://myfilipinomatch.lovable.app/who-liked-me">
+        <Button style={button} href="https://www.myfilipinomatch.com/who-liked-me">
           See Who Liked You
         </Button>
         <Text style={footer}>

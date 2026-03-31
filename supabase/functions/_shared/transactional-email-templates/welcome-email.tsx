@@ -34,7 +34,7 @@ const WelcomeEmail = ({ name }: WelcomeEmailProps) => (
           2. Tell us about yourself and what you're looking for{'\n'}
           3. Start browsing and connecting with amazing people
         </Text>
-        <Button style={button} href="https://myfilipinomatch.lovable.app/discover">
+        <Button style={button} href="https://www.myfilipinomatch.com/discover">
           Start Exploring
         </Button>
         <Text style={footer}>

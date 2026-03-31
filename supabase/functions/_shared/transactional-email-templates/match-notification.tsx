@@ -25,7 +25,7 @@ const MatchNotificationEmail = ({ matchName }: MatchNotificationProps) => (
             ? `Great news — you and ${matchName} liked each other! Start a conversation and see where it goes.`
             : `Great news — someone you liked has liked you back! Start a conversation and see where it goes.`}
         </Text>
-        <Button style={button} href="https://myfilipinomatch.lovable.app/matches">
+        <Button style={button} href="https://www.myfilipinomatch.com/matches">
           View Your Matches
         </Button>
         <Text style={footer}>
