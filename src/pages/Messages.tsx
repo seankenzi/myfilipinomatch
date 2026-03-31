@@ -513,13 +513,13 @@ const Messages = () => {
             ) : (
               <div className="py-1">
                 {matches.map((match) => (
-                  <button
+                   <button
                     key={match.id}
                     onClick={() => setSelectedMatch(match)}
-                    className={`w-full flex items-center gap-3.5 px-5 py-3.5 transition-all text-left relative group ${
+                    className={`w-full flex items-center gap-3.5 px-5 py-4 transition-all text-left relative group min-h-[72px] ${
                       selectedMatch?.id === match.id
                         ? "bg-primary/8 border-l-[3px] border-l-primary"
-                        : "hover:bg-muted/60 border-l-[3px] border-l-transparent"
+                        : "hover:bg-muted/60 border-l-[3px] border-l-transparent active:bg-muted/80"
                     }`}
                   >
                     <div className="relative flex-shrink-0">
