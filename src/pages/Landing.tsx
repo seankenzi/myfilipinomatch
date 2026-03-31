@@ -207,7 +207,7 @@ const Landing = () => {
       </section>
 
       {/* ===== WHY FILOHEART IS DIFFERENT ===== */}
-      <section className="relative py-20 overflow-hidden" style={{ background: 'linear-gradient(135deg, hsl(350 65% 55% / 0.06), hsl(35 80% 55% / 0.08), hsl(175 40% 40% / 0.06))' }}>
+      <section className="relative py-12 md:py-20 overflow-hidden" style={{ background: 'linear-gradient(135deg, hsl(350 65% 55% / 0.06), hsl(35 80% 55% / 0.08), hsl(175 40% 40% / 0.06))' }}>
         <div className="container relative z-10">
           <h2 className="mb-4 text-center text-3xl font-bold md:text-4xl" style={{ fontFamily: 'var(--font-display)' }}>
             Why <span className="text-gradient">MyFilipinoMatch</span> Is Different
