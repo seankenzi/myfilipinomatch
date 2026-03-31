@@ -63,6 +63,18 @@ const Landing = () => {
               "query-input": "required name=search_term_string",
             },
           },
+          {
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            mainEntity: faqs.map((faq) => ({
+              "@type": "Question",
+              name: faq.question,
+              acceptedAnswer: {
+                "@type": "Answer",
+                text: faq.answer,
+              },
+            })),
+          },
         ]}
       />
       {/* ===== HERO SECTION ===== */}
