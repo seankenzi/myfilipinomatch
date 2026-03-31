@@ -42,7 +42,14 @@ const Settings = () => {
       setSubscription(data);
       setLoadingSub(false);
     };
+    const fetchVideoUsage = async () => {
+      if (!user) return;
+      const { data, error } = await supabase.rpc("get_monthly_video_usage", { p_user_id: user.id });
+      if (!error && data !== null) setVideoUsedSeconds(data as number);
+      setLoadingVideo(false);
+    };
     fetchSubscription();
+    fetchVideoUsage();
   }, [user]);
 
   const handleChangePassword = async () => {
