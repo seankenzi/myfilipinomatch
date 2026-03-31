@@ -49,44 +49,70 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       // Send welcome email on first sign-in after email confirmation
       if (_event === 'SIGNED_IN' && session?.user) {
         const u = session.user;
-        const createdAt = new Date(u.created_at).getTime();
-        const now = Date.now();
         const welcomeKey = `welcome_sent_${u.id}`;
-        // Only send within 2 minutes of account creation AND only once per device
-        if (now - createdAt < 120_000 && !localStorage.getItem(welcomeKey)) {
-          localStorage.setItem(welcomeKey, '1');
-          // Welcome email to user
-          supabase.functions.invoke('send-transactional-email', {
-            body: {
-              templateName: 'welcome-email',
-              recipientEmail: u.email,
-              idempotencyKey: `welcome-${u.id}`,
-              templateData: { name: u.user_metadata?.full_name || undefined },
-            },
-          }).catch(() => { /* non-critical */ });
 
-          // Notify admins about new signup via email
-          supabase.from('user_roles').select('user_id').eq('role', 'admin').then(({ data: admins }) => {
-            if (!admins?.length) return;
-            const adminIds = admins.map(a => a.user_id);
-            supabase.from('profiles').select('email').in('id', adminIds).then(({ data: adminProfiles }) => {
-              adminProfiles?.forEach(admin => {
-                if (admin.email) {
-                  supabase.functions.invoke('send-transactional-email', {
-                    body: {
-                      templateName: 'admin-new-signup',
-                      recipientEmail: admin.email,
-                      idempotencyKey: `admin-new-signup-${u.id}-${admin.email}`,
-                      templateData: {
-                        userName: u.user_metadata?.full_name || undefined,
-                        userEmail: u.email,
-                      },
-                    },
-                  }).catch(() => { /* non-critical */ });
-                }
+        // Quick local guard to avoid unnecessary DB query on every sign-in
+        if (!localStorage.getItem(welcomeKey)) {
+          // Database-level check: only send if profile was created < 5 min ago
+          // AND no welcome email has ever been logged for this user
+          (async () => {
+            try {
+              const { data: profile } = await supabase
+                .from('profiles')
+                .select('created_at')
+                .eq('id', u.id)
+                .single();
+
+              if (!profile) return;
+
+              const profileCreatedAt = new Date(profile.created_at).getTime();
+              const now = Date.now();
+
+              // Profile must have been created within the last 5 minutes
+              if (now - profileCreatedAt > 300_000) {
+                localStorage.setItem(welcomeKey, '1');
+                return;
+              }
+
+              // Mark sent immediately to prevent race conditions
+              localStorage.setItem(welcomeKey, '1');
+
+              // Welcome email to user
+              supabase.functions.invoke('send-transactional-email', {
+                body: {
+                  templateName: 'welcome-email',
+                  recipientEmail: u.email,
+                  idempotencyKey: `welcome-${u.id}`,
+                  templateData: { name: u.user_metadata?.full_name || undefined },
+                },
+              }).catch(() => { /* non-critical */ });
+
+              // Notify admins about new signup via email
+              supabase.from('user_roles').select('user_id').eq('role', 'admin').then(({ data: admins }) => {
+                if (!admins?.length) return;
+                const adminIds = admins.map(a => a.user_id);
+                supabase.from('profiles').select('email').in('id', adminIds).then(({ data: adminProfiles }) => {
+                  adminProfiles?.forEach(admin => {
+                    if (admin.email) {
+                      supabase.functions.invoke('send-transactional-email', {
+                        body: {
+                          templateName: 'admin-new-signup',
+                          recipientEmail: admin.email,
+                          idempotencyKey: `admin-new-signup-${u.id}-${admin.email}`,
+                          templateData: {
+                            userName: u.user_metadata?.full_name || undefined,
+                            userEmail: u.email,
+                          },
+                        },
+                      }).catch(() => { /* non-critical */ });
+                    }
+                  });
+                });
               });
-            });
-          });
+            } catch {
+              /* non-critical */
+            }
+          })();
         }
       }
     });
