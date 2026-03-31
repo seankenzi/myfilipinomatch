@@ -1173,7 +1173,7 @@ const Discover = () => {
                         </div>
 
                         {/* Quick info */}
-                        <div className="p-2.5 space-y-1.5">
+                        <div className="p-2.5 space-y-2">
                           {profile.relationship_intent && (
                             <span className="inline-block rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary">
                               {formatIntent(profile.relationship_intent)}
@@ -1183,15 +1183,15 @@ const Discover = () => {
                           {/* Action buttons */}
                           <div className="flex gap-1.5">
                             {likedIds.has(profile.id) ? (
-                              <div className="flex flex-1 items-center justify-center gap-1 rounded-lg bg-primary/20 py-1.5 text-[11px] font-medium text-primary">
-                                <Heart className="h-3 w-3 fill-primary" /> Liked
+                              <div className="flex flex-1 items-center justify-center gap-1 rounded-lg bg-primary/20 min-h-[44px] text-[11px] font-medium text-primary">
+                                <Heart className="h-3.5 w-3.5 fill-primary" /> Liked
                               </div>
                             ) : (
                               <button
                                 onClick={() => handleListLike(profile)}
-                                className="flex flex-1 items-center justify-center gap-1 rounded-lg bg-primary/10 py-1.5 text-[11px] font-medium text-primary hover:bg-primary/20 transition-colors"
+                                className="flex flex-1 items-center justify-center gap-1 rounded-lg bg-primary/10 min-h-[44px] text-[11px] font-medium text-primary hover:bg-primary/20 transition-colors active:scale-95"
                               >
-                                <Heart className="h-3 w-3" /> Like
+                                <Heart className="h-3.5 w-3.5" /> Like
                               </button>
                             )}
                             <button
@@ -1201,22 +1201,22 @@ const Discover = () => {
                                   setVideoModalOpen(true);
                                 }
                               }}
-                              className="flex items-center justify-center rounded-lg bg-secondary/10 px-2.5 py-1.5 text-secondary hover:bg-secondary/20 transition-colors"
+                              className="flex items-center justify-center rounded-lg bg-secondary/10 min-w-[44px] min-h-[44px] text-secondary hover:bg-secondary/20 transition-colors active:scale-95"
                               title="Video Call"
                             >
-                              <Video className="h-3 w-3" />
+                              <Video className="h-4 w-4" />
                             </button>
                             <button
                               onClick={() => handlePriorityLike(profile)}
-                              className="flex items-center justify-center rounded-lg bg-accent/10 px-2.5 py-1.5 text-accent hover:bg-accent/20 transition-colors"
+                              className="flex items-center justify-center rounded-lg bg-accent/10 min-w-[44px] min-h-[44px] text-accent hover:bg-accent/20 transition-colors active:scale-95"
                             >
-                              <Star className="h-3 w-3 fill-accent" />
+                              <Star className="h-4 w-4 fill-accent" />
                             </button>
                             <button
                               onClick={() => handleReport(profile)}
-                              className="flex items-center justify-center rounded-lg bg-muted px-2.5 py-1.5 text-muted-foreground hover:text-destructive transition-colors"
+                              className="flex items-center justify-center rounded-lg bg-muted min-w-[44px] min-h-[44px] text-muted-foreground hover:text-destructive transition-colors active:scale-95"
                             >
-                              <Flag className="h-3 w-3" />
+                              <Flag className="h-4 w-4" />
                             </button>
                           </div>
 
