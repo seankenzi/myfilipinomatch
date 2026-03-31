@@ -41,6 +41,7 @@ const Support = lazy(() => import("./pages/Support.tsx"));
 const Unsubscribe = lazy(() => import("./pages/Unsubscribe.tsx"));
 const NotFound = lazy(() => import("./pages/NotFound.tsx"));
 const Blog = lazy(() => import("./pages/Blog.tsx"));
+const BlogPost = lazy(() => import("./pages/BlogPost.tsx"));
 
 const queryClient = new QueryClient();
 
