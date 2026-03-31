@@ -301,7 +301,8 @@ const WhoLikedMe = () => {
                       {photoUrl ? (
                         <img
                           src={photoUrl}
-                          alt={isPremium ? liker.full_name : "Someone"}
+                          alt={isPremium ? `${liker.full_name} profile photo` : "Someone who liked your profile"}
+                          loading="lazy"
                           className={`h-full w-full object-cover transition-transform duration-300 group-hover:scale-105 ${
                             !isPremium ? "blur-lg scale-110" : ""
                           }`}

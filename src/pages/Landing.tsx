@@ -420,7 +420,7 @@ const Landing = () => {
       <section className="relative py-24 overflow-hidden">
         <img
           src={heroCouple}
-          alt=""
+          alt="Happy couple enjoying time together — MyFilipinoMatch"
           className="absolute inset-0 h-full w-full object-cover"
           loading="lazy"
           aria-hidden="true"

@@ -226,7 +226,7 @@ const UsersTab = () => {
                     <td className="p-3">
                       <div className="flex items-center gap-2">
                         <div className="h-8 w-8 rounded-full bg-muted overflow-hidden flex-shrink-0">
-                          {u.avatar_url ? <img src={u.avatar_url} className="h-full w-full object-cover" /> : <Users className="h-full w-full p-1.5 text-muted-foreground" />}
+                          {u.avatar_url ? <img src={u.avatar_url} alt={`${u.full_name || 'User'} avatar`} loading="lazy" className="h-full w-full object-cover" /> : <Users className="h-full w-full p-1.5 text-muted-foreground" />}
                         </div>
                         <span className="font-medium truncate max-w-[150px]">{u.full_name || "—"}</span>
                       </div>
@@ -333,7 +333,7 @@ const ModerationTab = () => {
             {verifications.map(v => (
               <div key={v.id} className="rounded-xl border border-border bg-card p-4 flex items-center gap-4">
                 {v.document_url && (
-                  <img src={v.document_url} className="h-14 w-14 rounded-lg object-cover border border-border" />
+                  <img src={v.document_url} alt={`Verification document for ${v.user_name}`} loading="lazy" className="h-14 w-14 rounded-lg object-cover border border-border" />
                 )}
                 <div className="flex-1">
                   <p className="font-medium text-sm">{v.user_name}</p>

@@ -1076,7 +1076,7 @@ const Discover = () => {
                       <div key={profile.id} className="flex-shrink-0 w-24 text-center">
                         <div className="relative mx-auto h-20 w-20 rounded-full overflow-hidden border-2 border-accent/30 shadow-card">
                           {getProfilePhotos(profile).length > 0 ? (
-                            <img src={getProfilePhotos(profile)[0]} alt={profile.full_name} className="h-full w-full object-cover" />
+                            <img src={getProfilePhotos(profile)[0]} alt={`${profile.full_name} profile photo`} className="h-full w-full object-cover" loading="lazy" />
                           ) : (
                             <div className="flex h-full w-full items-center justify-center bg-muted text-xl">👤</div>
                           )}
@@ -1121,7 +1121,7 @@ const Discover = () => {
                         {/* Photo */}
                         <div className="relative aspect-[3/4] cursor-pointer" onClick={() => navigate(`/profile/${profile.id}`)}>
                           {getProfilePhotos(profile).length > 0 ? (
-                            <img src={getProfilePhotos(profile)[0]} alt={profile.full_name} className="h-full w-full object-cover" />
+                            <img src={getProfilePhotos(profile)[0]} alt={`${profile.full_name} profile photo`} className="h-full w-full object-cover" loading="lazy" />
                           ) : (
                             <div className="flex h-full w-full items-center justify-center bg-muted text-3xl">👤</div>
                           )}

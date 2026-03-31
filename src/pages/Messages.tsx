@@ -526,7 +526,8 @@ const Messages = () => {
                       {getPhoto(match.other_user) ? (
                         <img
                           src={getPhoto(match.other_user)!}
-                          alt={match.other_user.full_name}
+                          alt={`${match.other_user.full_name} profile photo`}
+                          loading="lazy"
                           className="h-13 w-13 rounded-full object-cover ring-2 ring-border"
                           style={{ height: '52px', width: '52px' }}
                         />
@@ -599,7 +600,8 @@ const Messages = () => {
                     {getPhoto(selectedMatch.other_user) ? (
                       <img
                         src={getPhoto(selectedMatch.other_user)!}
-                        alt={selectedMatch.other_user.full_name}
+                        alt={`${selectedMatch.other_user.full_name} profile photo`}
+                        loading="lazy"
                         className="h-11 w-11 rounded-full object-cover ring-2 ring-primary/20 group-hover:ring-primary/40 transition-all"
                       />
                     ) : (
