@@ -16,8 +16,25 @@ const isPreviewHost =
   window.location.hostname.includes("lovableproject.com");
 
 if (isPreviewHost || isInIframe) {
-  navigator.serviceWorker?.getRegistrations().then((registrations) => {
-    registrations.forEach((r) => r.unregister());
+  const previewCleanupKey = "__lovable_preview_cache_cleared";
+
+  Promise.all([
+    navigator.serviceWorker?.getRegistrations() ?? Promise.resolve([]),
+    "caches" in window ? caches.keys() : Promise.resolve([] as string[]),
+  ]).then(async ([registrations, cacheKeys]) => {
+    await Promise.all(registrations.map((r) => r.unregister()));
+
+    if ("caches" in window) {
+      await Promise.all(cacheKeys.map((key) => caches.delete(key)));
+    }
+
+    const needsOneTimeReload = (registrations.length > 0 || cacheKeys.length > 0)
+      && !window.sessionStorage.getItem(previewCleanupKey);
+
+    if (needsOneTimeReload) {
+      window.sessionStorage.setItem(previewCleanupKey, "true");
+      window.location.reload();
+    }
   });
 }
 
