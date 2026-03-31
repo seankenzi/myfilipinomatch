@@ -431,6 +431,7 @@ const Landing = () => {
           </div>
         </div>
       </section>
+      </LazySection>
     </div>
   );
 };
