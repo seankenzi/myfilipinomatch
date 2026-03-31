@@ -1,5 +1,5 @@
 import Navbar from "@/components/Navbar";
-
+import SEO from "@/components/SEO";
 import { Heart, Users, Award, Globe } from "lucide-react";
 
 const About = () => {
