@@ -23,6 +23,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import VideoBanner from "@/components/VideoBanner";
 import VideoCallModal from "@/components/VideoCallModal";
+import VideoCall from "@/components/VideoCall";
 import { getSignedPhotoUrls } from "@/lib/storage";
 
 interface Profile {
@@ -208,6 +209,11 @@ const Discover = () => {
   // Video call modal
   const [videoModalOpen, setVideoModalOpen] = useState(false);
   const [videoModalTarget, setVideoModalTarget] = useState<string>("");
+
+  // Direct video call
+  const [videoCallOpen, setVideoCallOpen] = useState(false);
+  const [videoCallMatchId, setVideoCallMatchId] = useState<string | null>(null);
+  const [videoCallUserName, setVideoCallUserName] = useState("");
 
   // Boost
   const [isBoosted, setIsBoosted] = useState(false);
@@ -499,7 +505,27 @@ const Discover = () => {
 
     if (!user) return;
 
-    navigate(`/messages?profile=${profile.id}&openVideo=1`);
+    // Look up existing match
+    const { data: matchesData } = await supabase
+      .from("matches")
+      .select("id, user1_id, user2_id")
+      .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`);
+
+    const existingMatch = matchesData?.find((m) => {
+      const otherId = m.user1_id === user.id ? m.user2_id : m.user1_id;
+      return otherId === profile.id;
+    });
+
+    if (existingMatch) {
+      setVideoCallMatchId(existingMatch.id);
+      setVideoCallUserName(profile.full_name);
+      setVideoCallOpen(true);
+    } else {
+      toast({
+        title: "💬 Direct Message first",
+        description: `Use Direct Message ✨ to connect with ${profile.full_name.split(" ")[0]}, then you can video call.`,
+      });
+    }
   };
 
   const sendIntroMessage = async () => {
@@ -1325,6 +1351,16 @@ const Discover = () => {
         onOpenChange={setVideoModalOpen}
         userName={videoModalTarget}
       />
+
+      {/* Direct Video Call */}
+      {videoCallMatchId && (
+        <VideoCall
+          matchId={videoCallMatchId}
+          otherUserName={videoCallUserName}
+          open={videoCallOpen}
+          onClose={() => { setVideoCallOpen(false); setVideoCallMatchId(null); }}
+        />
+      )}
 
       <BottomNav />
     </div>
