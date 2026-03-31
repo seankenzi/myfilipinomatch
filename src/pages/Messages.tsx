@@ -822,7 +822,7 @@ const Messages = () => {
                         <input
                           type="text"
                           placeholder="Type a message..."
-                          className="w-full rounded-full border border-input bg-muted/30 px-5 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all placeholder:text-muted-foreground/60"
+                          className="w-full rounded-full border border-input bg-muted/30 px-5 py-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all placeholder:text-muted-foreground/60 min-h-[48px]"
                           value={newMessage}
                           onChange={(e) => { setNewMessage(e.target.value.slice(0, 1000)); broadcastTyping(); }}
                           onKeyDown={handleKeyDown}
