@@ -15,7 +15,6 @@ const IncomingCallHandler = () => {
     matchId: string;
     roomUrl: string;
     callerName: string;
-    sessionId?: string;
   } | null>(null);
 
   const handleAccept = async () => {
