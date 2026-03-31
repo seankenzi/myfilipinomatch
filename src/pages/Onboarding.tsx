@@ -255,14 +255,14 @@ const Onboarding = () => {
                 <p className="text-sm text-muted-foreground">This helps us match you with the right people</p>
               </div>
               <RadioGroup value={userType} onValueChange={setUserType} className="grid gap-3">
-                <label className={`flex items-center gap-4 rounded-xl border-2 p-5 cursor-pointer transition-all ${userType === "foreigner" ? "border-primary bg-primary/5 shadow-sm" : "border-border hover:border-muted-foreground/30"}`}>
+                <label className={`flex items-center gap-4 rounded-xl border-2 p-5 cursor-pointer transition-all min-h-[72px] active:scale-[0.98] ${userType === "foreigner" ? "border-primary bg-primary/5 shadow-sm" : "border-border hover:border-muted-foreground/30"}`}>
                   <RadioGroupItem value="foreigner" />
                   <div>
                     <p className="font-semibold text-lg">🌍 Foreigner</p>
                     <p className="text-sm text-muted-foreground">Looking to connect with someone in the Philippines</p>
                   </div>
                 </label>
-                <label className={`flex items-center gap-4 rounded-xl border-2 p-5 cursor-pointer transition-all ${userType === "philippines" ? "border-primary bg-primary/5 shadow-sm" : "border-border hover:border-muted-foreground/30"}`}>
+                <label className={`flex items-center gap-4 rounded-xl border-2 p-5 cursor-pointer transition-all min-h-[72px] active:scale-[0.98] ${userType === "philippines" ? "border-primary bg-primary/5 shadow-sm" : "border-border hover:border-muted-foreground/30"}`}>
                   <RadioGroupItem value="philippines" />
                   <div>
                     <p className="font-semibold text-lg">🇵🇭 Based in the Philippines</p>
