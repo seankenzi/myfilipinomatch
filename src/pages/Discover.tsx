@@ -970,6 +970,11 @@ const Discover = () => {
                           if (!isPremium) {
                             setVideoModalTarget(currentProfile.full_name);
                             setVideoModalOpen(true);
+                          } else {
+                            toast({
+                              title: "Match first to video call",
+                              description: `Like ${currentProfile.full_name.split(" ")[0]} and wait for a mutual match to start a video call.`,
+                            });
                           }
                         }}
                         className="flex h-12 w-12 items-center justify-center rounded-full border-2 border-secondary bg-secondary/10 shadow-card transition-all hover:shadow-card-hover hover:scale-105 active:scale-95"
@@ -1199,6 +1204,11 @@ const Discover = () => {
                                 if (!isPremium) {
                                   setVideoModalTarget(profile.full_name);
                                   setVideoModalOpen(true);
+                                } else {
+                                  toast({
+                                    title: "Match first to video call",
+                                    description: `Like ${profile.full_name.split(" ")[0]} and wait for a mutual match to start a video call.`,
+                                  });
                                 }
                               }}
                               className="flex items-center justify-center rounded-lg bg-secondary/10 min-w-[44px] min-h-[44px] text-secondary hover:bg-secondary/20 transition-colors active:scale-95"
