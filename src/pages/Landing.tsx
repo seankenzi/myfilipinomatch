@@ -166,7 +166,7 @@ const Landing = () => {
           <h2 className="mb-4 text-center text-3xl font-bold md:text-4xl" style={{ fontFamily: 'var(--font-display)' }}>
             How It Works
           </h2>
-          <p className="text-center text-muted-foreground mb-16 max-w-md mx-auto">
+          <p className="text-center text-muted-foreground mb-10 md:mb-16 max-w-md mx-auto">
             Three simple steps to finding your match
           </p>
           <div className="mx-auto max-w-4xl grid gap-10 md:grid-cols-3">
