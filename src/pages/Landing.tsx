@@ -357,7 +357,32 @@ const Landing = () => {
         </div>
       </section>
 
-
+      {/* ===== FAQ SECTION ===== */}
+      <section className="relative py-20 bg-background overflow-hidden">
+        <div className="absolute -bottom-20 -left-16 w-72 h-72 rounded-full bg-accent/8 blur-3xl" />
+        <div className="container relative z-10">
+          <h2 className="mb-4 text-center text-3xl font-bold md:text-4xl" style={{ fontFamily: 'var(--font-display)' }}>
+            Frequently Asked Questions
+          </h2>
+          <p className="text-center text-muted-foreground mb-12 max-w-md mx-auto">
+            Everything you need to know before getting started
+          </p>
+          <div className="mx-auto max-w-2xl">
+            <Accordion type="single" collapsible className="space-y-3">
+              {faqs.map((faq, i) => (
+                <AccordionItem key={i} value={`faq-${i}`} className="rounded-2xl border border-border bg-card px-6 shadow-card data-[state=open]:shadow-card-hover transition-shadow">
+                  <AccordionTrigger className="text-left text-sm font-semibold text-foreground hover:no-underline py-5">
+                    {faq.question}
+                  </AccordionTrigger>
+                  <AccordionContent className="text-sm text-muted-foreground leading-relaxed pb-5">
+                    {faq.answer}
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
+          </div>
+        </div>
+      </section>
 
 
       {/* ===== FINAL CTA ===== */}
