@@ -84,7 +84,7 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
       // If joining an existing room (accepted incoming call), skip edge function
       if (joinRoomUrl) {
         const separator = joinRoomUrl.includes("?") ? "&" : "?";
-        setRoomUrl(`${joinRoomUrl}${separator}prejoin=false&showParticipantsBar=false&showUserNameChangeUI=false&showLeaveButton=false&showFullscreenButton=false`);
+        setRoomUrl(`${joinRoomUrl}${separator}prejoin=false&showParticipantsBar=false&showUserNameChangeUI=false&showLeaveButton=false&showFullscreenButton=false&showLocalVideo=true&showChat=false&activeSpeakerMode=false`);
         setRemainingSeconds(7200);
         setElapsedSeconds(0);
         callStartTimeRef.current = Date.now();
