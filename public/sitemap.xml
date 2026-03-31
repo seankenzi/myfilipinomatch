@@ -45,4 +45,34 @@
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
+  <url>
+    <loc>https://myfilipinomatch.lovable.app/blog/how-to-spot-fake-profiles-on-dating-sites</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://myfilipinomatch.lovable.app/blog/tips-for-building-a-long-distance-relationship-with-a-filipina</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://myfilipinomatch.lovable.app/blog/understanding-filipino-culture-for-foreign-partners</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://myfilipinomatch.lovable.app/blog/why-video-calls-build-trust-in-online-dating</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://myfilipinomatch.lovable.app/blog/first-trip-to-the-philippines-what-to-expect</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://myfilipinomatch.lovable.app/blog/signs-she-is-serious-about-a-relationship</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
 </urlset>
