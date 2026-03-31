@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { VideoOff, PhoneOff, Loader2, Crown, Clock, WifiOff } from "lucide-react";
+import { VideoOff, Video, PhoneOff, Loader2, Crown, Clock, WifiOff, Mic, MicOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
@@ -44,6 +44,8 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
   const RECONNECT_TIMEOUT_MS = 30000; // 30s before giving up
   const [callEstablished, setCallEstablished] = useState(false);
   const remainingSecondsRef = useRef(7200);
+  const [isMuted, setIsMuted] = useState(false);
+  const [isCameraOff, setIsCameraOff] = useState(false);
 
   const closeUi = useCallback(
     (toastMessage?: { title: string; description?: string }) => {
@@ -64,6 +66,8 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
       setLimitReached(false);
       setElapsedSeconds(0);
       setCallEstablished(false);
+      setIsMuted(false);
+      setIsCameraOff(false);
 
       if (toastMessage) {
         toast({
@@ -124,7 +128,7 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
       // If joining an existing room (accepted incoming call), skip edge function
       if (joinRoomUrl) {
         const separator = joinRoomUrl.includes("?") ? "&" : "?";
-        setRoomUrl(`${joinRoomUrl}${separator}prejoin=false&showParticipantsBar=false&showUserNameChangeUI=false&showLeaveButton=false&showFullscreenButton=false&showLocalVideo=true&showChat=false&activeSpeakerMode=false&showHeader=false`);
+        setRoomUrl(`${joinRoomUrl}${separator}prejoin=false&showParticipantsBar=false&showUserNameChangeUI=false&showLeaveButton=false&showFullscreenButton=false&showLocalVideo=true&showChat=false&activeSpeakerMode=false&showHeader=false&showControls=false`);
         remainingSecondsRef.current = 7200;
         setRemainingSeconds(7200);
         setElapsedSeconds(0);
@@ -164,7 +168,7 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
         return;
       }
 
-      setRoomUrl(`${data.room_url}?t=${data.token}&prejoin=false&showParticipantsBar=false&showUserNameChangeUI=false&showLeaveButton=false&showFullscreenButton=false&showLocalVideo=true&showChat=false&activeSpeakerMode=false&showHeader=false`);
+      setRoomUrl(`${data.room_url}?t=${data.token}&prejoin=false&showParticipantsBar=false&showUserNameChangeUI=false&showLeaveButton=false&showFullscreenButton=false&showLocalVideo=true&showChat=false&activeSpeakerMode=false&showHeader=false&showControls=false`);
       setSessionId(data.session_id);
       remainingSecondsRef.current = data.remaining_seconds || 7200;
       setRemainingSeconds(data.remaining_seconds || 7200);
@@ -535,14 +539,45 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
               )
             )}
 
-            <Button
-              variant="destructive"
-              size="icon"
-              className="absolute bottom-6 left-1/2 -translate-x-1/2 h-14 w-14 rounded-full shadow-lg"
-              onClick={handleClose}
-            >
-              <PhoneOff className="h-6 w-6" />
-            </Button>
+            {/* Custom call controls */}
+            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-3">
+              <Button
+                variant={isMuted ? "secondary" : "outline"}
+                size="icon"
+                className={`h-12 w-12 rounded-full shadow-lg backdrop-blur-sm ${
+                  isMuted ? "bg-muted/90 text-destructive" : "bg-card/80 text-foreground"
+                }`}
+                onClick={() => {
+                  iframeRef.current?.contentWindow?.postMessage({ action: "toggle-audio" }, "*");
+                  setIsMuted((prev) => !prev);
+                }}
+              >
+                {isMuted ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
+              </Button>
+
+              <Button
+                variant="destructive"
+                size="icon"
+                className="h-14 w-14 rounded-full shadow-lg"
+                onClick={handleClose}
+              >
+                <PhoneOff className="h-6 w-6" />
+              </Button>
+
+              <Button
+                variant={isCameraOff ? "secondary" : "outline"}
+                size="icon"
+                className={`h-12 w-12 rounded-full shadow-lg backdrop-blur-sm ${
+                  isCameraOff ? "bg-muted/90 text-destructive" : "bg-card/80 text-foreground"
+                }`}
+                onClick={() => {
+                  iframeRef.current?.contentWindow?.postMessage({ action: "toggle-video" }, "*");
+                  setIsCameraOff((prev) => !prev);
+                }}
+              >
+                {isCameraOff ? <VideoOff className="h-5 w-5" /> : <Video className="h-5 w-5" />}
+              </Button>
+            </div>
           </div>
         )}
       </DialogContent>
