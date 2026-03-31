@@ -128,19 +128,11 @@ Deno.serve(async (req) => {
 
       const calleeTokenData = await calleeTokenRes.json();
 
-      // Record session for callee
-      const { data: calleeSession } = await supabaseAdmin
-        .from("video_call_sessions")
-        .insert({ user_id: user.id, match_id: joinMatchId })
-        .select("id")
-        .single();
-
       return new Response(
         JSON.stringify({
           room_url: roomInfo.url,
           token: calleeTokenData.token,
           full_room_url: `${roomInfo.url}?t=${calleeTokenData.token}`,
-          session_id: calleeSession?.id,
         }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
