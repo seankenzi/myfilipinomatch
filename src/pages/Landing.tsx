@@ -78,7 +78,7 @@ const Landing = () => {
         ]}
       />
       {/* ===== HERO SECTION ===== */}
-      <section className="relative min-h-[90vh] flex items-center overflow-hidden">
+      <section className="relative min-h-[85vh] md:min-h-[90vh] flex items-center overflow-hidden">
         {heroImages.map((img, i) => (
           <img
             key={i}
