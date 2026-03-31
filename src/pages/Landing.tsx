@@ -417,7 +417,7 @@ const Landing = () => {
 
 
       {/* ===== FINAL CTA ===== */}
-      <section className="relative py-24 overflow-hidden">
+      <section className="relative py-16 md:py-24 overflow-hidden">
         <img
           src={heroCouple}
           alt="Happy couple enjoying time together — MyFilipinoMatch"
