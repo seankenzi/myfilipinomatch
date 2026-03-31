@@ -371,8 +371,9 @@ const Landing = () => {
           </div>
         </div>
       </section>
+      </LazySection>
 
-      {/* ===== FAQ SECTION ===== */}
+      <LazySection>
       <section className="relative py-12 md:py-20 bg-background overflow-hidden">
         <div className="absolute -bottom-20 -left-16 w-72 h-72 rounded-full bg-accent/8 blur-3xl" />
         <div className="container relative z-10">
