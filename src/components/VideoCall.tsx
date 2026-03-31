@@ -177,7 +177,7 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
     }
   }, [open]);
 
-  // (participant-joined timer effect is placed after handleClose below)
+  
 
   // Listen for signal status changes (ended, declined, missed)
   const channelIdRef = useRef(0);
