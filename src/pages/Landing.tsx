@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
-import { Heart, Shield, Globe, MessageSquare, Star, CheckCircle, ArrowRight, UserPlus, Search, MessagesSquare, ShieldCheck, Ban, Lock, Video, Eye, BadgeCheck, Users, AlertTriangle } from "lucide-react";
+import { Heart, Shield, ArrowRight, UserPlus, Search, MessagesSquare, ShieldCheck, Ban, Lock, Eye, BadgeCheck, Users, AlertTriangle, Star } from "lucide-react";
 import { Link } from "react-router-dom";
 import SEO from "@/components/SEO";
+import LazySection from "@/components/LazySection";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
 import { Button } from "@/components/ui/button";
