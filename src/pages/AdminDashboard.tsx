@@ -226,7 +226,7 @@ const UsersTab = () => {
                     <td className="p-3">
                       <div className="flex items-center gap-2">
                         <div className="h-8 w-8 rounded-full bg-muted overflow-hidden flex-shrink-0">
-                          {u.avatar_url ? <img src={u.avatar_url} className="h-full w-full object-cover" /> : <Users className="h-full w-full p-1.5 text-muted-foreground" />}
+                          {u.avatar_url ? <img src={u.avatar_url} alt={`${u.full_name || 'User'} avatar`} loading="lazy" className="h-full w-full object-cover" /> : <Users className="h-full w-full p-1.5 text-muted-foreground" />}
                         </div>
                         <span className="font-medium truncate max-w-[150px]">{u.full_name || "—"}</span>
                       </div>
