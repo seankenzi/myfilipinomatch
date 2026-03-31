@@ -158,7 +158,7 @@ const Landing = () => {
       </section>
 
       {/* ===== HOW IT WORKS ===== */}
-      <section className="relative py-20 bg-background overflow-hidden">
+      <section className="relative py-12 md:py-20 bg-background overflow-hidden">
         {/* Decorative blobs */}
         <div className="absolute -top-20 -left-20 w-72 h-72 rounded-full bg-primary/10 blur-3xl" />
         <div className="absolute -bottom-20 -right-20 w-80 h-80 rounded-full bg-accent/10 blur-3xl" />
