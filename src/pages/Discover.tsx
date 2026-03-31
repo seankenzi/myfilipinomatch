@@ -499,15 +499,16 @@ const Discover = () => {
 
     if (!user) return;
 
-    const { data: existingMatch, error } = await supabase
+    const { data: matchesData, error } = await supabase
       .from("matches")
-      .select("id")
-      .or(
-        `and(user1_id.eq.${user.id},user2_id.eq.${profile.id}),and(user1_id.eq.${profile.id},user2_id.eq.${user.id})`
-      )
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
+      .select("id, user1_id, user2_id")
+      .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`)
+      .order("created_at", { ascending: false });
+
+    const existingMatch = matchesData?.find((match) => {
+      const otherUserId = match.user1_id === user.id ? match.user2_id : match.user1_id;
+      return otherUserId === profile.id;
+    });
 
     if (error) {
       toast({
