@@ -131,7 +131,34 @@ const Settings = () => {
             )}
           </div>
 
-          {/* Account */}
+          {/* Video Call Usage — only show for yearly subscribers */}
+          {subscription?.plan === "yearly" && subscription?.status === "active" && (
+            <div className="mb-4 rounded-2xl border border-border bg-card p-5 shadow-card">
+              <h2 className="mb-4 font-semibold flex items-center gap-2">
+                <Video className="h-4 w-4 text-primary" />
+                Video Call Usage
+              </h2>
+              {loadingVideo ? (
+                <p className="text-sm text-muted-foreground">Loading...</p>
+              ) : (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">Used this month</span>
+                    <span className="font-medium">
+                      {Math.floor(videoUsedSeconds / 60)}m / 120m
+                    </span>
+                  </div>
+                  <Progress value={Math.min(100, (videoUsedSeconds / 7200) * 100)} className="h-2" />
+                  <p className="text-xs text-muted-foreground">
+                    {videoUsedSeconds >= 7200
+                      ? "Monthly limit reached — resets next month."
+                      : `${Math.floor((7200 - videoUsedSeconds) / 60)} minutes remaining`}
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+
           <div className="mb-4 rounded-2xl border border-border bg-card p-5 shadow-card">
             <h2 className="mb-4 font-semibold flex items-center gap-2">
               <Mail className="h-4 w-4 text-primary" />
