@@ -490,6 +490,45 @@ const Discover = () => {
     setIntroDialog(true);
   };
 
+  const handleVideoCallClick = async (profile: Profile) => {
+    if (!isPremium) {
+      setVideoModalTarget(profile.full_name);
+      setVideoModalOpen(true);
+      return;
+    }
+
+    if (!user) return;
+
+    const { data: existingMatch, error } = await supabase
+      .from("matches")
+      .select("id")
+      .or(
+        `and(user1_id.eq.${user.id},user2_id.eq.${profile.id}),and(user1_id.eq.${profile.id},user2_id.eq.${user.id})`
+      )
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (error) {
+      toast({
+        title: "Couldn't open video call",
+        description: "Please try again in a moment.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (existingMatch?.id) {
+      navigate(`/messages?match=${existingMatch.id}`);
+      return;
+    }
+
+    toast({
+      title: "💬 Direct Message first",
+      description: `Use Direct Message ✨ to connect with ${profile.full_name.split(" ")[0]}, then start a video call from Messages.`,
+    });
+  };
+
   const sendIntroMessage = async () => {
     if (!introTarget || !user) return;
     await handleLike(introTarget);
@@ -967,14 +1006,8 @@ const Discover = () => {
                       </button>
                       <button
                         onClick={() => {
-                          if (!isPremium) {
-                            setVideoModalTarget(currentProfile.full_name);
-                            setVideoModalOpen(true);
-                          } else {
-                            toast({
-                              title: "💬 Direct Message first",
-                              description: `Use Direct Message ✨ to connect with ${currentProfile.full_name.split(" ")[0]}, then start a video call from Messages.`,
-                            });
+                          if (currentProfile) {
+                            void handleVideoCallClick(currentProfile);
                           }
                         }}
                         className="flex h-12 w-12 items-center justify-center rounded-full border-2 border-secondary bg-secondary/10 shadow-card transition-all hover:shadow-card-hover hover:scale-105 active:scale-95"
@@ -1200,17 +1233,7 @@ const Discover = () => {
                               </button>
                             )}
                             <button
-                              onClick={() => {
-                                if (!isPremium) {
-                                  setVideoModalTarget(profile.full_name);
-                                  setVideoModalOpen(true);
-                                } else {
-                                  toast({
-                                    title: "💬 Direct Message first",
-                                    description: `Use Direct Message ✨ to connect with ${profile.full_name.split(" ")[0]}, then start a video call from Messages.`,
-                                  });
-                                }
-                              }}
+                              onClick={() => void handleVideoCallClick(profile)}
                               className="flex items-center justify-center rounded-lg bg-secondary/10 min-w-[44px] min-h-[44px] text-secondary hover:bg-secondary/20 transition-colors active:scale-95"
                               title="Video Call"
                             >
