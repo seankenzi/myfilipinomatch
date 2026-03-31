@@ -65,7 +65,7 @@ const App = () => {
           <ScrollToTop />
           <div className="flex min-h-screen flex-col">
             
-            <div className="flex-1">
+            <div className="flex-1 pb-16 md:pb-0">
               <ErrorBoundary>
               <Suspense fallback={<LazyFallback />}>
               <Routes>

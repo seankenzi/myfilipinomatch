@@ -70,9 +70,9 @@ const Navbar = ({ bannerSubtitle }: NavbarProps) => {
     <>
     <header className="sticky top-0 z-50 border-b border-border bg-card/90 backdrop-blur-md">
       <div className="container flex h-16 items-center justify-between">
-        <Link to={user ? "/discover" : "/"} className="flex items-center gap-2">
-          <img src={logo} alt="MyFilipinoMatch" className="h-10 w-10" />
-          <span className="text-xl font-display font-bold text-foreground">
+        <Link to={user ? "/discover" : "/"} className="flex items-center gap-2 min-w-0">
+          <img src={logo} alt="MyFilipinoMatch" className="h-9 w-9 md:h-10 md:w-10 flex-shrink-0" />
+          <span className="text-lg md:text-xl font-display font-bold text-foreground truncate">
             MyFilipinoMatch
           </span>
         </Link>
