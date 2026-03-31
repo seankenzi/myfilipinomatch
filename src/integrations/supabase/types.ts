@@ -580,6 +580,39 @@ export type Database = {
         }
         Relationships: []
       }
+      video_call_signals: {
+        Row: {
+          callee_id: string
+          caller_id: string
+          created_at: string
+          id: string
+          match_id: string
+          room_url: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          callee_id: string
+          caller_id: string
+          created_at?: string
+          id?: string
+          match_id: string
+          room_url?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          callee_id?: string
+          caller_id?: string
+          created_at?: string
+          id?: string
+          match_id?: string
+          room_url?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       public_profiles: {
