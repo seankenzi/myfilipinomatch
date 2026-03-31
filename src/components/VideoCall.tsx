@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Video, VideoOff, Mic, MicOff, PhoneOff, Loader2, Crown, Clock } from "lucide-react";
+import { Video, VideoOff, Mic, MicOff, PhoneOff, Loader2, Crown, Clock, WifiOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
@@ -39,6 +39,9 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const callStartTimeRef = useRef<number>(0);
   const isClosingRef = useRef(false);
+  const [connectionLost, setConnectionLost] = useState(false);
+  const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const RECONNECT_TIMEOUT_MS = 30000; // 30s before giving up
 
   const closeUi = useCallback(
     (toastMessage?: { title: string; description?: string }) => {
@@ -312,10 +315,80 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
     closeUi();
   }, [endSession, closeUi, matchId]);
 
+  // Monitor connection health via Daily postMessage events & online status
+  useEffect(() => {
+    if (!open || !roomUrl) return;
+
+    const handleOnline = () => {
+      if (!connectionLost) return;
+      setConnectionLost(false);
+      if (reconnectTimerRef.current) {
+        clearTimeout(reconnectTimerRef.current);
+        reconnectTimerRef.current = null;
+      }
+      toast({ title: "Reconnected", description: "Your connection has been restored." });
+    };
+
+    const handleOffline = () => {
+      if (isClosingRef.current) return;
+      setConnectionLost(true);
+      toast({
+        title: "Connection lost",
+        description: "Trying to reconnect… The call will end if connection isn't restored in 30 seconds.",
+        variant: "destructive",
+      });
+      reconnectTimerRef.current = setTimeout(() => {
+        if (isClosingRef.current) return;
+        isClosingRef.current = true;
+        void endSession();
+        closeUi({
+          title: "Call disconnected",
+          description: "The connection couldn't be restored. Please try calling again.",
+        });
+      }, RECONNECT_TIMEOUT_MS);
+    };
+
+    // Listen for Daily iframe error events
+    const handleMessage = (event: MessageEvent) => {
+      if (typeof event.data !== "object" || !event.data?.action) return;
+      const action = event.data.action as string;
+
+      if (action === "error" || action === "network-connection") {
+        if (event.data?.errorMsg?.includes("disconnected") || event.data?.type === "disconnected") {
+          handleOffline();
+        } else if (event.data?.type === "connected") {
+          handleOnline();
+        }
+      }
+
+      // Daily sends "left-meeting" when participant is kicked/disconnected
+      if (action === "left-meeting" && !isClosingRef.current) {
+        isClosingRef.current = true;
+        void endSession();
+        closeUi({ title: "Call ended", description: "You were disconnected from the call." });
+      }
+    };
+
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+    window.addEventListener("message", handleMessage);
+
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+      window.removeEventListener("message", handleMessage);
+      if (reconnectTimerRef.current) {
+        clearTimeout(reconnectTimerRef.current);
+        reconnectTimerRef.current = null;
+      }
+    };
+  }, [open, roomUrl, connectionLost, endSession, closeUi, toast]);
+
   // Cleanup on unmount
   useEffect(() => {
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
+      if (reconnectTimerRef.current) clearTimeout(reconnectTimerRef.current);
     };
   }, []);
 
@@ -392,6 +465,15 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
               className="w-full h-full border-0"
               title={`Video call with ${otherUserName}`}
             />
+
+            {/* Connection lost overlay */}
+            {connectionLost && (
+              <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-background/80 backdrop-blur-sm gap-3">
+                <WifiOff className="h-10 w-10 text-destructive animate-pulse" />
+                <p className="text-sm font-medium text-foreground">Connection lost</p>
+                <p className="text-xs text-muted-foreground">Attempting to reconnect…</p>
+              </div>
+            )}
 
             {/* Timer overlay */}
             <div
