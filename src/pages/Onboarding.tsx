@@ -584,7 +584,7 @@ const Onboarding = () => {
           {/* Navigation buttons */}
           <div className="mt-8 flex gap-3">
             {step > 1 && (
-              <Button variant="outline" size="lg" onClick={back} className="flex-1">
+              <Button variant="outline" size="lg" onClick={back} className="flex-1 min-h-[48px]">
                 <ArrowLeft className="mr-2 h-4 w-4" /> Back
               </Button>
             )}
@@ -594,7 +594,7 @@ const Onboarding = () => {
                 size="lg"
                 onClick={next}
                 disabled={!canProceed()}
-                className="flex-1"
+                className="flex-1 min-h-[48px]"
               >
                 Next <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
@@ -604,7 +604,7 @@ const Onboarding = () => {
                 size="lg"
                 onClick={() => saveProfile()}
                 disabled={saving}
-                className="flex-1"
+                className="flex-1 min-h-[48px]"
               >
                 {saving ? "Saving..." : "Skip for Now"}
               </Button>
