@@ -360,7 +360,7 @@ const Landing = () => {
       </section>
 
       {/* ===== CONTENT SECTION FOR SEO ===== */}
-      <section className="py-20 bg-background">
+      <section className="py-12 md:py-20 bg-background">
         <div className="container">
           <div className="mx-auto max-w-3xl">
             <h2 className="mb-6 text-3xl font-bold md:text-4xl text-center" style={{ fontFamily: 'var(--font-display)' }}>
