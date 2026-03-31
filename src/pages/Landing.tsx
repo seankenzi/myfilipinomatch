@@ -48,7 +48,7 @@ const Landing = () => {
             "@context": "https://schema.org",
             "@type": "Organization",
             name: "MyFilipinoMatch",
-            url: "https://myfilipinomatch.lovable.app",
+            url: "https://www.myfilipinomatch.com",
             description: "The most trusted international dating platform connecting foreigners with Filipino singles for serious, long-term relationships and marriage.",
             sameAs: [],
           },
