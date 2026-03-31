@@ -134,30 +134,7 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
       setElapsedSeconds(0);
       callStartTimeRef.current = Date.now();
 
-      // Create a call signal for the other user
-      try {
-        // Find the other user in this match
-        const { data: matchData } = await supabase
-          .from("matches")
-          .select("user1_id, user2_id")
-          .eq("id", matchId)
-          .single();
-
-        if (matchData && sessionData?.session?.user?.id) {
-          const callerId = sessionData.session.user.id;
-          const calleeId = matchData.user1_id === callerId ? matchData.user2_id : matchData.user1_id;
-
-          await supabase.from("video_call_signals").insert({
-            match_id: matchId,
-            caller_id: callerId,
-            callee_id: calleeId,
-            room_url: `${data.room_url}?t=${data.token}`,
-            status: "ringing",
-          });
-        }
-      } catch {
-        // Signal creation is best-effort
-      }
+      // Signaling is now created server-side in the daily-video function
 
       // Start countdown timer
       if (timerRef.current) clearInterval(timerRef.current);
@@ -210,8 +187,10 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
           const status = (payload.new as any).status;
           if (status === "missed") {
             toast({ title: "No answer", description: "They didn't pick up. Try again later." });
+            onClose();
           } else if (status === "declined") {
             toast({ title: "Call declined", description: "They're not available right now." });
+            onClose();
           }
         }
       )

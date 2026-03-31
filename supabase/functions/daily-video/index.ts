@@ -254,10 +254,32 @@ Deno.serve(async (req) => {
       .select("id")
       .single();
 
+    // Create or refresh a ringing signal for the other participant
+    const calleeId = match.user1_id === user.id ? match.user2_id : match.user1_id;
+
+    await supabaseAdmin
+      .from("video_call_signals")
+      .delete()
+      .eq("match_id", match_id)
+      .in("status", ["ringing", "missed", "declined", "ended"]);
+
+    const fullRoomUrl = `${roomUrl}?t=${tokenData.token}`;
+
+    await supabaseAdmin
+      .from("video_call_signals")
+      .insert({
+        match_id,
+        caller_id: user.id,
+        callee_id: calleeId,
+        room_url: fullRoomUrl,
+        status: "ringing",
+      });
+
     return new Response(
       JSON.stringify({
         room_url: roomUrl,
         token: tokenData.token,
+        full_room_url: fullRoomUrl,
         session_id: session?.id,
         remaining_seconds: remainingSeconds,
         used_seconds: usedSeconds,
