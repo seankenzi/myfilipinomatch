@@ -9,6 +9,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import heroCouple from "@/assets/hero-couple.jpg";
 import heroCouple2 from "@/assets/hero-couple-2.jpg";
 import heroCouple3 from "@/assets/hero-couple-3.jpg";
+import heroCoupleMobile from "@/assets/hero-couple-mobile.jpg";
+import heroCouple2Mobile from "@/assets/hero-couple-2-mobile.jpg";
+import heroCouple3Mobile from "@/assets/hero-couple-3-mobile.jpg";
 import coupleCafe from "@/assets/couple-cafe.jpg";
 import coupleGarden from "@/assets/couple-garden.jpg";
 import mariaPhoto from "@/assets/test-profiles/maria.jpg";
@@ -18,7 +21,11 @@ import davidPhoto from "@/assets/test-profiles/david.jpg";
 import sofiaPhoto from "@/assets/test-profiles/sofia.jpg";
 import kenjiPhoto from "@/assets/test-profiles/kenji.jpg";
 
-const heroImages = [heroCouple, heroCouple2, heroCouple3];
+const heroImages = [
+  { desktop: heroCouple, mobile: heroCoupleMobile },
+  { desktop: heroCouple2, mobile: heroCouple2Mobile },
+  { desktop: heroCouple3, mobile: heroCouple3Mobile },
+];
 
 const faqs = [
   { question: "Is MyFilipinoMatch free to join?", answer: "Yes! Creating an account is completely free. You can set up your profile, browse verified members, and receive matches at no cost. Premium features like unlimited messaging and video calls are available with an upgrade." },
@@ -80,18 +87,20 @@ const Landing = () => {
       {/* ===== HERO SECTION ===== */}
       <section className="relative min-h-[85vh] md:min-h-[90vh] flex items-center overflow-hidden">
         {heroImages.map((img, i) => (
-          <img
-            key={i}
-            src={img}
-            alt={["Happy interracial couple enjoying time together", "Filipino woman and foreign partner smiling", "Couple in love on a tropical date"][i]}
-            className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-1000 ${
-              i === currentImage ? "opacity-100" : "opacity-0"
-            }`}
-            width={1920}
-            height={1080}
-            fetchPriority={i === 0 ? "high" : "low"}
-            loading={i === 0 ? "eager" : "lazy"}
-          />
+          <picture key={i}>
+            <source media="(max-width: 768px)" srcSet={img.mobile} />
+            <img
+              src={img.desktop}
+              alt={["Happy interracial couple enjoying time together", "Filipino woman and foreign partner smiling", "Couple in love on a tropical date"][i]}
+              className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-1000 ${
+                i === currentImage ? "opacity-100" : "opacity-0"
+              }`}
+              width={1920}
+              height={1080}
+              fetchPriority={i === 0 ? "high" : "low"}
+              loading={i === 0 ? "eager" : "lazy"}
+            />
+          </picture>
         ))}
         <div className="absolute inset-0 bg-gradient-to-r from-foreground/75 via-foreground/55 to-foreground/30" />
         <div className="absolute inset-0 bg-gradient-to-t from-foreground/60 via-transparent to-foreground/20" />
@@ -389,13 +398,16 @@ const Landing = () => {
 
       {/* ===== FINAL CTA ===== */}
       <section className="relative py-16 md:py-24 overflow-hidden">
-        <img
-          src={heroCouple}
-          alt="Happy couple enjoying time together — MyFilipinoMatch"
-          className="absolute inset-0 h-full w-full object-cover"
-          loading="lazy"
-          aria-hidden="true"
-        />
+        <picture>
+          <source media="(max-width: 768px)" srcSet={heroCoupleMobile} />
+          <img
+            src={heroCouple}
+            alt="Happy couple enjoying time together — MyFilipinoMatch"
+            className="absolute inset-0 h-full w-full object-cover"
+            loading="lazy"
+            aria-hidden="true"
+          />
+        </picture>
         <div className="absolute inset-0 gradient-hero opacity-85" />
         <div className="container relative z-10">
           <div className="mx-auto max-w-2xl text-center">
