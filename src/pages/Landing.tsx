@@ -83,12 +83,14 @@ const Landing = () => {
           <img
             key={i}
             src={img}
-            alt={`Happy interracial couple ${i + 1}`}
+            alt={["Happy interracial couple enjoying time together", "Filipino woman and foreign partner smiling", "Couple in love on a tropical date"][i]}
             className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-1000 ${
               i === currentImage ? "opacity-100" : "opacity-0"
             }`}
             width={1920}
             height={1080}
+            fetchPriority={i === 0 ? "high" : "low"}
+            loading={i === 0 ? "eager" : "lazy"}
           />
         ))}
         <div className="absolute inset-0 bg-gradient-to-r from-foreground/75 via-foreground/55 to-foreground/30" />
@@ -138,7 +140,7 @@ const Landing = () => {
                   <img
                     key={i}
                     src={photo}
-                    alt="Member"
+                    alt={["MyFilipinoMatch verified member Maria", "MyFilipinoMatch member James", "MyFilipinoMatch verified member Ana", "MyFilipinoMatch member Kenji"][i]}
                     className="h-10 w-10 rounded-full border-2 border-primary-foreground/30 object-cover"
                     loading="lazy"
                     width={40}

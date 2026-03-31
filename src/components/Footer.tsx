@@ -15,6 +15,7 @@ const Footer = () => (
           <Link to="/privacy" className="hover:text-foreground transition-colors">Privacy</Link>
           <Link to="/terms" className="hover:text-foreground transition-colors">Terms</Link>
           <Link to="/support" className="hover:text-foreground transition-colors">Support</Link>
+          <Link to="/blog" className="hover:text-foreground transition-colors">Blog</Link>
         </div>
         <p className="text-xs text-muted-foreground">© 2026 MyFilipinoMatch. All rights reserved.</p>
       </div>
