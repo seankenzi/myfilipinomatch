@@ -338,15 +338,15 @@ const Profile = () => {
 
           {/* Actions */}
           <div className="space-y-2">
-            <button onClick={() => navigate("/settings")} className="flex w-full items-center gap-3 rounded-xl border border-border bg-card px-4 py-3 text-sm font-medium shadow-card transition-all hover:shadow-card-hover">
-              <Settings className="h-4 w-4 text-muted-foreground" />
+            <button onClick={() => navigate("/settings")} className="flex w-full items-center gap-3 rounded-xl border border-border bg-card px-4 py-4 text-sm font-medium shadow-card transition-all hover:shadow-card-hover min-h-[52px] active:scale-[0.98]">
+              <Settings className="h-5 w-5 text-muted-foreground" />
               Settings
             </button>
             <button
               onClick={handleSignOut}
-              className="flex w-full items-center gap-3 rounded-xl border border-border bg-card px-4 py-3 text-sm font-medium text-destructive shadow-card transition-all hover:shadow-card-hover"
+              className="flex w-full items-center gap-3 rounded-xl border border-border bg-card px-4 py-4 text-sm font-medium text-destructive shadow-card transition-all hover:shadow-card-hover min-h-[52px] active:scale-[0.98]"
             >
-              <LogOut className="h-4 w-4" />
+              <LogOut className="h-5 w-5" />
               Sign out
             </button>
           </div>
