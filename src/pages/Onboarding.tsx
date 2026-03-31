@@ -233,7 +233,7 @@ const Onboarding = () => {
         </div>
       </div>
 
-      <div className="flex flex-1 items-center justify-center px-4 py-8 overflow-hidden">
+      <div className="flex flex-1 items-center justify-center px-5 py-6 md:py-8 overflow-hidden">
         <div className="w-full max-w-lg">
           <AnimatePresence mode="wait" custom={direction}>
             <motion.div
