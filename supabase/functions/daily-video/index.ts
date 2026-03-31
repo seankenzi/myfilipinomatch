@@ -8,9 +8,15 @@ const corsHeaders = {
 };
 
 const DAILY_API_URL = "https://api.daily.co/v1";
+const MONTHLY_LIMIT_SECONDS = 2 * 60 * 60; // 2 hours in seconds
 
 const BodySchema = z.object({
   match_id: z.string().uuid(),
+});
+
+const EndSessionSchema = z.object({
+  session_id: z.string().uuid(),
+  duration_seconds: z.number().int().min(0),
 });
 
 Deno.serve(async (req) => {
@@ -26,6 +32,7 @@ Deno.serve(async (req) => {
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
@@ -39,6 +46,8 @@ Deno.serve(async (req) => {
       global: { headers: { Authorization: authHeader } },
     });
 
+    const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
+
     const {
       data: { user },
       error: authError,
@@ -51,6 +60,45 @@ Deno.serve(async (req) => {
       });
     }
 
+    const url = new URL(req.url);
+    const action = url.searchParams.get("action");
+
+    // Handle end-session action
+    if (action === "end-session") {
+      const parsed = EndSessionSchema.safeParse(await req.json());
+      if (!parsed.success) {
+        return new Response(
+          JSON.stringify({ error: parsed.error.flatten().fieldErrors }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      const { session_id, duration_seconds } = parsed.data;
+
+      const { error: updateError } = await supabaseAdmin
+        .from("video_call_sessions")
+        .update({
+          ended_at: new Date().toISOString(),
+          duration_seconds,
+        })
+        .eq("id", session_id)
+        .eq("user_id", user.id);
+
+      if (updateError) {
+        console.error("Error ending session:", updateError);
+        return new Response(JSON.stringify({ error: "Failed to end session" }), {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      return new Response(JSON.stringify({ success: true }), {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Default action: start a video call
     const parsed = BodySchema.safeParse(await req.json());
     if (!parsed.success) {
       return new Response(
@@ -110,8 +158,30 @@ Deno.serve(async (req) => {
       );
     }
 
+    // Check monthly usage limit
+    const { data: usageData, error: usageError } = await supabaseAdmin
+      .rpc("get_monthly_video_usage", { p_user_id: user.id });
+
+    const usedSeconds = usageError ? 0 : (usageData ?? 0);
+    const remainingSeconds = Math.max(0, MONTHLY_LIMIT_SECONDS - usedSeconds);
+
+    if (remainingSeconds <= 0) {
+      return new Response(
+        JSON.stringify({
+          error: "Monthly video call limit reached (2 hours). Resets next month.",
+          code: "MONTHLY_LIMIT_REACHED",
+          used_seconds: usedSeconds,
+          limit_seconds: MONTHLY_LIMIT_SECONDS,
+        }),
+        { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     // Create or get a Daily room for this match
     const roomName = `match-${match_id}`;
+
+    // Cap room expiry to remaining time
+    const roomExpSeconds = Math.min(remainingSeconds, 3600);
 
     // Try to get existing room
     const existingRoom = await fetch(`${DAILY_API_URL}/rooms/${roomName}`, {
@@ -124,7 +194,6 @@ Deno.serve(async (req) => {
       const roomData = await existingRoom.json();
       roomUrl = roomData.url;
     } else {
-      // Create new room (expires in 1 hour)
       const createRes = await fetch(`${DAILY_API_URL}/rooms`, {
         method: "POST",
         headers: {
@@ -134,7 +203,7 @@ Deno.serve(async (req) => {
         body: JSON.stringify({
           name: roomName,
           properties: {
-            exp: Math.floor(Date.now() / 1000) + 3600,
+            exp: Math.floor(Date.now() / 1000) + roomExpSeconds,
             max_participants: 2,
             enable_chat: false,
             enable_screenshare: false,
@@ -162,7 +231,7 @@ Deno.serve(async (req) => {
         properties: {
           room_name: roomName,
           user_name: user.id,
-          exp: Math.floor(Date.now() / 1000) + 3600,
+          exp: Math.floor(Date.now() / 1000) + roomExpSeconds,
           is_owner: false,
         },
       }),
@@ -175,8 +244,25 @@ Deno.serve(async (req) => {
 
     const tokenData = await tokenRes.json();
 
+    // Record session start
+    const { data: session } = await supabaseAdmin
+      .from("video_call_sessions")
+      .insert({
+        user_id: user.id,
+        match_id: match_id,
+      })
+      .select("id")
+      .single();
+
     return new Response(
-      JSON.stringify({ room_url: roomUrl, token: tokenData.token }),
+      JSON.stringify({
+        room_url: roomUrl,
+        token: tokenData.token,
+        session_id: session?.id,
+        remaining_seconds: remainingSeconds,
+        used_seconds: usedSeconds,
+        limit_seconds: MONTHLY_LIMIT_SECONDS,
+      }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error: unknown) {
