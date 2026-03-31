@@ -31,10 +31,10 @@ const DAILY_EMBED_PARAMS: Record<string, string> = {
 };
 
 const DAILY_IFRAME_CROP = {
-  top: 56,
-  bottom: 104,
-  topRightHeight: 220,
-  topRightWidth: 320,
+  top: 76,
+  bottom: 136,
+  topRightHeight: 320,
+  topRightWidth: 360,
 };
 
 const buildDailyEmbedUrl = (baseUrl: string, token?: string) => {
@@ -544,12 +544,12 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
         )}
 
         {roomUrl && (
-          <div className="relative w-full h-full overflow-hidden">
+          <div className="relative h-full w-full overflow-hidden bg-foreground">
             <iframe
               ref={iframeRef}
               src={roomUrl}
               allow="camera; microphone; fullscreen; display-capture"
-              className="absolute left-0 right-0 w-full border-0"
+              className="absolute left-0 right-0 w-full border-0 bg-foreground"
               style={{
                 top: `-${DAILY_IFRAME_CROP.top}px`,
                 height: `calc(100% + ${DAILY_IFRAME_CROP.top + DAILY_IFRAME_CROP.bottom}px)`,
@@ -560,12 +560,12 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
             {/* Fallback masks for stubborn Daily UI strips */}
             <div
               aria-hidden
-              className="pointer-events-none absolute inset-x-0 top-0 z-20 bg-background"
-              style={{ height: DAILY_IFRAME_CROP.top }}
+              className="pointer-events-none absolute inset-x-0 top-0 z-20 bg-gradient-to-b from-foreground via-foreground to-transparent"
+              style={{ height: DAILY_IFRAME_CROP.top + 48 }}
             />
             <div
               aria-hidden
-              className="pointer-events-none absolute top-0 right-0 z-20 hidden md:block bg-background"
+              className="pointer-events-none absolute top-0 right-0 z-20 hidden md:block bg-gradient-to-bl from-foreground via-foreground to-transparent"
               style={{
                 height: DAILY_IFRAME_CROP.topRightHeight,
                 width: DAILY_IFRAME_CROP.topRightWidth,
@@ -573,8 +573,8 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
             />
             <div
               aria-hidden
-              className="pointer-events-none absolute inset-x-0 bottom-0 z-20 bg-background"
-              style={{ height: DAILY_IFRAME_CROP.bottom }}
+              className="pointer-events-none absolute inset-x-0 bottom-0 z-20 bg-gradient-to-t from-foreground via-foreground to-transparent"
+              style={{ height: DAILY_IFRAME_CROP.bottom + 32 }}
             />
 
             {/* Connection lost overlay */}
@@ -607,44 +607,46 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
               )
             )}
 
-            {/* Custom call controls bar - covers Daily's bottom toolbar */}
-            <div className="absolute bottom-0 left-0 right-0 z-30 flex items-center justify-center gap-3 bg-background/95 backdrop-blur-sm py-5 border-t border-border">
-              <Button
-                variant={isMuted ? "secondary" : "outline"}
-                size="icon"
-                className={`h-12 w-12 rounded-full shadow-lg ${
-                  isMuted ? "bg-muted/90 text-destructive" : "bg-card/80 text-foreground"
-                }`}
-                onClick={() => {
-                  iframeRef.current?.contentWindow?.postMessage({ action: "toggle-audio" }, "*");
-                  setIsMuted((prev) => !prev);
-                }}
-              >
-                {isMuted ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
-              </Button>
+            {/* Floating controls - keeps Daily's toolbar hidden without creating white bars */}
+            <div className="absolute inset-x-0 bottom-6 z-30 flex justify-center px-4">
+              <div className="flex max-w-full items-center gap-3 rounded-full border border-border/40 bg-foreground/55 px-4 py-3 shadow-lg backdrop-blur-md">
+                <Button
+                  variant={isMuted ? "secondary" : "outline"}
+                  size="icon"
+                  className={`h-12 w-12 rounded-full shadow-lg ${
+                    isMuted ? "bg-muted/90 text-destructive" : "bg-card/80 text-foreground"
+                  }`}
+                  onClick={() => {
+                    iframeRef.current?.contentWindow?.postMessage({ action: "toggle-audio" }, "*");
+                    setIsMuted((prev) => !prev);
+                  }}
+                >
+                  {isMuted ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
+                </Button>
 
-              <Button
-                variant="destructive"
-                size="icon"
-                className="h-14 w-14 rounded-full shadow-lg"
-                onClick={handleClose}
-              >
-                <PhoneOff className="h-6 w-6" />
-              </Button>
+                <Button
+                  variant="destructive"
+                  size="icon"
+                  className="h-14 w-14 rounded-full shadow-lg"
+                  onClick={handleClose}
+                >
+                  <PhoneOff className="h-6 w-6" />
+                </Button>
 
-              <Button
-                variant={isCameraOff ? "secondary" : "outline"}
-                size="icon"
-                className={`h-12 w-12 rounded-full shadow-lg ${
-                  isCameraOff ? "bg-muted/90 text-destructive" : "bg-card/80 text-foreground"
-                }`}
-                onClick={() => {
-                  iframeRef.current?.contentWindow?.postMessage({ action: "toggle-video" }, "*");
-                  setIsCameraOff((prev) => !prev);
-                }}
-              >
-                {isCameraOff ? <VideoOff className="h-5 w-5" /> : <Video className="h-5 w-5" />}
-              </Button>
+                <Button
+                  variant={isCameraOff ? "secondary" : "outline"}
+                  size="icon"
+                  className={`h-12 w-12 rounded-full shadow-lg ${
+                    isCameraOff ? "bg-muted/90 text-destructive" : "bg-card/80 text-foreground"
+                  }`}
+                  onClick={() => {
+                    iframeRef.current?.contentWindow?.postMessage({ action: "toggle-video" }, "*");
+                    setIsCameraOff((prev) => !prev);
+                  }}
+                >
+                  {isCameraOff ? <VideoOff className="h-5 w-5" /> : <Video className="h-5 w-5" />}
+                </Button>
+              </div>
             </div>
           </div>
         )}
