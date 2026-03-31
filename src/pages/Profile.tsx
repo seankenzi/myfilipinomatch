@@ -332,7 +332,7 @@ const Profile = () => {
               <p className="text-sm text-primary-foreground/80 mb-4">
                 Unlock unlimited messaging, see who liked you, and boost your profile visibility.
               </p>
-              <Button variant="secondary" size="sm" onClick={() => navigate("/premium")}>Upgrade Now</Button>
+              <Button variant="secondary" size="sm" onClick={() => navigate("/premium")} className="min-h-[44px] px-5">Upgrade Now</Button>
             </div>
           )}
 
