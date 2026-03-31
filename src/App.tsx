@@ -40,6 +40,7 @@ const Privacy = lazy(() => import("./pages/Privacy.tsx"));
 const Terms = lazy(() => import("./pages/Terms.tsx"));
 const Support = lazy(() => import("./pages/Support.tsx"));
 const Unsubscribe = lazy(() => import("./pages/Unsubscribe.tsx"));
+const EmailUnsubscribe = lazy(() => import("./pages/EmailUnsubscribe.tsx"));
 const NotFound = lazy(() => import("./pages/NotFound.tsx"));
 const Blog = lazy(() => import("./pages/Blog.tsx"));
 const BlogPost = lazy(() => import("./pages/BlogPost.tsx"));
@@ -95,6 +96,7 @@ const App = () => {
                 <Route path="/blog" element={<Blog />} />
                 <Route path="/blog/:slug" element={<BlogPost />} />
                 <Route path="/unsubscribe" element={<Unsubscribe />} />
+                <Route path="/email-unsubscribe" element={<EmailUnsubscribe />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
               </Suspense>
