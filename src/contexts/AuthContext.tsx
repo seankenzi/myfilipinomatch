@@ -51,8 +51,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const u = session.user;
         const createdAt = new Date(u.created_at).getTime();
         const now = Date.now();
-        // Only send within 2 minutes of account creation (first login)
-        if (now - createdAt < 120_000) {
+        const welcomeKey = `welcome_sent_${u.id}`;
+        // Only send within 2 minutes of account creation AND only once per device
+        if (now - createdAt < 120_000 && !localStorage.getItem(welcomeKey)) {
+          localStorage.setItem(welcomeKey, '1');
           // Welcome email to user
           supabase.functions.invoke('send-transactional-email', {
             body: {
