@@ -832,9 +832,9 @@ const Messages = () => {
                       <button
                         onClick={handleSend}
                         disabled={!newMessage.trim() || sending}
-                        className="flex h-11 w-11 items-center justify-center rounded-full gradient-hero text-primary-foreground shadow-md transition-all hover:scale-105 hover:shadow-lg active:scale-95 disabled:opacity-40 disabled:hover:scale-100 disabled:shadow-none"
+                        className="flex h-12 w-12 items-center justify-center rounded-full gradient-hero text-primary-foreground shadow-md transition-all hover:scale-105 hover:shadow-lg active:scale-95 disabled:opacity-40 disabled:hover:scale-100 disabled:shadow-none"
                       >
-                        <Send className="h-4 w-4" />
+                        <Send className="h-5 w-5" />
                       </button>
                     </div>
                   </div>
