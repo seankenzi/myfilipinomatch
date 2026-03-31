@@ -138,7 +138,7 @@ const Landing = () => {
                   <img
                     key={i}
                     src={photo}
-                    alt="Member"
+                    alt={["MyFilipinoMatch verified member Maria", "MyFilipinoMatch member James", "MyFilipinoMatch verified member Ana", "MyFilipinoMatch member Kenji"][i]}
                     className="h-10 w-10 rounded-full border-2 border-primary-foreground/30 object-cover"
                     loading="lazy"
                     width={40}
