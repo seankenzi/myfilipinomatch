@@ -160,17 +160,13 @@ const Messages = () => {
     if (!user) return;
     setLoading(true);
 
-    const { data: blockedData } = await supabase
-      .from("blocked_users")
-      .select("blocked_id")
-      .eq("blocker_id", user.id);
-    const blockedIds = new Set((blockedData || []).map((b: any) => b.blocked_id));
-
-    const { data: matchesData, error } = await supabase
-      .from("matches")
-      .select("*")
-      .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`)
-      .order("created_at", { ascending: false });
+    // Fetch blocked users and matches in parallel
+    const [{ data: blockedData }, { data: matchesData, error }] = await Promise.all([
+      supabase.from("blocked_users").select("blocked_id").eq("blocker_id", user.id),
+      supabase.from("matches").select("*")
+        .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`)
+        .order("created_at", { ascending: false }),
+    ]);
 
     if (error) {
       toast({ title: "Error loading matches", variant: "destructive" });
@@ -184,6 +180,7 @@ const Messages = () => {
       return;
     }
 
+    const blockedIds = new Set((blockedData || []).map((b: any) => b.blocked_id));
     const filteredMatches = matchesData.filter((m) => {
       const otherId = m.user1_id === user.id ? m.user2_id : m.user1_id;
       return !blockedIds.has(otherId);
@@ -195,67 +192,66 @@ const Messages = () => {
       return;
     }
 
-    const profileEntries = await Promise.all(
+    // Fetch all profiles, messages, and unread counts in one parallel batch
+    const rawEntries = await Promise.all(
       filteredMatches.map(async (m) => {
         const otherId = m.user1_id === user.id ? m.user2_id : m.user1_id;
-        const { data } = await supabase.rpc("get_profile_by_id", { profile_id: otherId });
-        const profile = data && data.length > 0 ? data[0] : null;
-        if (!profile) return null;
 
-        const signedPhoto = await resolvePhoto(getPhoto(profile));
-
-        return [
-          otherId,
-          {
-            id: profile.id,
-            full_name: profile.full_name,
-            avatar_url: signedPhoto,
-            photos: signedPhoto ? [signedPhoto] : null,
-            is_verified: profile.is_verified,
-            age: profile.age,
-            city: profile.city,
-            country: profile.country,
-            is_premium: profile.is_premium,
-            last_seen: profile.last_seen,
-          } satisfies MatchProfile,
-        ] as const;
-      })
-    );
-
-    const profileMap = new Map(
-      profileEntries.filter((entry): entry is readonly [string, MatchProfile] => entry !== null)
-    );
-
-    const matchList: Match[] = (await Promise.all(
-      filteredMatches.map(async (m) => {
-        const otherId = m.user1_id === user.id ? m.user2_id : m.user1_id;
-        const profile = profileMap.get(otherId);
-        if (!profile) return null;
-
-        const [{ data: lastMsg }, { count }] = await Promise.all([
-          supabase
-            .from("messages")
+        const [{ data: profileData }, { data: lastMsg }, { count }] = await Promise.all([
+          supabase.rpc("get_profile_by_id", { profile_id: otherId }),
+          supabase.from("messages")
             .select("content, created_at, sender_id, read")
             .eq("match_id", m.id)
             .order("created_at", { ascending: false })
             .limit(1)
             .maybeSingle(),
-          supabase
-            .from("messages")
+          supabase.from("messages")
             .select("id", { count: "exact", head: true })
             .eq("match_id", m.id)
             .eq("read", false)
             .neq("sender_id", user.id),
         ]);
 
+        const profile = profileData && profileData.length > 0 ? profileData[0] : null;
+        if (!profile) return null;
+
         return {
-          id: m.id,
-          other_user: profile,
-          last_message: lastMsg || undefined,
-          unread_count: count || 0,
-        } as Match;
+          matchId: m.id,
+          profile,
+          photoPath: getPhoto(profile),
+          lastMsg: lastMsg || undefined,
+          unreadCount: count || 0,
+        };
       })
-    )).filter((m): m is Match => m !== null);
+    );
+
+    const validEntries = rawEntries.filter((e): e is NonNullable<typeof e> => e !== null);
+
+    // Batch sign all photos in a single request
+    const photoPaths = validEntries.map((e) => e.photoPath).filter((p): p is string => !!p);
+    const signedPhotos = photoPaths.length > 0 ? await getSignedPhotoUrls(photoPaths) : [];
+    const photoMap = new Map(photoPaths.map((p, i) => [p, signedPhotos[i]]));
+
+    const matchList: Match[] = validEntries.map((e) => {
+      const signedPhoto = e.photoPath ? (photoMap.get(e.photoPath) || null) : null;
+      return {
+        id: e.matchId,
+        other_user: {
+          id: e.profile.id,
+          full_name: e.profile.full_name,
+          avatar_url: signedPhoto,
+          photos: signedPhoto ? [signedPhoto] : null,
+          is_verified: e.profile.is_verified,
+          age: e.profile.age,
+          city: e.profile.city,
+          country: e.profile.country,
+          is_premium: e.profile.is_premium,
+          last_seen: e.profile.last_seen,
+        },
+        last_message: e.lastMsg,
+        unread_count: e.unreadCount,
+      };
+    });
 
     matchList.sort((a, b) => {
       if (a.unread_count > 0 && b.unread_count === 0) return -1;
