@@ -243,6 +243,12 @@ const Signup = () => {
             <Link to="/login">Sign in to your account</Link>
           </Button>
         </div>
+        <p className="mt-3 text-center">
+          <Link to="/" className="inline-flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+            <ArrowLeft className="h-4 w-4" />
+            Back to Home
+          </Link>
+        </p>
       </div>
     </div>
   );
