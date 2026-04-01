@@ -138,6 +138,28 @@ const Safety = () => {
               </div>
             </Section>
 
+            {/* ── GDPR compliance ── */}
+            <Section>
+              <SectionTitle icon={Scale}>GDPR Compliance</SectionTitle>
+              <p className="text-sm text-muted-foreground mb-6 leading-relaxed">
+                We comply with the EU General Data Protection Regulation (GDPR) to give you full control over your personal data.
+              </p>
+              <div className="grid gap-4 md:grid-cols-2">
+                <FeatureCard icon={Cookie} title="Cookie Consent" description="Non-essential cookies (analytics, marketing) are blocked until you give explicit consent. You can change your preferences anytime via Cookie Settings in the footer." />
+                <FeatureCard icon={Download} title="Data Export" description="Download all your personal data in JSON format from Settings at any time — fulfilling your Right to Data Portability." />
+                <FeatureCard icon={Trash2} title="Account Deletion" description="Request permanent deletion of all your data from Settings. You have a 24-hour grace period to cancel before everything is irreversibly removed." />
+                <FeatureCard icon={ClipboardCheck} title="Consent-Based Signup" description="You must explicitly agree to our Terms of Service and Privacy Policy before creating an account — no pre-checked boxes." />
+              </div>
+              <div className="mt-5 flex flex-wrap gap-3 text-sm">
+                <Link to="/privacy" className="inline-flex items-center gap-1.5 text-primary hover:underline font-medium">
+                  Privacy Policy →
+                </Link>
+                <Link to="/cookie-policy" className="inline-flex items-center gap-1.5 text-primary hover:underline font-medium">
+                  Cookie Policy →
+                </Link>
+              </div>
+            </Section>
+
             {/* ── Safety tips ── */}
             <Section>
               <SectionTitle icon={Heart}>Safety Tips for Members</SectionTitle>
