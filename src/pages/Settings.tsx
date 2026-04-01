@@ -53,8 +53,21 @@ const Settings = () => {
       if (!error && data !== null) setVideoUsedSeconds(data as number);
       setLoadingVideo(false);
     };
+    const fetchPendingDeletion = async () => {
+      if (!user) return;
+      const { data } = await supabase
+        .from("account_deletions" as any)
+        .select("id, scheduled_for")
+        .eq("user_id", user.id)
+        .eq("status", "pending")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      setPendingDeletion(data as any);
+    };
     fetchSubscription();
     fetchVideoUsage();
+    fetchPendingDeletion();
   }, [user]);
 
   const handleChangePassword = async () => {
