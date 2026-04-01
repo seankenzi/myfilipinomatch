@@ -106,6 +106,7 @@ const App = () => {
               </ErrorBoundary>
             </div>
             <Footer />
+            <CookieConsent />
           </div>
         </AuthProvider>
       </BrowserRouter>
