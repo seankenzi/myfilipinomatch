@@ -178,7 +178,22 @@ const Signup = () => {
             <div ref={turnstileRef} />
           </div>
 
-          <Button type="submit" variant="hero" size="lg" className="w-full min-h-[48px] text-base" disabled={loading || !turnstileToken}>
+          {/* Terms & Privacy consent */}
+          <div className="flex items-start gap-2">
+            <Checkbox
+              id="terms-consent"
+              checked={agreedToTerms}
+              onCheckedChange={(checked) => setAgreedToTerms(checked === true)}
+              className="mt-0.5"
+            />
+            <Label htmlFor="terms-consent" className="text-sm font-normal text-muted-foreground leading-snug cursor-pointer">
+              I agree to the{" "}
+              <Link to="/terms" className="text-primary hover:underline" target="_blank">Terms of Service</Link> and{" "}
+              <Link to="/privacy" className="text-primary hover:underline" target="_blank">Privacy Policy</Link>
+            </Label>
+          </div>
+
+          <Button type="submit" variant="hero" size="lg" className="w-full min-h-[48px] text-base" disabled={loading || !turnstileToken || !agreedToTerms}>
             {loading ? "Creating account..." : "Create Free Account"}
           </Button>
         </form>
