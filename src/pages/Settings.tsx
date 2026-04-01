@@ -31,6 +31,8 @@ const Settings = () => {
   const [videoUsedSeconds, setVideoUsedSeconds] = useState(0);
   const [loadingVideo, setLoadingVideo] = useState(true);
   const [exportingData, setExportingData] = useState(false);
+  const [pendingDeletion, setPendingDeletion] = useState<{ id: string; scheduled_for: string } | null>(null);
+  const [cancellingDeletion, setCancellingDeletion] = useState(false);
 
   useEffect(() => {
     const fetchSubscription = async () => {
