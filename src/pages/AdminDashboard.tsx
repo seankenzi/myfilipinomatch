@@ -103,6 +103,7 @@ const UsersTab = () => {
   const { toast } = useToast();
   const [users, setUsers] = useState<any[]>([]);
   const [search, setSearch] = useState("");
+  const [onboardingFilter, setOnboardingFilter] = useState<"all" | "completed" | "incomplete">("all");
   const [loading, setLoading] = useState(true);
 
   const fetchUsers = async () => {
@@ -110,6 +111,11 @@ const UsersTab = () => {
     let query = supabase.from("profiles").select("*").order("created_at", { ascending: false }).limit(100);
     if (search.trim()) {
       query = query.or(`full_name.ilike.%${search}%,email.ilike.%${search}%`);
+    }
+    if (onboardingFilter === "completed") {
+      query = query.eq("onboarding_completed", true);
+    } else if (onboardingFilter === "incomplete") {
+      query = query.or("onboarding_completed.is.null,onboarding_completed.eq.false");
     }
     const { data } = await query;
     // Resolve signed URLs for avatars
