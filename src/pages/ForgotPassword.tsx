@@ -65,11 +65,18 @@ const ForgotPassword = () => {
           </div>
         )}
 
-        <p className="mt-6 text-center">
-          <Link to="/login" className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline">
-            <ArrowLeft className="h-4 w-4" /> Back to login
-          </Link>
-        </p>
+        <div className="mt-6 space-y-3 text-center">
+          <p>
+            <Link to="/login" className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline">
+              <ArrowLeft className="h-4 w-4" /> Back to login
+            </Link>
+          </p>
+          <p>
+            <Link to="/" className="inline-flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+              <ArrowLeft className="h-4 w-4" /> Back to Home
+            </Link>
+          </p>
+        </div>
       </div>
     </div>
   );
