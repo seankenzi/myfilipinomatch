@@ -1133,19 +1133,17 @@ const EmailsTab = () => {
       .from("email_send_log")
       .select("*")
       .order("created_at", { ascending: false })
-      .limit(200);
+      .limit(500);
 
     if (templateFilter !== "all") {
       query = query.eq("template_name", templateFilter);
     }
-    if (statusFilter !== "all") {
-      query = query.eq("status", statusFilter);
-    }
+    // Don't filter status server-side — we need all rows to deduplicate properly
 
     const { data } = await query;
     const rows = data || [];
 
-    // Deduplicate by message_id (keep latest)
+    // Deduplicate by message_id (keep latest status per email)
     const seen = new Map<string, any>();
     for (const row of rows) {
       const key = row.message_id || row.id;
@@ -1153,7 +1151,7 @@ const EmailsTab = () => {
         seen.set(key, row);
       }
     }
-    const deduped = Array.from(seen.values()).sort(
+    let deduped = Array.from(seen.values()).sort(
       (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
     );
 
@@ -1167,7 +1165,7 @@ const EmailsTab = () => {
     setLoading(false);
   };
 
-  useEffect(() => { fetchLogs(); }, [templateFilter, statusFilter]);
+  useEffect(() => { fetchLogs(); }, [templateFilter]);
 
   const statusBadge = (status: string) => {
     const styles: Record<string, string> = {
@@ -1185,6 +1183,13 @@ const EmailsTab = () => {
       </span>
     );
   };
+
+  // Apply status filter client-side after dedup
+  const filteredLogs = statusFilter === "all"
+    ? logs
+    : statusFilter === "dlq"
+      ? logs.filter(l => ["dlq", "failed"].includes(l.status))
+      : logs.filter(l => l.status === statusFilter);
 
   const stats = {
     total: logs.length,
@@ -1242,7 +1247,7 @@ const EmailsTab = () => {
       {/* Table */}
       {loading ? (
         <div className="flex justify-center py-10"><div className="h-6 w-6 animate-spin rounded-full border-4 border-primary border-t-transparent" /></div>
-      ) : logs.length === 0 ? (
+      ) : filteredLogs.length === 0 ? (
         <div className="p-10 text-center text-muted-foreground">No email logs found.</div>
       ) : (
         <div className="rounded-xl border border-border overflow-hidden">
@@ -1258,7 +1263,7 @@ const EmailsTab = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
-                {logs.map((log) => (
+                {filteredLogs.map((log) => (
                   <tr key={log.id} className="hover:bg-muted/30 transition-colors">
                     <td className="p-3 text-xs font-medium">{log.template_name}</td>
                     <td className="p-3 text-xs text-muted-foreground truncate max-w-[200px]">{log.recipient_email}</td>
