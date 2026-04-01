@@ -55,8 +55,8 @@ const Signup = () => {
     document.head.appendChild(script);
 
     return () => {
-      if (widgetIdRef.current && window.turnstile) {
-        window.turnstile.remove(widgetIdRef.current);
+      if (widgetIdRef.current && getWindow().turnstile) {
+        getWindow().turnstile.remove(widgetIdRef.current);
         widgetIdRef.current = null;
       }
     };
