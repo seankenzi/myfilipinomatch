@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import SEO from "@/components/SEO";
 import { Link, useNavigate } from "react-router-dom";
-import { Mail, Lock, Eye, EyeOff, Shield, Heart, Users } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, Shield, Heart, Users, ArrowLeft } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { lovable } from "@/integrations/lovable/index";
 import { Button } from "@/components/ui/button";
@@ -243,6 +243,12 @@ const Signup = () => {
             <Link to="/login">Sign in to your account</Link>
           </Button>
         </div>
+        <p className="mt-3 text-center">
+          <Link to="/" className="inline-flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+            <ArrowLeft className="h-4 w-4" />
+            Back to Home
+          </Link>
+        </p>
       </div>
     </div>
   );
