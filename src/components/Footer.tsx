@@ -14,8 +14,15 @@ const Footer = () => (
           <Link to="/safety" className="hover:text-foreground transition-colors">Trust & Safety</Link>
           <Link to="/privacy" className="hover:text-foreground transition-colors">Privacy</Link>
           <Link to="/terms" className="hover:text-foreground transition-colors">Terms</Link>
+          <Link to="/cookie-policy" className="hover:text-foreground transition-colors">Cookies</Link>
           <Link to="/support" className="hover:text-foreground transition-colors">Support</Link>
           <Link to="/blog" className="hover:text-foreground transition-colors">Blog</Link>
+          <button
+            onClick={() => window.dispatchEvent(new Event("open-cookie-consent"))}
+            className="hover:text-foreground transition-colors"
+          >
+            Cookie Preferences
+          </button>
         </div>
         <p className="absolute right-0 text-xs text-muted-foreground">© 2026 MyFilipinoMatch. All rights reserved.</p>
       </div>
