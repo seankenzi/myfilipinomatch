@@ -30,8 +30,8 @@ const Signup = () => {
   const navigate = useNavigate();
 
   const renderWidget = useCallback(() => {
-    if (turnstileRef.current && window.turnstile && !widgetIdRef.current) {
-      widgetIdRef.current = window.turnstile.render(turnstileRef.current, {
+    if (turnstileRef.current && getWindow().turnstile && !widgetIdRef.current) {
+      widgetIdRef.current = getWindow().turnstile.render(turnstileRef.current, {
         sitekey: TURNSTILE_SITE_KEY,
         callback: (token: string) => setTurnstileToken(token),
         "expired-callback": () => setTurnstileToken(null),
