@@ -314,12 +314,55 @@ const Settings = () => {
               <Trash2 className="h-4 w-4" />
               Danger Zone
             </h2>
-            <p className="text-sm text-muted-foreground mb-4">
-              Permanently delete your account and all associated data.
-            </p>
-            <Button variant="destructive" size="sm" onClick={handleDeleteAccount}>
-              Delete Account
-            </Button>
+
+            {pendingDeletion ? (
+              <div className="space-y-4">
+                <div className="flex items-start gap-3 rounded-xl bg-destructive/5 border border-destructive/15 p-4">
+                  <AlertCircle className="h-5 w-5 text-destructive flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-medium text-destructive">Deletion scheduled</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Your account and all data will be permanently deleted on{" "}
+                      <strong className="text-foreground">
+                        {format(new Date(pendingDeletion.scheduled_for), "MMMM d, yyyy 'at' h:mm a")}
+                      </strong>.
+                    </p>
+                  </div>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={cancellingDeletion}
+                  onClick={async () => {
+                    setCancellingDeletion(true);
+                    try {
+                      const { error } = await supabase
+                        .from("account_deletions" as any)
+                        .update({ status: "cancelled" })
+                        .eq("id", pendingDeletion.id);
+                      if (error) throw error;
+                      setPendingDeletion(null);
+                      toast({ title: "Deletion cancelled", description: "Your account will not be deleted." });
+                    } catch {
+                      toast({ title: "Error", description: "Failed to cancel deletion.", variant: "destructive" });
+                    } finally {
+                      setCancellingDeletion(false);
+                    }
+                  }}
+                >
+                  {cancellingDeletion ? "Cancelling..." : "Cancel Deletion"}
+                </Button>
+              </div>
+            ) : (
+              <>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Permanently delete your account and all associated data. You'll have 24 hours to change your mind.
+                </p>
+                <Button variant="destructive" size="sm" onClick={handleDeleteAccount}>
+                  Delete Account
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </main>
