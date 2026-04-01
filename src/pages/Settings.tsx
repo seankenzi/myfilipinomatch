@@ -72,10 +72,32 @@ const Settings = () => {
   };
 
   const handleDeleteAccount = async () => {
-    if (!confirm("Are you sure you want to delete your account? This action cannot be undone.")) return;
-    toast({ title: "Account deletion requested", description: "Your account will be deleted within 24 hours." });
-    await signOut();
-    navigate("/");
+    if (!user) return;
+    const confirmed = confirm(
+      "Are you sure you want to delete your account? All your data will be permanently removed within 24 hours. This cannot be undone."
+    );
+    if (!confirmed) return;
+
+    try {
+      // Create a pending deletion record
+      const { error } = await supabase.from("account_deletions" as any).insert({
+        user_id: user.id,
+      });
+      if (error) throw error;
+
+      toast({
+        title: "Account deletion scheduled",
+        description: "Your account and all data will be permanently deleted within 24 hours.",
+      });
+      await signOut();
+      navigate("/");
+    } catch {
+      toast({
+        title: "Error",
+        description: "Failed to schedule deletion. Please contact support.",
+        variant: "destructive",
+      });
+    }
   };
 
   const isActive = subscription?.status === "active";
