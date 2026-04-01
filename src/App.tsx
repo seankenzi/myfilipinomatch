@@ -99,6 +99,7 @@ const App = () => {
                 <Route path="/support" element={<Support />} />
                 <Route path="/blog" element={<Blog />} />
                 <Route path="/blog/:slug" element={<BlogPost />} />
+                <Route path="/cookie-policy" element={<CookiePolicy />} />
                 <Route path="/unsubscribe" element={<Unsubscribe />} />
                 <Route path="/email-unsubscribe" element={<EmailUnsubscribe />} />
                 <Route path="*" element={<NotFound />} />
