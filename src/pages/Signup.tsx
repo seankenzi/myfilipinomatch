@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import SEO from "@/components/SEO";
 import { Link, useNavigate } from "react-router-dom";
 import { Mail, Lock, Eye, EyeOff, Shield, Heart, Users } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 import { lovable } from "@/integrations/lovable/index";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,6 +24,7 @@ const Signup = () => {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
   const turnstileRef = useRef<HTMLDivElement>(null);
   const widgetIdRef = useRef<string | null>(null);
   const { toast } = useToast();
@@ -176,7 +178,22 @@ const Signup = () => {
             <div ref={turnstileRef} />
           </div>
 
-          <Button type="submit" variant="hero" size="lg" className="w-full min-h-[48px] text-base" disabled={loading || !turnstileToken}>
+          {/* Terms & Privacy consent */}
+          <div className="flex items-start gap-2">
+            <Checkbox
+              id="terms-consent"
+              checked={agreedToTerms}
+              onCheckedChange={(checked) => setAgreedToTerms(checked === true)}
+              className="mt-0.5"
+            />
+            <Label htmlFor="terms-consent" className="text-sm font-normal text-muted-foreground leading-snug cursor-pointer">
+              I agree to the{" "}
+              <Link to="/terms" className="text-primary hover:underline" target="_blank">Terms of Service</Link> and{" "}
+              <Link to="/privacy" className="text-primary hover:underline" target="_blank">Privacy Policy</Link>
+            </Label>
+          </div>
+
+          <Button type="submit" variant="hero" size="lg" className="w-full min-h-[48px] text-base" disabled={loading || !turnstileToken || !agreedToTerms}>
             {loading ? "Creating account..." : "Create Free Account"}
           </Button>
         </form>
@@ -219,11 +236,6 @@ const Signup = () => {
           </div>
         </div>
 
-        <p className="mt-4 text-center text-xs text-muted-foreground">
-          By signing up, you agree to our{" "}
-          <Link to="/terms" className="text-primary hover:underline">Terms</Link> and{" "}
-          <Link to="/privacy" className="text-primary hover:underline">Privacy Policy</Link>
-        </p>
 
         <div className="mt-5 rounded-xl border border-primary/20 bg-primary/5 p-4 text-center">
           <p className="text-sm text-muted-foreground mb-2">Already have an account?</p>
