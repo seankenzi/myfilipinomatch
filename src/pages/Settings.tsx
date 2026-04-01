@@ -20,6 +20,8 @@ const Settings = () => {
   const { toast } = useToast();
   const [newPassword, setNewPassword] = useState("");
   const [changingPassword, setChangingPassword] = useState(false);
+  const [newEmail, setNewEmail] = useState("");
+  const [changingEmail, setChangingEmail] = useState(false);
   const [subscription, setSubscription] = useState<{
     plan: string | null;
     status: string | null;
