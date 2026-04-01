@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import SEO from "@/components/SEO";
 import { Link, useNavigate } from "react-router-dom";
 import { Mail, Lock, Eye, EyeOff, Shield, Heart, Users } from "lucide-react";
@@ -8,7 +8,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 import logo from "@/assets/myfilipinomatch-logo.png";
+
+const TURNSTILE_SITE_KEY = "0x4AAAAAACy2sfcdM2WdoPnF";
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const getWindow = () => window as any;
 
 const Signup = () => {
   const [email, setEmail] = useState("");
@@ -16,9 +22,45 @@ const Signup = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const turnstileRef = useRef<HTMLDivElement>(null);
+  const widgetIdRef = useRef<string | null>(null);
   const { toast } = useToast();
   const { signUp } = useAuth();
   const navigate = useNavigate();
+
+  const renderWidget = useCallback(() => {
+    if (turnstileRef.current && getWindow().turnstile && !widgetIdRef.current) {
+      widgetIdRef.current = getWindow().turnstile.render(turnstileRef.current, {
+        sitekey: TURNSTILE_SITE_KEY,
+        callback: (token: string) => setTurnstileToken(token),
+        "expired-callback": () => setTurnstileToken(null),
+        "error-callback": () => setTurnstileToken(null),
+        theme: "light",
+      });
+    }
+  }, []);
+
+  useEffect(() => {
+    // Load Turnstile script if not already loaded
+    if (document.querySelector('script[src*="turnstile"]')) {
+      renderWidget();
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
+    script.async = true;
+    script.onload = () => renderWidget();
+    document.head.appendChild(script);
+
+    return () => {
+      if (widgetIdRef.current && getWindow().turnstile) {
+        getWindow().turnstile.remove(widgetIdRef.current);
+        widgetIdRef.current = null;
+      }
+    };
+  }, [renderWidget]);
 
   const handleGoogleSignIn = async () => {
     setGoogleLoading(true);
@@ -33,26 +75,59 @@ const Signup = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    const { error } = await signUp(email, password, "");
-    if (error) {
-      const isDuplicate = error.message.includes("already exists");
-      toast({
-        title: "Signup failed",
-        description: isDuplicate ? (
-          <span>
-            An account with this email already exists.{" "}
-            <a href="/login" onClick={(e) => { e.preventDefault(); navigate("/login"); }} className="font-medium underline">
-              Sign in instead
-            </a>
-          </span>
-        ) : error.message,
-        variant: "destructive",
-      });
-    } else {
-      toast({ title: "Check your email", description: "We sent you a confirmation link to verify your account." });
-      navigate("/login");
+
+    if (!turnstileToken) {
+      toast({ title: "Please complete the CAPTCHA", description: "Verify you're human before signing up.", variant: "destructive" });
+      return;
     }
+
+    setLoading(true);
+
+    try {
+      // Verify turnstile token server-side
+      const { data: verifyData, error: verifyError } = await supabase.functions.invoke("verify-turnstile", {
+        body: { token: turnstileToken },
+      });
+
+      if (verifyError || !verifyData?.success) {
+        toast({ title: "CAPTCHA verification failed", description: "Please try again.", variant: "destructive" });
+        // Reset widget
+        if (widgetIdRef.current && getWindow().turnstile) {
+          getWindow().turnstile.reset(widgetIdRef.current);
+        }
+        setTurnstileToken(null);
+        setLoading(false);
+        return;
+      }
+
+      const { error } = await signUp(email, password, "");
+      if (error) {
+        const isDuplicate = error.message.includes("already exists");
+        toast({
+          title: "Signup failed",
+          description: isDuplicate ? (
+            <span>
+              An account with this email already exists.{" "}
+              <a href="/login" onClick={(e) => { e.preventDefault(); navigate("/login"); }} className="font-medium underline">
+                Sign in instead
+              </a>
+            </span>
+          ) : error.message,
+          variant: "destructive",
+        });
+      } else {
+        toast({ title: "Check your email", description: "We sent you a confirmation link to verify your account." });
+        navigate("/login");
+      }
+    } catch {
+      toast({ title: "Something went wrong", description: "Please try again later.", variant: "destructive" });
+    }
+
+    // Reset widget after attempt
+    if (widgetIdRef.current && getWindow().turnstile) {
+      getWindow().turnstile.reset(widgetIdRef.current);
+    }
+    setTurnstileToken(null);
     setLoading(false);
   };
 
@@ -96,7 +171,12 @@ const Signup = () => {
             </div>
           </div>
 
-          <Button type="submit" variant="hero" size="lg" className="w-full min-h-[48px] text-base" disabled={loading}>
+          {/* Turnstile CAPTCHA */}
+          <div className="flex justify-center">
+            <div ref={turnstileRef} />
+          </div>
+
+          <Button type="submit" variant="hero" size="lg" className="w-full min-h-[48px] text-base" disabled={loading || !turnstileToken}>
             {loading ? "Creating account..." : "Create Free Account"}
           </Button>
         </form>
