@@ -167,10 +167,44 @@ const Settings = () => {
               <Mail className="h-4 w-4 text-primary" />
               Account
             </h2>
-            <div className="space-y-3">
+            <div className="space-y-4">
               <div>
-                <Label className="text-xs text-muted-foreground">Email</Label>
+                <Label className="text-xs text-muted-foreground">Current Email</Label>
                 <p className="text-sm font-medium">{user?.email}</p>
+              </div>
+              <div>
+                <Label className="text-xs">Change Email</Label>
+                <div className="flex gap-2 mt-1">
+                  <Input
+                    type="email"
+                    value={newEmail}
+                    onChange={(e) => setNewEmail(e.target.value)}
+                    placeholder="Enter new email"
+                    className="flex-1"
+                  />
+                  <Button
+                    size="sm"
+                    disabled={changingEmail}
+                    onClick={async () => {
+                      if (!newEmail || !newEmail.includes("@")) {
+                        toast({ title: "Please enter a valid email", variant: "destructive" });
+                        return;
+                      }
+                      setChangingEmail(true);
+                      const { error } = await supabase.auth.updateUser({ email: newEmail });
+                      if (error) {
+                        toast({ title: "Error", description: error.message, variant: "destructive" });
+                      } else {
+                        toast({ title: "Confirmation sent", description: "Check both your old and new email to confirm the change." });
+                        setNewEmail("");
+                      }
+                      setChangingEmail(false);
+                    }}
+                  >
+                    {changingEmail ? "..." : "Update"}
+                  </Button>
+                </div>
+                <p className="text-[11px] text-muted-foreground mt-1.5">You'll need to confirm via both your old and new email.</p>
               </div>
             </div>
           </div>
