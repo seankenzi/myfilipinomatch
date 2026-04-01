@@ -1,7 +1,7 @@
 import { useState } from "react";
 import SEO from "@/components/SEO";
 import { Link, useNavigate } from "react-router-dom";
-import { Mail, Lock, Eye, EyeOff } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { Button } from "@/components/ui/button";
@@ -124,10 +124,18 @@ const Login = () => {
           {googleLoading ? "Signing in..." : "Continue with Google"}
         </Button>
 
-        <p className="mt-6 text-center text-sm text-muted-foreground">
-          Don't have an account?{" "}
-          <Link to="/signup" className="font-medium text-primary hover:underline">Sign up free</Link>
-        </p>
+        <div className="mt-6 space-y-3 text-center text-sm text-muted-foreground">
+          <p>
+            Don't have an account?{" "}
+            <Link to="/signup" className="font-medium text-primary hover:underline">Sign up free</Link>
+          </p>
+          <p>
+            <Link to="/" className="inline-flex items-center gap-1 font-medium text-muted-foreground hover:text-foreground transition-colors">
+              <ArrowLeft className="h-4 w-4" />
+              Back to Home
+            </Link>
+          </p>
+        </div>
       </div>
     </div>
     </>
