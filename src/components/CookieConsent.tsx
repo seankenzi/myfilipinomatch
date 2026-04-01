@@ -45,6 +45,11 @@ const CookieConsent = () => {
       const timer = setTimeout(() => setVisible(true), 1000);
       return () => clearTimeout(timer);
     }
+
+    // Listen for manual re-open from footer link
+    const handleReopen = () => setVisible(true);
+    window.addEventListener("open-cookie-consent", handleReopen);
+    return () => window.removeEventListener("open-cookie-consent", handleReopen);
   }, []);
 
   const handleAccept = () => {
