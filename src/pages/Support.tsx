@@ -17,35 +17,52 @@ const Support = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [showFaq, setShowFaq] = useState(false);
+  const [name, setName] = useState(user?.user_metadata?.full_name || "");
+  const [email, setEmail] = useState(user?.email || "");
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
   const [sending, setSending] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!subject.trim() || !message.trim()) {
+    if (!name.trim() || !email.trim() || !subject.trim() || !message.trim()) {
       toast({ title: "Please fill in all fields", variant: "destructive" });
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      toast({ title: "Please enter a valid email address", variant: "destructive" });
       return;
     }
     setSending(true);
 
-    // Send contact confirmation email to the user
-    if (user?.email) {
-      const confirmId = crypto.randomUUID();
-      await supabase.functions.invoke("send-transactional-email", {
-        body: {
-          templateName: "contact-confirmation",
-          recipientEmail: user.email,
-          idempotencyKey: `contact-confirm-${confirmId}`,
-          templateData: {
-            name: user.user_metadata?.full_name || undefined,
-            subject: subject.trim(),
-          },
+    const submissionId = crypto.randomUUID();
+
+    // Store the contact submission
+    await supabase.from("contact_submissions").insert({
+      id: submissionId,
+      user_id: user?.id || null,
+      name: name.trim(),
+      email: email.trim(),
+      subject: subject.trim(),
+      message: message.trim(),
+    });
+
+    // Send contact confirmation email
+    await supabase.functions.invoke("send-transactional-email", {
+      body: {
+        templateName: "contact-confirmation",
+        recipientEmail: email.trim(),
+        idempotencyKey: `contact-confirm-${submissionId}`,
+        templateData: {
+          name: name.trim(),
+          subject: subject.trim(),
         },
-      });
-    }
+      },
+    });
 
     toast({ title: "Message sent!", description: "We'll get back to you within 24 hours. Check your email for confirmation." });
+    setName(user?.user_metadata?.full_name || "");
+    setEmail(user?.email || "");
     setSubject("");
     setMessage("");
     setSending(false);
@@ -132,6 +149,29 @@ const Support = () => {
           <div className="rounded-2xl border border-border bg-card p-6 shadow-card">
             <h2 className="text-lg font-semibold mb-4">Contact Us</h2>
             <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <Label className="text-xs">Your Name</Label>
+                  <Input
+                    className="mt-1"
+                    placeholder="Full name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    maxLength={100}
+                  />
+                </div>
+                <div>
+                  <Label className="text-xs">Your Email</Label>
+                  <Input
+                    className="mt-1"
+                    type="email"
+                    placeholder="email@example.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    maxLength={255}
+                  />
+                </div>
+              </div>
               <div>
                 <Label className="text-xs">Subject</Label>
                 <Input
@@ -139,6 +179,7 @@ const Support = () => {
                   placeholder="What do you need help with?"
                   value={subject}
                   onChange={(e) => setSubject(e.target.value)}
+                  maxLength={200}
                 />
               </div>
               <div>
@@ -149,6 +190,7 @@ const Support = () => {
                   rows={4}
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
+                  maxLength={2000}
                 />
               </div>
               <Button type="submit" className="gradient-hero text-primary-foreground w-full" disabled={sending}>

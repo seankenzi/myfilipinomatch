@@ -103,6 +103,7 @@ const UsersTab = () => {
   const { toast } = useToast();
   const [users, setUsers] = useState<any[]>([]);
   const [search, setSearch] = useState("");
+  const [onboardingFilter, setOnboardingFilter] = useState<"all" | "completed" | "incomplete">("all");
   const [loading, setLoading] = useState(true);
 
   const fetchUsers = async () => {
@@ -110,6 +111,11 @@ const UsersTab = () => {
     let query = supabase.from("profiles").select("*").order("created_at", { ascending: false }).limit(100);
     if (search.trim()) {
       query = query.or(`full_name.ilike.%${search}%,email.ilike.%${search}%`);
+    }
+    if (onboardingFilter === "completed") {
+      query = query.eq("onboarding_completed", true);
+    } else if (onboardingFilter === "incomplete") {
+      query = query.or("onboarding_completed.is.null,onboarding_completed.eq.false");
     }
     const { data } = await query;
     // Resolve signed URLs for avatars
@@ -126,7 +132,7 @@ const UsersTab = () => {
     setLoading(false);
   };
 
-  useEffect(() => { fetchUsers(); }, []);
+  useEffect(() => { fetchUsers(); }, [onboardingFilter]);
 
   const handleVerify = async (userId: string, verified: boolean) => {
     await supabase.from("profiles").update({ is_verified: verified }).eq("id", userId);
@@ -191,7 +197,7 @@ const UsersTab = () => {
 
   return (
     <div className="space-y-4">
-      <div className="flex gap-2">
+      <div className="flex flex-col sm:flex-row gap-2">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
@@ -200,6 +206,19 @@ const UsersTab = () => {
             onChange={(e) => setSearch(e.target.value)}
             className="pl-9"
           />
+        </div>
+        <div className="flex gap-1">
+          {(["all", "completed", "incomplete"] as const).map((filter) => (
+            <Button
+              key={filter}
+              size="sm"
+              variant={onboardingFilter === filter ? "default" : "outline"}
+              onClick={() => setOnboardingFilter(filter)}
+              className="text-xs capitalize"
+            >
+              {filter === "all" ? "All" : filter === "completed" ? "Onboarded" : "Not Onboarded"}
+            </Button>
+          ))}
         </div>
         <Button onClick={fetchUsers} variant="outline" size="icon"><RefreshCw className="h-4 w-4" /></Button>
       </div>
