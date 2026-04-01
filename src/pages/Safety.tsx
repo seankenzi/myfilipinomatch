@@ -5,6 +5,7 @@ import {
   Shield, Eye, Lock, AlertTriangle, CheckCircle, ShieldCheck,
   UserCheck, MessageSquareWarning, KeyRound, Globe, Heart,
   FileCheck, BadgeCheck, Scale, Fingerprint, ServerCrash, Camera,
+  Download, Trash2, Cookie, ClipboardCheck,
 } from "lucide-react";
 
 /* ── Section wrapper ── */
