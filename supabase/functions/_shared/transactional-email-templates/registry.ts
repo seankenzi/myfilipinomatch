@@ -16,6 +16,7 @@ import { template as profileLiked } from './profile-liked.tsx'
 import { template as adminNewSignup } from './admin-new-signup.tsx'
 import { template as appCrashAlert } from './app-crash-alert.tsx'
 import { template as videoAnomalyAlert } from './video-anomaly-alert.tsx'
+import { template as adminContactSubmission } from './admin-contact-submission.tsx'
 
 export const TEMPLATES: Record<string, TemplateEntry> = {
   'welcome-email': welcomeEmail,
@@ -25,4 +26,5 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'admin-new-signup': adminNewSignup,
   'app-crash-alert': appCrashAlert,
   'video-anomaly-alert': videoAnomalyAlert,
+  'admin-contact-submission': adminContactSubmission,
 }

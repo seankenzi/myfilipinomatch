@@ -47,18 +47,31 @@ const Support = () => {
       message: message.trim(),
     });
 
-    // Send contact confirmation email
-    await supabase.functions.invoke("send-transactional-email", {
-      body: {
-        templateName: "contact-confirmation",
-        recipientEmail: email.trim(),
-        idempotencyKey: `contact-confirm-${submissionId}`,
-        templateData: {
-          name: name.trim(),
-          subject: subject.trim(),
+    // Send contact confirmation email to user + admin notification in parallel
+    const adminEmail = "support@myfilipinomatch.com";
+    await Promise.all([
+      supabase.functions.invoke("send-transactional-email", {
+        body: {
+          templateName: "contact-confirmation",
+          recipientEmail: email.trim(),
+          idempotencyKey: `contact-confirm-${submissionId}`,
+          templateData: { name: name.trim(), subject: subject.trim() },
         },
-      },
-    });
+      }),
+      supabase.functions.invoke("send-transactional-email", {
+        body: {
+          templateName: "admin-contact-submission",
+          recipientEmail: adminEmail,
+          idempotencyKey: `admin-contact-${submissionId}`,
+          templateData: {
+            senderName: name.trim(),
+            senderEmail: email.trim(),
+            subject: subject.trim(),
+            message: message.trim(),
+          },
+        },
+      }),
+    ]);
 
     toast({ title: "Message sent!", description: "We'll get back to you within 24 hours. Check your email for confirmation." });
     setName(user?.user_metadata?.full_name || "");
