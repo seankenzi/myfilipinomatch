@@ -1,4 +1,4 @@
-import { ArrowLeft, Lock, Trash2, Mail, Crown, Video } from "lucide-react";
+import { ArrowLeft, Lock, Trash2, Mail, Crown, Video, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
@@ -28,6 +28,7 @@ const Settings = () => {
   const [loadingSub, setLoadingSub] = useState(true);
   const [videoUsedSeconds, setVideoUsedSeconds] = useState(0);
   const [loadingVideo, setLoadingVideo] = useState(true);
+  const [exportingData, setExportingData] = useState(false);
 
   useEffect(() => {
     const fetchSubscription = async () => {
@@ -195,6 +196,43 @@ const Settings = () => {
                 </div>
               </div>
             </div>
+          </div>
+
+          {/* Privacy & Data */}
+          <div className="mb-4 rounded-2xl border border-border bg-card p-5 shadow-card">
+            <h2 className="mb-4 font-semibold flex items-center gap-2">
+              <Download className="h-4 w-4 text-primary" />
+              Privacy & Data
+            </h2>
+            <p className="text-sm text-muted-foreground mb-4">
+              Download a copy of all personal data we hold about you.
+            </p>
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={exportingData}
+              onClick={async () => {
+                setExportingData(true);
+                try {
+                  const { data, error } = await supabase.functions.invoke("export-user-data");
+                  if (error) throw error;
+                  const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement("a");
+                  a.href = url;
+                  a.download = `my-data-export-${new Date().toISOString().slice(0, 10)}.json`;
+                  a.click();
+                  URL.revokeObjectURL(url);
+                  toast({ title: "Data exported successfully!" });
+                } catch {
+                  toast({ title: "Export failed", description: "Please try again later.", variant: "destructive" });
+                } finally {
+                  setExportingData(false);
+                }
+              }}
+            >
+              {exportingData ? "Exporting..." : "Download My Data"}
+            </Button>
           </div>
 
           {/* Danger Zone */}
