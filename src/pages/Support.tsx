@@ -149,6 +149,29 @@ const Support = () => {
           <div className="rounded-2xl border border-border bg-card p-6 shadow-card">
             <h2 className="text-lg font-semibold mb-4">Contact Us</h2>
             <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <Label className="text-xs">Your Name</Label>
+                  <Input
+                    className="mt-1"
+                    placeholder="Full name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    maxLength={100}
+                  />
+                </div>
+                <div>
+                  <Label className="text-xs">Your Email</Label>
+                  <Input
+                    className="mt-1"
+                    type="email"
+                    placeholder="email@example.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    maxLength={255}
+                  />
+                </div>
+              </div>
               <div>
                 <Label className="text-xs">Subject</Label>
                 <Input
@@ -156,6 +179,7 @@ const Support = () => {
                   placeholder="What do you need help with?"
                   value={subject}
                   onChange={(e) => setSubject(e.target.value)}
+                  maxLength={200}
                 />
               </div>
               <div>
@@ -166,6 +190,7 @@ const Support = () => {
                   rows={4}
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
+                  maxLength={2000}
                 />
               </div>
               <Button type="submit" className="gradient-hero text-primary-foreground w-full" disabled={sending}>
