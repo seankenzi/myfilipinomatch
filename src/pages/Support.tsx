@@ -89,20 +89,43 @@ const Support = () => {
 
           {/* FAQ Section */}
           {showFaq && (
-            <div className="mb-10 rounded-2xl border border-border bg-card p-6 shadow-card space-y-4">
-              <h2 className="text-lg font-semibold">Frequently Asked Questions</h2>
-              {[
-                { q: "How do I verify my profile?", a: "Go to your Profile page and tap 'Get Verified'. Follow the instructions to upload a selfie. Our team will review it within 24 hours." },
-                { q: "How does matching work?", a: "When you and another user both like each other, it's a match! You can then start messaging each other." },
-                { q: "What is premium?", a: "Premium unlocks unlimited messaging, the ability to see who liked you, and increased profile visibility." },
-                { q: "How do I report someone?", a: "Open a chat with the user, tap the menu icon (⋮) in the top right, and select 'Report'. You can also report profiles from the Discover page." },
-                { q: "Can I delete my account?", a: "Yes. Go to Settings and select 'Delete Account'. This action is permanent." },
-              ].map(({ q, a }) => (
-                <div key={q} className="border-b border-border pb-3 last:border-0 last:pb-0">
-                  <h3 className="font-medium text-sm text-foreground">{q}</h3>
-                  <p className="text-xs text-muted-foreground mt-1">{a}</p>
-                </div>
-              ))}
+            <div className="mb-10 rounded-2xl border border-border bg-card p-6 shadow-card space-y-6">
+              <div>
+                <h2 className="text-lg font-semibold mb-3">General Questions</h2>
+                <Accordion type="single" collapsible className="w-full">
+                  {[
+                    { q: "Is MyFilipinoMatch free to join?", a: "Yes! Creating an account is completely free. You can set up your profile, browse verified members, and receive matches at no cost. Premium features like unlimited messaging and video calls are available with an upgrade." },
+                    { q: "How does profile verification work?", a: "Every member goes through a verification process that includes a live selfie pose challenge. Our moderation team manually reviews each submission to ensure profiles are authentic — no bots, no fakes." },
+                    { q: "Is MyFilipinoMatch a scam site?", a: "Absolutely not. We are a legitimate dating platform focused on genuine, long-term relationships. Unlike pay-per-message sites, we don't charge you to send individual messages or use fake operators. Our verified profiles and active moderation keep the community safe." },
+                    { q: "Who is MyFilipinoMatch for?", a: "MyFilipinoMatch is designed for foreign men seeking serious relationships with Filipino women, and for Filipinas looking to connect with international partners for long-term commitment or marriage." },
+                    { q: "Can I video call my matches?", a: "Yes! Premium members get access to in-app video calling so you can see and talk to your matches face-to-face before meeting in person — building trust and real connection." },
+                    { q: "How do you keep members safe?", a: "We invest heavily in safety: manual profile verification, an active moderation team, a report-and-block system, secure encrypted messaging, and strict community guidelines. Your privacy and security are our top priorities." },
+                  ].map(({ q, a }, i) => (
+                    <AccordionItem key={i} value={`general-${i}`}>
+                      <AccordionTrigger className="text-sm text-left">{q}</AccordionTrigger>
+                      <AccordionContent className="text-muted-foreground">{a}</AccordionContent>
+                    </AccordionItem>
+                  ))}
+                </Accordion>
+              </div>
+
+              <div>
+                <h2 className="text-lg font-semibold mb-3">Account & Features</h2>
+                <Accordion type="single" collapsible className="w-full">
+                  {[
+                    { q: "How do I verify my profile?", a: "Go to your Profile page and tap 'Get Verified'. Follow the instructions to upload a selfie. Our team will review it within 24 hours." },
+                    { q: "How does matching work?", a: "When you and another user both like each other, it's a match! You can then start messaging each other." },
+                    { q: "What is premium?", a: "Premium unlocks unlimited messaging, the ability to see who liked you, and increased profile visibility." },
+                    { q: "How do I report someone?", a: "Open a chat with the user, tap the menu icon (⋮) in the top right, and select 'Report'. You can also report profiles from the Discover page." },
+                    { q: "Can I delete my account?", a: "Yes. Go to Settings and select 'Delete Account'. This action is permanent." },
+                  ].map(({ q, a }, i) => (
+                    <AccordionItem key={i} value={`account-${i}`}>
+                      <AccordionTrigger className="text-sm text-left">{q}</AccordionTrigger>
+                      <AccordionContent className="text-muted-foreground">{a}</AccordionContent>
+                    </AccordionItem>
+                  ))}
+                </Accordion>
+              </div>
             </div>
           )}
 
