@@ -91,17 +91,17 @@ const Safety = () => {
 
             {/* ── Security certifications ── */}
             <Section>
-              <SectionTitle icon={FileCheck}>Security & Certifications</SectionTitle>
+              <SectionTitle icon={FileCheck}>How We Protect You</SectionTitle>
               <p className="text-sm text-muted-foreground mb-6 leading-relaxed">
-                We follow industry best practices and undergo regular assessments to keep your data and experience safe.
+                Real measures we've built into the platform to keep you and your data safe.
               </p>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                <CertBadge title="SSL/TLS Encryption" subtitle="All data encrypted in transit" />
-                <CertBadge title="GDPR Compliant" subtitle="EU data protection standards" />
-                <CertBadge title="SOC 2 Aligned" subtitle="Enterprise-grade security controls" />
-                <CertBadge title="OWASP Top 10" subtitle="Protection against common threats" />
-                <CertBadge title="Regular Audits" subtitle="Ongoing vulnerability scanning" />
-                <CertBadge title="RLS Enforced" subtitle="Row-level data isolation" />
+                <CertBadge title="SSL/TLS Encrypted" subtitle="All connections use HTTPS" />
+                <CertBadge title="100% Manual Review" subtitle="Every profile checked by a human" />
+                <CertBadge title="Match-Only Chat" subtitle="No messages from strangers" />
+                <CertBadge title="Data Isolation" subtitle="Row-level security on all data" />
+                <CertBadge title="Encrypted Storage" subtitle="Data encrypted at rest" />
+                <CertBadge title="Selfie Verification" subtitle="Pose challenge confirms identity" />
               </div>
             </Section>
 
