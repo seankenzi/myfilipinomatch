@@ -1119,6 +1119,163 @@ const ContactSubmissionsTab = () => {
   );
 };
 
+// ─── Emails Tab ───
+const EmailsTab = () => {
+  const [logs, setLogs] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [templateFilter, setTemplateFilter] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [templates, setTemplates] = useState<string[]>([]);
+
+  const fetchLogs = async () => {
+    setLoading(true);
+    let query = supabase
+      .from("email_send_log")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(200);
+
+    if (templateFilter !== "all") {
+      query = query.eq("template_name", templateFilter);
+    }
+    if (statusFilter !== "all") {
+      query = query.eq("status", statusFilter);
+    }
+
+    const { data } = await query;
+    const rows = data || [];
+
+    // Deduplicate by message_id (keep latest)
+    const seen = new Map<string, any>();
+    for (const row of rows) {
+      const key = row.message_id || row.id;
+      if (!seen.has(key) || new Date(row.created_at) > new Date(seen.get(key).created_at)) {
+        seen.set(key, row);
+      }
+    }
+    const deduped = Array.from(seen.values()).sort(
+      (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    );
+
+    setLogs(deduped);
+
+    // Extract unique templates
+    if (templates.length === 0) {
+      const uniqueTemplates = [...new Set(rows.map((r: any) => r.template_name))].sort();
+      setTemplates(uniqueTemplates);
+    }
+    setLoading(false);
+  };
+
+  useEffect(() => { fetchLogs(); }, [templateFilter, statusFilter]);
+
+  const statusBadge = (status: string) => {
+    const styles: Record<string, string> = {
+      sent: "bg-secondary/10 text-secondary",
+      pending: "bg-accent/10 text-accent",
+      dlq: "bg-destructive/10 text-destructive",
+      failed: "bg-destructive/10 text-destructive",
+      suppressed: "bg-yellow-500/10 text-yellow-600",
+      bounced: "bg-destructive/10 text-destructive",
+      complained: "bg-destructive/10 text-destructive",
+    };
+    return (
+      <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full ${styles[status] || "bg-muted text-muted-foreground"}`}>
+        {status}
+      </span>
+    );
+  };
+
+  const stats = {
+    total: logs.length,
+    sent: logs.filter(l => l.status === "sent").length,
+    failed: logs.filter(l => ["dlq", "failed"].includes(l.status)).length,
+    pending: logs.filter(l => l.status === "pending").length,
+  };
+
+  return (
+    <div className="space-y-4">
+      {/* Stats */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        {[
+          { label: "Total Emails", value: stats.total, color: "text-primary" },
+          { label: "Sent", value: stats.sent, color: "text-secondary" },
+          { label: "Pending", value: stats.pending, color: "text-accent" },
+          { label: "Failed", value: stats.failed, color: "text-destructive" },
+        ].map((s) => (
+          <div key={s.label} className="rounded-xl border border-border bg-card p-4 shadow-sm">
+            <p className="text-xs text-muted-foreground">{s.label}</p>
+            <p className={`text-xl font-bold ${s.color}`}>{s.value}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Filters */}
+      <div className="flex flex-wrap gap-2 items-center">
+        <select
+          value={templateFilter}
+          onChange={(e) => setTemplateFilter(e.target.value)}
+          className="rounded-lg border border-border bg-card px-3 py-1.5 text-xs"
+        >
+          <option value="all">All Templates</option>
+          {templates.map((t) => (
+            <option key={t} value={t}>{t}</option>
+          ))}
+        </select>
+        <div className="flex gap-1">
+          {(["all", "sent", "pending", "dlq"] as const).map((f) => (
+            <Button
+              key={f}
+              size="sm"
+              variant={statusFilter === f ? "default" : "outline"}
+              onClick={() => setStatusFilter(f)}
+              className="text-xs capitalize"
+            >
+              {f === "all" ? "All" : f === "dlq" ? "Failed" : f}
+            </Button>
+          ))}
+        </div>
+        <div className="flex-1" />
+        <Button onClick={fetchLogs} variant="outline" size="icon"><RefreshCw className="h-4 w-4" /></Button>
+      </div>
+
+      {/* Table */}
+      {loading ? (
+        <div className="flex justify-center py-10"><div className="h-6 w-6 animate-spin rounded-full border-4 border-primary border-t-transparent" /></div>
+      ) : logs.length === 0 ? (
+        <div className="p-10 text-center text-muted-foreground">No email logs found.</div>
+      ) : (
+        <div className="rounded-xl border border-border overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-muted/50">
+                <tr>
+                  <th className="text-left p-3 font-medium text-muted-foreground">Template</th>
+                  <th className="text-left p-3 font-medium text-muted-foreground">Recipient</th>
+                  <th className="text-center p-3 font-medium text-muted-foreground">Status</th>
+                  <th className="text-left p-3 font-medium text-muted-foreground">Date</th>
+                  <th className="text-left p-3 font-medium text-muted-foreground">Error</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {logs.map((log) => (
+                  <tr key={log.id} className="hover:bg-muted/30 transition-colors">
+                    <td className="p-3 text-xs font-medium">{log.template_name}</td>
+                    <td className="p-3 text-xs text-muted-foreground truncate max-w-[200px]">{log.recipient_email}</td>
+                    <td className="p-3 text-center">{statusBadge(log.status)}</td>
+                    <td className="p-3 text-xs text-muted-foreground">{format(new Date(log.created_at), "MMM d, yyyy h:mm a")}</td>
+                    <td className="p-3 text-xs text-destructive truncate max-w-[200px]">{log.error_message || "—"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 // ─── Main Admin Dashboard ───
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -1144,13 +1301,14 @@ const AdminDashboard = () => {
           </div>
 
           <Tabs defaultValue="dashboard" className="space-y-6" onValueChange={(v) => { if (v === "subscriptions") setSubsRefreshKey(k => k + 1); }}>
-            <TabsList className="grid w-full grid-cols-8 max-w-5xl">
+            <TabsList className="grid w-full grid-cols-9 max-w-5xl">
               <TabsTrigger value="dashboard" className="text-xs"><TrendingUp className="h-3.5 w-3.5 mr-1" /> Overview</TabsTrigger>
               <TabsTrigger value="users" className="text-xs"><Users className="h-3.5 w-3.5 mr-1" /> Users</TabsTrigger>
               <TabsTrigger value="moderation" className="text-xs"><Shield className="h-3.5 w-3.5 mr-1" /> Moderation</TabsTrigger>
               <TabsTrigger value="subscriptions" className="text-xs"><CreditCard className="h-3.5 w-3.5 mr-1" /> Subs</TabsTrigger>
               <TabsTrigger value="features" className="text-xs"><ToggleRight className="h-3.5 w-3.5 mr-1" /> Features</TabsTrigger>
               <TabsTrigger value="contact" className="text-xs"><Inbox className="h-3.5 w-3.5 mr-1" /> Contact</TabsTrigger>
+              <TabsTrigger value="emails" className="text-xs"><Mail className="h-3.5 w-3.5 mr-1" /> Emails</TabsTrigger>
               <TabsTrigger value="video" className="text-xs"><Video className="h-3.5 w-3.5 mr-1" /> Video</TabsTrigger>
               <TabsTrigger value="crashes" className="text-xs"><Bug className="h-3.5 w-3.5 mr-1" /> Crashes</TabsTrigger>
             </TabsList>
@@ -1161,6 +1319,7 @@ const AdminDashboard = () => {
             <TabsContent value="subscriptions"><SubscriptionsTab refreshKey={subsRefreshKey} /></TabsContent>
             <TabsContent value="features"><FeatureFlagsTab /></TabsContent>
             <TabsContent value="contact"><ContactSubmissionsTab /></TabsContent>
+            <TabsContent value="emails"><EmailsTab /></TabsContent>
             <TabsContent value="video"><VideoUsageTab /></TabsContent>
             <TabsContent value="crashes"><CrashLogsTab /></TabsContent>
           </Tabs>
