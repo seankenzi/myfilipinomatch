@@ -92,8 +92,8 @@ const Signup = () => {
       if (verifyError || !verifyData?.success) {
         toast({ title: "CAPTCHA verification failed", description: "Please try again.", variant: "destructive" });
         // Reset widget
-        if (widgetIdRef.current && window.turnstile) {
-          window.turnstile.reset(widgetIdRef.current);
+        if (widgetIdRef.current && getWindow().turnstile) {
+          getWindow().turnstile.reset(widgetIdRef.current);
         }
         setTurnstileToken(null);
         setLoading(false);
