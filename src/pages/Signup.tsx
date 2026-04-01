@@ -13,6 +13,9 @@ import logo from "@/assets/myfilipinomatch-logo.png";
 
 const TURNSTILE_SITE_KEY = "0x4AAAAAACy2sfcdM2WdoPnF";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const getWindow = () => window as any;
+
 const Signup = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
