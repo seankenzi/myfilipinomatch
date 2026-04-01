@@ -13,6 +13,7 @@ import AdminRoute from "@/components/AdminRoute";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import ScrollToTop from "@/components/ScrollToTop";
 import IncomingCallHandler from "@/components/IncomingCallHandler";
+import CookieConsent from "@/components/CookieConsent";
 
 // Eagerly load the landing/index page for fast initial paint
 import Index from "./pages/Index.tsx";
