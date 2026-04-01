@@ -1184,6 +1184,13 @@ const EmailsTab = () => {
     );
   };
 
+  // Apply status filter client-side after dedup
+  const filteredLogs = statusFilter === "all"
+    ? logs
+    : statusFilter === "dlq"
+      ? logs.filter(l => ["dlq", "failed"].includes(l.status))
+      : logs.filter(l => l.status === statusFilter);
+
   const stats = {
     total: logs.length,
     sent: logs.filter(l => l.status === "sent").length,
