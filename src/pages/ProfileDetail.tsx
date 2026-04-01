@@ -121,7 +121,7 @@ const ProfileDetail = () => {
     checkLiked();
     checkMatch();
     checkPremium();
-  }, [id, user]);
+  }, [id, user, isAdmin]);
 
   const rawPhotos = profile
     ? [
