@@ -13,26 +13,51 @@
     <link rel="preconnect" href="https://qxxehbdtfxbapxanqefv.supabase.co" crossorigin />
     <link rel="dns-prefetch" href="https://qxxehbdtfxbapxanqefv.supabase.co" />
     <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
-    <!-- Google Analytics — only loads if cookie consent is accepted -->
+    <link rel="dns-prefetch" href="https://connect.facebook.net" />
+    <!-- Cookie-gated scripts — only load when user consents to the specific category -->
     <script>
-      window.__loadAnalytics = function() {
-        if (window.__analyticsLoaded) return;
-        window.__analyticsLoaded = true;
-        var s = document.createElement('script');
-        s.src = 'https://www.googletagmanager.com/gtag/js?id=G-YSD4Q86MPZ';
-        s.async = true;
-        document.head.appendChild(s);
-        s.onload = function() {
-          window.dataLayer = window.dataLayer || [];
-          function gtag(){dataLayer.push(arguments);}
-          gtag('js', new Date());
-          gtag('config', 'G-YSD4Q86MPZ');
+      (function() {
+        var CONSENT_KEY = 'cookie_preferences';
+
+        function getPrefs() {
+          try { return JSON.parse(localStorage.getItem(CONSENT_KEY)) || {}; } catch(e) { return {}; }
+        }
+
+        // --- Google Analytics ---
+        window.__loadAnalytics = function() {
+          if (window.__analyticsLoaded) return;
+          window.__analyticsLoaded = true;
+          var s = document.createElement('script');
+          s.src = 'https://www.googletagmanager.com/gtag/js?id=G-YSD4Q86MPZ';
+          s.async = true;
+          document.head.appendChild(s);
+          s.onload = function() {
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-YSD4Q86MPZ', { anonymize_ip: true });
+          };
         };
-      };
-      // Auto-load if previously accepted
-      if (localStorage.getItem('cookie_consent') === 'accepted') {
-        window.addEventListener('load', window.__loadAnalytics);
-      }
+
+        // --- Facebook Pixel ---
+        window.__loadMarketing = function() {
+          if (window.__marketingLoaded) return;
+          window.__marketingLoaded = true;
+          !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+          n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
+          n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
+          t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}
+          (window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
+          // Replace YOUR_PIXEL_ID with your actual Facebook Pixel ID when ready
+          // fbq('init', 'YOUR_PIXEL_ID');
+          // fbq('track', 'PageView');
+        };
+
+        // Auto-load based on saved preferences
+        var prefs = getPrefs();
+        if (prefs.analytics) window.addEventListener('load', window.__loadAnalytics);
+        if (prefs.marketing) window.addEventListener('load', window.__loadMarketing);
+      })();
     </script>
     <meta name="author" content="MyFilipinoMatch" />
     <meta property="og:type" content="website" />

@@ -21,7 +21,7 @@ const Footer = () => (
             onClick={() => window.dispatchEvent(new Event("open-cookie-consent"))}
             className="hover:text-foreground transition-colors"
           >
-            Cookie Preferences
+            Cookie Settings
           </button>
         </div>
         <p className="absolute right-0 text-xs text-muted-foreground">© 2026 MyFilipinoMatch. All rights reserved.</p>
