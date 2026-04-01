@@ -124,8 +124,8 @@ const Signup = () => {
     }
 
     // Reset widget after attempt
-    if (widgetIdRef.current && window.turnstile) {
-      window.turnstile.reset(widgetIdRef.current);
+    if (widgetIdRef.current && getWindow().turnstile) {
+      getWindow().turnstile.reset(widgetIdRef.current);
     }
     setTurnstileToken(null);
     setLoading(false);
