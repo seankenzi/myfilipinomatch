@@ -35,7 +35,12 @@
     <meta name="twitter:image" content="https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/017a55af-afd2-4091-a6e6-373b9e2fac21/id-preview-9d7f156a--d7e8e2e6-0b61-4c99-bb95-51ec2800fd55.lovable.app-1774621161903.png" />
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <div id="initial-loader" style="display:flex;align-items:center;justify-content:center;min-height:100vh;background:#fff">
+        <div style="width:40px;height:40px;border:4px solid #f3f3f3;border-top:4px solid #d94f5c;border-radius:50%;animation:ll-spin .8s linear infinite"></div>
+      </div>
+      <style>@keyframes ll-spin{to{transform:rotate(360deg)}}</style>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
