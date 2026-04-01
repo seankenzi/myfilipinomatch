@@ -71,31 +71,52 @@ const CookiePolicy = () => {
                       <td className="px-4 py-3 text-xs">Google Analytics — distinguishes unique visitors</td>
                       <td className="px-4 py-3 text-xs">24 hours</td>
                     </tr>
+                    <tr>
+                      <td className="px-4 py-3 font-mono text-xs">_fbp</td>
+                      <td className="px-4 py-3"><span className="rounded-full bg-primary/10 text-primary px-2 py-0.5 text-xs font-medium">Marketing</span></td>
+                      <td className="px-4 py-3 text-xs">Facebook Pixel — measures ad effectiveness and enables retargeting</td>
+                      <td className="px-4 py-3 text-xs">3 months</td>
+                    </tr>
+                    <tr>
+                      <td className="px-4 py-3 font-mono text-xs">fr</td>
+                      <td className="px-4 py-3"><span className="rounded-full bg-primary/10 text-primary px-2 py-0.5 text-xs font-medium">Marketing</span></td>
+                      <td className="px-4 py-3 text-xs">Facebook — delivers and measures ad relevance</td>
+                      <td className="px-4 py-3 text-xs">3 months</td>
+                    </tr>
                   </tbody>
                 </table>
               </div>
             </section>
 
             <section>
-              <h2 className="text-lg font-semibold text-foreground mb-3">Essential Cookies</h2>
-              <p>
-                These cookies are necessary for the website to function. They enable core features like authentication and cookie consent management. You cannot opt out of essential cookies as they are required for the site to work.
-              </p>
-            </section>
-
-            <section>
-              <h2 className="text-lg font-semibold text-foreground mb-3">Analytics Cookies</h2>
-              <p>
-                We use Google Analytics to understand how visitors interact with our site. These cookies are <strong className="text-foreground">only loaded if you click "Accept all"</strong> in the cookie banner. If you choose "Essential only," no analytics cookies are set and no data is sent to Google.
-              </p>
+              <h2 className="text-lg font-semibold text-foreground mb-3">Cookie Categories</h2>
+              <div className="space-y-4">
+                <div>
+                  <h3 className="text-sm font-semibold text-foreground mb-1">🔒 Essential (always active)</h3>
+                  <p>Required for authentication, messaging, video calls, and cookie consent management. These cannot be disabled.</p>
+                </div>
+                <div>
+                  <h3 className="text-sm font-semibold text-foreground mb-1">📊 Analytics</h3>
+                  <p>Google Analytics helps us understand how visitors use the site. Only loaded if you explicitly enable this category. IP addresses are anonymized.</p>
+                </div>
+                <div>
+                  <h3 className="text-sm font-semibold text-foreground mb-1">📢 Marketing</h3>
+                  <p>Facebook Pixel allows us to measure ad effectiveness. Only loaded if you enable this category. No data is shared until you consent.</p>
+                </div>
+                <div>
+                  <h3 className="text-sm font-semibold text-foreground mb-1">⚙️ Preferences</h3>
+                  <p>Remembers your display settings and personalization choices for a better experience.</p>
+                </div>
+              </div>
             </section>
 
             <section>
               <h2 className="text-lg font-semibold text-foreground mb-3">Managing Your Preferences</h2>
               <p className="mb-3">You can change your cookie preferences at any time by:</p>
               <ul className="list-disc pl-5 space-y-1">
-                <li>Clearing your browser's cookies and revisiting the site — the consent banner will appear again</li>
-                <li>Using your browser's built-in cookie settings to block or delete specific cookies</li>
+                <li>Clicking <strong className="text-foreground">"Cookie Settings"</strong> in the website footer</li>
+                <li>Using the "Manage Preferences" button on the cookie banner</li>
+                <li>Clearing your browser's cookies and revisiting the site</li>
               </ul>
             </section>
 
