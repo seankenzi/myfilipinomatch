@@ -9,6 +9,7 @@ import BottomNav from "@/components/BottomNav";
 import Navbar from "@/components/Navbar";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { useAdmin } from "@/hooks/useAdmin";
 import { useToast } from "@/hooks/use-toast";
 import { useSignedPhotos } from "@/hooks/useSignedPhotos";
 
@@ -61,6 +62,7 @@ const ProfileDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { isAdmin } = useAdmin();
   const { toast } = useToast();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -72,8 +74,20 @@ const ProfileDetail = () => {
   useEffect(() => {
     if (!id) return;
     const fetchProfile = async () => {
+      // Try the RPC first (requires onboarding_completed = true)
       const { data } = await supabase.rpc("get_profile_by_id", { profile_id: id });
-      const profileData = data && data.length > 0 ? data[0] : null;
+      let profileData = data && data.length > 0 ? data[0] : null;
+
+      // Admin fallback: if profile not found via RPC, query directly (admins can see all profiles via RLS)
+      if (!profileData && isAdmin) {
+        const { data: directData } = await supabase
+          .from("profiles")
+          .select("id, full_name, age, gender, country, city, bio, interests, relationship_intent, relocation_intent, photos, avatar_url, is_verified, is_premium, user_type, international_preference, education, language, want_children, height_cm, weight_kg, relationship_status, created_at, last_seen")
+          .eq("id", id)
+          .maybeSingle();
+        profileData = directData;
+      }
+
       setProfile(profileData as Profile | null);
       setLoading(false);
     };
@@ -107,7 +121,7 @@ const ProfileDetail = () => {
     checkLiked();
     checkMatch();
     checkPremium();
-  }, [id, user]);
+  }, [id, user, isAdmin]);
 
   const rawPhotos = profile
     ? [
