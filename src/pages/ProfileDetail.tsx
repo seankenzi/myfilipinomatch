@@ -9,6 +9,7 @@ import BottomNav from "@/components/BottomNav";
 import Navbar from "@/components/Navbar";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { useAdmin } from "@/hooks/useAdmin";
 import { useToast } from "@/hooks/use-toast";
 import { useSignedPhotos } from "@/hooks/useSignedPhotos";
 
