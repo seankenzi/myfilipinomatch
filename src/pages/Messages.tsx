@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import VideoCallModal from "@/components/VideoCallModal";
 import { detectContactInfo } from "@/lib/contactFilter";
+import { getSignedPhotoUrls } from "@/lib/storage";
 import OnlineStatus from "@/components/OnlineStatus";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
