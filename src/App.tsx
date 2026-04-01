@@ -46,6 +46,7 @@ const EmailUnsubscribe = lazy(() => import("./pages/EmailUnsubscribe.tsx"));
 const NotFound = lazy(() => import("./pages/NotFound.tsx"));
 const Blog = lazy(() => import("./pages/Blog.tsx"));
 const BlogPost = lazy(() => import("./pages/BlogPost.tsx"));
+const CookiePolicy = lazy(() => import("./pages/CookiePolicy.tsx"));
 
 const queryClient = new QueryClient();
 
@@ -98,6 +99,7 @@ const App = () => {
                 <Route path="/support" element={<Support />} />
                 <Route path="/blog" element={<Blog />} />
                 <Route path="/blog/:slug" element={<BlogPost />} />
+                <Route path="/cookie-policy" element={<CookiePolicy />} />
                 <Route path="/unsubscribe" element={<Unsubscribe />} />
                 <Route path="/email-unsubscribe" element={<EmailUnsubscribe />} />
                 <Route path="*" element={<NotFound />} />

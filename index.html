@@ -13,9 +13,11 @@
     <link rel="preconnect" href="https://qxxehbdtfxbapxanqefv.supabase.co" crossorigin />
     <link rel="dns-prefetch" href="https://qxxehbdtfxbapxanqefv.supabase.co" />
     <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
-    <!-- Google Analytics (deferred) -->
+    <!-- Google Analytics — only loads if cookie consent is accepted -->
     <script>
-      window.addEventListener('load', function() {
+      window.__loadAnalytics = function() {
+        if (window.__analyticsLoaded) return;
+        window.__analyticsLoaded = true;
         var s = document.createElement('script');
         s.src = 'https://www.googletagmanager.com/gtag/js?id=G-YSD4Q86MPZ';
         s.async = true;
@@ -26,7 +28,11 @@
           gtag('js', new Date());
           gtag('config', 'G-YSD4Q86MPZ');
         };
-      });
+      };
+      // Auto-load if previously accepted
+      if (localStorage.getItem('cookie_consent') === 'accepted') {
+        window.addEventListener('load', window.__loadAnalytics);
+      }
     </script>
     <meta name="author" content="MyFilipinoMatch" />
     <meta property="og:type" content="website" />
