@@ -357,6 +357,12 @@ const Landing = () => {
                   </div>
                 ))}
               </div>
+              <Link
+                to="/safety"
+                className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-primary hover:underline"
+              >
+                Visit our Trust & Safety Center <ArrowRight className="h-4 w-4" />
+              </Link>
             </div>
             <div className="relative rounded-3xl overflow-hidden shadow-elevated ring-4 ring-primary/10">
               <img
