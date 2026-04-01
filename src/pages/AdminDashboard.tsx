@@ -1247,7 +1247,7 @@ const EmailsTab = () => {
       {/* Table */}
       {loading ? (
         <div className="flex justify-center py-10"><div className="h-6 w-6 animate-spin rounded-full border-4 border-primary border-t-transparent" /></div>
-      ) : logs.length === 0 ? (
+      ) : filteredLogs.length === 0 ? (
         <div className="p-10 text-center text-muted-foreground">No email logs found.</div>
       ) : (
         <div className="rounded-xl border border-border overflow-hidden">
@@ -1263,7 +1263,7 @@ const EmailsTab = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
-                {logs.map((log) => (
+                {filteredLogs.map((log) => (
                   <tr key={log.id} className="hover:bg-muted/30 transition-colors">
                     <td className="p-3 text-xs font-medium">{log.template_name}</td>
                     <td className="p-3 text-xs text-muted-foreground truncate max-w-[200px]">{log.recipient_email}</td>
