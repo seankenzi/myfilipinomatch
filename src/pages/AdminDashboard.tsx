@@ -197,7 +197,7 @@ const UsersTab = () => {
 
   return (
     <div className="space-y-4">
-      <div className="flex gap-2">
+      <div className="flex flex-col sm:flex-row gap-2">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
@@ -206,6 +206,19 @@ const UsersTab = () => {
             onChange={(e) => setSearch(e.target.value)}
             className="pl-9"
           />
+        </div>
+        <div className="flex gap-1">
+          {(["all", "completed", "incomplete"] as const).map((filter) => (
+            <Button
+              key={filter}
+              size="sm"
+              variant={onboardingFilter === filter ? "default" : "outline"}
+              onClick={() => setOnboardingFilter(filter)}
+              className="text-xs capitalize"
+            >
+              {filter === "all" ? "All" : filter === "completed" ? "Onboarded" : "Not Onboarded"}
+            </Button>
+          ))}
         </div>
         <Button onClick={fetchUsers} variant="outline" size="icon"><RefreshCw className="h-4 w-4" /></Button>
       </div>
