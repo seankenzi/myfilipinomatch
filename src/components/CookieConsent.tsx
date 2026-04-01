@@ -2,8 +2,39 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Cookie } from "lucide-react";
 import { Link } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 
 const COOKIE_CONSENT_KEY = "cookie_consent";
+
+const getAnonymousId = (): string => {
+  let id = localStorage.getItem("anonymous_id");
+  if (!id) {
+    id = crypto.randomUUID();
+    localStorage.setItem("anonymous_id", id);
+  }
+  return id;
+};
+
+const storeConsentRecord = async (consentType: "accepted" | "declined") => {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    await supabase.from("cookie_consents" as any).insert({
+      anonymous_id: getAnonymousId(),
+      consent_type: consentType,
+      user_id: user?.id || null,
+      user_agent: navigator.userAgent,
+    });
+  } catch (e) {
+    console.error("Failed to store consent record:", e);
+  }
+};
+
+declare global {
+  interface Window {
+    __loadAnalytics?: () => void;
+    __analyticsLoaded?: boolean;
+  }
+}
 
 const CookieConsent = () => {
   const [visible, setVisible] = useState(false);
@@ -11,7 +42,6 @@ const CookieConsent = () => {
   useEffect(() => {
     const consent = localStorage.getItem(COOKIE_CONSENT_KEY);
     if (!consent) {
-      // Small delay so it doesn't flash on first paint
       const timer = setTimeout(() => setVisible(true), 1000);
       return () => clearTimeout(timer);
     }
@@ -20,11 +50,15 @@ const CookieConsent = () => {
   const handleAccept = () => {
     localStorage.setItem(COOKIE_CONSENT_KEY, "accepted");
     setVisible(false);
+    storeConsentRecord("accepted");
+    // Load analytics now
+    window.__loadAnalytics?.();
   };
 
   const handleDecline = () => {
     localStorage.setItem(COOKIE_CONSENT_KEY, "declined");
     setVisible(false);
+    storeConsentRecord("declined");
   };
 
   if (!visible) return null;
@@ -39,9 +73,11 @@ const CookieConsent = () => {
           <div className="flex-1">
             <h3 className="font-semibold text-foreground text-sm mb-1">We value your privacy</h3>
             <p className="text-xs text-muted-foreground leading-relaxed mb-4">
-              We use essential cookies to keep the site running and analytics cookies to improve your experience. 
+              We use essential cookies to keep the site running and analytics cookies to improve your experience.
               You can read more in our{" "}
-              <Link to="/privacy" className="text-primary hover:underline">Privacy Policy</Link>.
+              <Link to="/privacy" className="text-primary hover:underline">Privacy Policy</Link>
+              {" "}and{" "}
+              <Link to="/cookie-policy" className="text-primary hover:underline">Cookie Policy</Link>.
             </p>
             <div className="flex items-center gap-3">
               <Button size="sm" onClick={handleAccept} className="text-xs">
