@@ -122,10 +122,10 @@ const Safety = () => {
             <Section>
               <SectionTitle icon={Fingerprint}>Privacy Commitments</SectionTitle>
               <div className="grid gap-4 md:grid-cols-2">
-                <FeatureCard icon={KeyRound} title="Your Data, Your Control" description="Download or delete your data anytime. We never sell personal information to third parties — period." />
-                <FeatureCard icon={Globe} title="Minimal Data Collection" description="We only collect what's necessary to deliver the experience. No hidden trackers, no dark patterns." />
+                <FeatureCard icon={KeyRound} title="We Never Sell Your Data" description="Your personal information is never sold or shared with third parties for marketing. You can delete your account and data at any time." />
+                <FeatureCard icon={Globe} title="Purpose-Driven Data Collection" description="We collect only what's needed to power your experience — your profile, preferences, and matches. We use basic analytics to improve the platform." />
                 <FeatureCard icon={Scale} title="Transparent Policies" description="Our Privacy Policy and Terms of Service are written in plain language so you know exactly what you're agreeing to." />
-                <FeatureCard icon={Lock} title="Secure Infrastructure" description="All data is stored with encryption at rest, protected by row-level security, and hosted on SOC 2-compliant infrastructure." />
+                <FeatureCard icon={Lock} title="Secure Infrastructure" description="All data is protected by row-level security policies, encrypted connections, and hosted on enterprise-grade cloud infrastructure." />
               </div>
               <div className="mt-5 flex flex-wrap gap-3 text-sm">
                 <Link to="/privacy" className="inline-flex items-center gap-1.5 text-primary hover:underline font-medium">
