@@ -1133,19 +1133,17 @@ const EmailsTab = () => {
       .from("email_send_log")
       .select("*")
       .order("created_at", { ascending: false })
-      .limit(200);
+      .limit(500);
 
     if (templateFilter !== "all") {
       query = query.eq("template_name", templateFilter);
     }
-    if (statusFilter !== "all") {
-      query = query.eq("status", statusFilter);
-    }
+    // Don't filter status server-side — we need all rows to deduplicate properly
 
     const { data } = await query;
     const rows = data || [];
 
-    // Deduplicate by message_id (keep latest)
+    // Deduplicate by message_id (keep latest status per email)
     const seen = new Map<string, any>();
     for (const row of rows) {
       const key = row.message_id || row.id;
@@ -1153,7 +1151,7 @@ const EmailsTab = () => {
         seen.set(key, row);
       }
     }
-    const deduped = Array.from(seen.values()).sort(
+    let deduped = Array.from(seen.values()).sort(
       (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
     );
 
@@ -1167,7 +1165,7 @@ const EmailsTab = () => {
     setLoading(false);
   };
 
-  useEffect(() => { fetchLogs(); }, [templateFilter, statusFilter]);
+  useEffect(() => { fetchLogs(); }, [templateFilter]);
 
   const statusBadge = (status: string) => {
     const styles: Record<string, string> = {
