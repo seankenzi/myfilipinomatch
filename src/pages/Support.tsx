@@ -2,6 +2,7 @@ import Navbar from "@/components/Navbar";
 import SEO from "@/components/SEO";
 import { Mail, MessageCircle, HelpCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
