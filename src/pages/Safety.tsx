@@ -84,7 +84,7 @@ const Safety = () => {
             <StatCard value="100%" label="Manual profile review" />
             <StatCard value="24/7" label="Active moderation" />
             <StatCard value="SSL" label="Encrypted connections" />
-            <StatCard value="GDPR" label="Privacy compliant" />
+            <StatCard value="Zero" label="Data sold to third parties" />
           </div>
 
           <div className="divide-y divide-border">
