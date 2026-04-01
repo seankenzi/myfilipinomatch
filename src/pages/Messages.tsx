@@ -225,34 +225,36 @@ const Messages = () => {
       profileEntries.filter((entry): entry is readonly [string, MatchProfile] => entry !== null)
     );
 
-    const matchList: Match[] = [];
-    for (const m of filteredMatches) {
-      const otherId = m.user1_id === user.id ? m.user2_id : m.user1_id;
-      const profile = profileMap.get(otherId);
-      if (!profile) continue;
+    const matchList: Match[] = (await Promise.all(
+      filteredMatches.map(async (m) => {
+        const otherId = m.user1_id === user.id ? m.user2_id : m.user1_id;
+        const profile = profileMap.get(otherId);
+        if (!profile) return null;
 
-      const { data: lastMsg } = await supabase
-        .from("messages")
-        .select("content, created_at, sender_id, read")
-        .eq("match_id", m.id)
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
+        const [{ data: lastMsg }, { count }] = await Promise.all([
+          supabase
+            .from("messages")
+            .select("content, created_at, sender_id, read")
+            .eq("match_id", m.id)
+            .order("created_at", { ascending: false })
+            .limit(1)
+            .maybeSingle(),
+          supabase
+            .from("messages")
+            .select("id", { count: "exact", head: true })
+            .eq("match_id", m.id)
+            .eq("read", false)
+            .neq("sender_id", user.id),
+        ]);
 
-      const { count } = await supabase
-        .from("messages")
-        .select("id", { count: "exact", head: true })
-        .eq("match_id", m.id)
-        .eq("read", false)
-        .neq("sender_id", user.id);
-
-      matchList.push({
-        id: m.id,
-        other_user: profile,
-        last_message: lastMsg || undefined,
-        unread_count: count || 0,
-      });
-    }
+        return {
+          id: m.id,
+          other_user: profile,
+          last_message: lastMsg || undefined,
+          unread_count: count || 0,
+        } as Match;
+      })
+    )).filter((m): m is Match => m !== null);
 
     matchList.sort((a, b) => {
       if (a.unread_count > 0 && b.unread_count === 0) return -1;
