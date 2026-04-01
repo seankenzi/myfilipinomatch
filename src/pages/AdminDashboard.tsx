@@ -1160,6 +1160,7 @@ const AdminDashboard = () => {
             <TabsContent value="moderation"><ModerationTab /></TabsContent>
             <TabsContent value="subscriptions"><SubscriptionsTab refreshKey={subsRefreshKey} /></TabsContent>
             <TabsContent value="features"><FeatureFlagsTab /></TabsContent>
+            <TabsContent value="contact"><ContactSubmissionsTab /></TabsContent>
             <TabsContent value="video"><VideoUsageTab /></TabsContent>
             <TabsContent value="crashes"><CrashLogsTab /></TabsContent>
           </Tabs>
