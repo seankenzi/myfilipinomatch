@@ -236,11 +236,6 @@ const Signup = () => {
           </div>
         </div>
 
-        <p className="mt-4 text-center text-xs text-muted-foreground">
-          By signing up, you agree to our{" "}
-          <Link to="/terms" className="text-primary hover:underline">Terms</Link> and{" "}
-          <Link to="/privacy" className="text-primary hover:underline">Privacy Policy</Link>
-        </p>
 
         <div className="mt-5 rounded-xl border border-primary/20 bg-primary/5 p-4 text-center">
           <p className="text-sm text-muted-foreground mb-2">Already have an account?</p>
