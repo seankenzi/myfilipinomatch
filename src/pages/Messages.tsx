@@ -26,7 +26,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { format, isToday, isYesterday } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
-import { motion, AnimatePresence } from "framer-motion";
 
 const FREE_MESSAGE_LIMIT = 3;
 const FREE_DAILY_MESSAGE_LIMIT = 10;
