@@ -4,7 +4,7 @@ import {
   Users, Heart, MessageSquare, Shield, CreditCard, TrendingUp,
   BarChart3, ArrowLeft, Search, Ban, CheckCircle, XCircle,
   Clock, Eye, Star, AlertTriangle, RefreshCw, ToggleLeft, ToggleRight,
-  Plus, Trash2, Bug, Video
+  Plus, Trash2, Bug, Video, Mail, Inbox
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -1018,6 +1018,107 @@ const VideoUsageTab = () => {
   );
 };
 
+// ─── Contact Submissions Tab ───
+const ContactSubmissionsTab = () => {
+  const { toast } = useToast();
+  const [submissions, setSubmissions] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [statusFilter, setStatusFilter] = useState<"all" | "new" | "reviewed">("all");
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+
+  const fetchSubmissions = async () => {
+    setLoading(true);
+    let query = supabase.from("contact_submissions").select("*").order("created_at", { ascending: false }).limit(100);
+    if (statusFilter !== "all") {
+      query = query.eq("status", statusFilter);
+    }
+    const { data } = await query;
+    setSubmissions(data || []);
+    setLoading(false);
+  };
+
+  useEffect(() => { fetchSubmissions(); }, [statusFilter]);
+
+  const handleStatusChange = async (id: string, status: string) => {
+    await supabase.from("contact_submissions").update({ status }).eq("id", id);
+    toast({ title: `Marked as ${status}` });
+    fetchSubmissions();
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center gap-2">
+        {(["all", "new", "reviewed"] as const).map((f) => (
+          <Button
+            key={f}
+            size="sm"
+            variant={statusFilter === f ? "default" : "outline"}
+            onClick={() => setStatusFilter(f)}
+            className="text-xs capitalize"
+          >
+            {f === "all" ? `All` : f === "new" ? "New" : "Reviewed"}
+          </Button>
+        ))}
+        <div className="flex-1" />
+        <Button onClick={fetchSubmissions} variant="outline" size="icon"><RefreshCw className="h-4 w-4" /></Button>
+      </div>
+
+      {loading ? (
+        <div className="flex justify-center py-10"><div className="h-6 w-6 animate-spin rounded-full border-4 border-primary border-t-transparent" /></div>
+      ) : submissions.length === 0 ? (
+        <div className="p-10 text-center text-muted-foreground">No contact submissions found.</div>
+      ) : (
+        <div className="space-y-3">
+          {submissions.map((s) => (
+            <div key={s.id} className="rounded-xl border border-border bg-card p-4 shadow-sm">
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="font-medium text-sm truncate">{s.name}</span>
+                    <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full ${s.status === "new" ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"}`}>
+                      {s.status}
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted-foreground truncate">{s.email}</p>
+                  <p className="text-sm font-medium mt-2">{s.subject}</p>
+                  {expandedId === s.id ? (
+                    <p className="text-sm text-muted-foreground mt-1 whitespace-pre-wrap">{s.message}</p>
+                  ) : (
+                    <p className="text-sm text-muted-foreground mt-1 truncate">{s.message}</p>
+                  )}
+                  <div className="flex items-center gap-2 mt-2">
+                    <span className="text-xs text-muted-foreground">{format(new Date(s.created_at), "MMM d, yyyy h:mm a")}</span>
+                  </div>
+                </div>
+                <div className="flex flex-col gap-1 flex-shrink-0">
+                  <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => setExpandedId(expandedId === s.id ? null : s.id)}>
+                    <Eye className="h-3 w-3 mr-1" /> {expandedId === s.id ? "Collapse" : "Expand"}
+                  </Button>
+                  {s.status === "new" && (
+                    <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => handleStatusChange(s.id, "reviewed")}>
+                      <CheckCircle className="h-3 w-3 mr-1" /> Mark Reviewed
+                    </Button>
+                  )}
+                  {s.status === "reviewed" && (
+                    <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => handleStatusChange(s.id, "new")}>
+                      <Inbox className="h-3 w-3 mr-1" /> Mark New
+                    </Button>
+                  )}
+                  <a href={`mailto:${s.email}?subject=Re: ${encodeURIComponent(s.subject)}`}>
+                    <Button size="sm" variant="ghost" className="h-7 text-xs w-full">
+                      <Mail className="h-3 w-3 mr-1" /> Reply
+                    </Button>
+                  </a>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
 // ─── Main Admin Dashboard ───
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -1043,12 +1144,13 @@ const AdminDashboard = () => {
           </div>
 
           <Tabs defaultValue="dashboard" className="space-y-6" onValueChange={(v) => { if (v === "subscriptions") setSubsRefreshKey(k => k + 1); }}>
-            <TabsList className="grid w-full grid-cols-7 max-w-4xl">
+            <TabsList className="grid w-full grid-cols-8 max-w-5xl">
               <TabsTrigger value="dashboard" className="text-xs"><TrendingUp className="h-3.5 w-3.5 mr-1" /> Overview</TabsTrigger>
               <TabsTrigger value="users" className="text-xs"><Users className="h-3.5 w-3.5 mr-1" /> Users</TabsTrigger>
               <TabsTrigger value="moderation" className="text-xs"><Shield className="h-3.5 w-3.5 mr-1" /> Moderation</TabsTrigger>
               <TabsTrigger value="subscriptions" className="text-xs"><CreditCard className="h-3.5 w-3.5 mr-1" /> Subs</TabsTrigger>
               <TabsTrigger value="features" className="text-xs"><ToggleRight className="h-3.5 w-3.5 mr-1" /> Features</TabsTrigger>
+              <TabsTrigger value="contact" className="text-xs"><Inbox className="h-3.5 w-3.5 mr-1" /> Contact</TabsTrigger>
               <TabsTrigger value="video" className="text-xs"><Video className="h-3.5 w-3.5 mr-1" /> Video</TabsTrigger>
               <TabsTrigger value="crashes" className="text-xs"><Bug className="h-3.5 w-3.5 mr-1" /> Crashes</TabsTrigger>
             </TabsList>
@@ -1058,6 +1160,7 @@ const AdminDashboard = () => {
             <TabsContent value="moderation"><ModerationTab /></TabsContent>
             <TabsContent value="subscriptions"><SubscriptionsTab refreshKey={subsRefreshKey} /></TabsContent>
             <TabsContent value="features"><FeatureFlagsTab /></TabsContent>
+            <TabsContent value="contact"><ContactSubmissionsTab /></TabsContent>
             <TabsContent value="video"><VideoUsageTab /></TabsContent>
             <TabsContent value="crashes"><CrashLogsTab /></TabsContent>
           </Tabs>
