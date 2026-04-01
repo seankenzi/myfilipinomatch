@@ -46,6 +46,7 @@ const EmailUnsubscribe = lazy(() => import("./pages/EmailUnsubscribe.tsx"));
 const NotFound = lazy(() => import("./pages/NotFound.tsx"));
 const Blog = lazy(() => import("./pages/Blog.tsx"));
 const BlogPost = lazy(() => import("./pages/BlogPost.tsx"));
+const CookiePolicy = lazy(() => import("./pages/CookiePolicy.tsx"));
 
 const queryClient = new QueryClient();
 
