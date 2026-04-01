@@ -4,8 +4,8 @@ import logo from "@/assets/myfilipinomatch-logo.png";
 const Footer = () => (
   <footer className="hidden md:block border-t border-border bg-card">
     <div className="container py-6">
-      <div className="flex flex-col items-center gap-6 md:flex-row md:justify-between">
-        <div className="flex items-center gap-2">
+      <div className="relative flex items-center justify-center min-h-[40px]">
+        <div className="absolute left-0 flex items-center gap-2">
           <img src={logo} alt="MyFilipinoMatch" className="h-7 w-7" />
           <span className="text-lg font-bold text-foreground" style={{ fontFamily: 'var(--font-display)' }}>MyFilipinoMatch</span>
         </div>
@@ -17,7 +17,7 @@ const Footer = () => (
           <Link to="/support" className="hover:text-foreground transition-colors">Support</Link>
           <Link to="/blog" className="hover:text-foreground transition-colors">Blog</Link>
         </div>
-        <p className="text-xs text-muted-foreground">© 2026 MyFilipinoMatch. All rights reserved.</p>
+        <p className="absolute right-0 text-xs text-muted-foreground">© 2026 MyFilipinoMatch. All rights reserved.</p>
       </div>
     </div>
     <div className="border-t border-border/50 bg-primary/5 py-3">
