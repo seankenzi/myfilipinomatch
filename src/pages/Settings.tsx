@@ -28,6 +28,7 @@ const Settings = () => {
   const [loadingSub, setLoadingSub] = useState(true);
   const [videoUsedSeconds, setVideoUsedSeconds] = useState(0);
   const [loadingVideo, setLoadingVideo] = useState(true);
+  const [exportingData, setExportingData] = useState(false);
 
   useEffect(() => {
     const fetchSubscription = async () => {
