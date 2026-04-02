@@ -159,7 +159,6 @@ const Matches = () => {
               )}
             </div>
           )}
-          </div>
         </div>
       </main>
       <BottomNav />
