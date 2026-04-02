@@ -15,43 +15,15 @@ interface VideoCallProps {
   joinRoomUrl?: string; // If provided, skip room creation and join directly
 }
 
-const DAILY_EMBED_PARAMS: Record<string, string> = {
-  prejoin: "false",
-  showParticipantsBar: "false",
-  showUserNameChangeUI: "false",
-  showLeaveButton: "false",
-  showFullscreenButton: "false",
-  showLocalVideo: "true",
-  showChat: "false",
-  activeSpeakerMode: "false",
-  showHeader: "false",
-  showControls: "false",
-  enable_prejoin_ui: "false",
-  enable_people_ui: "false",
-  enable_network_ui: "false",
-  enable_video_processing_ui: "false",
-  video_processor: "none",
-};
-
-const DAILY_IFRAME_CROP = {
-  top: 48,
-  bottom: 80,
-};
-
-const buildDailyEmbedUrl = (baseUrl: string, token?: string) => {
+/** Extract base room URL (without query params) and token from a full Daily URL */
+const parseDailyUrl = (fullUrl: string): { url: string; token?: string } => {
   try {
-    const url = new URL(baseUrl);
-    if (token) url.searchParams.set("t", token);
-    Object.entries(DAILY_EMBED_PARAMS).forEach(([key, value]) => {
-      url.searchParams.set(key, value);
-    });
-    return url.toString();
+    const u = new URL(fullUrl);
+    const token = u.searchParams.get("t") || undefined;
+    u.search = "";
+    return { url: u.toString().replace(/\/$/, ""), token };
   } catch {
-    const withToken = token
-      ? `${baseUrl}${baseUrl.includes("?") ? "&" : "?"}t=${encodeURIComponent(token)}`
-      : baseUrl;
-    const params = new URLSearchParams(DAILY_EMBED_PARAMS).toString();
-    return `${withToken}${withToken.includes("?") ? "&" : "?"}${params}`;
+    return { url: fullUrl };
   }
 };
 
