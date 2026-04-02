@@ -1284,40 +1284,31 @@ const EmailsTab = () => {
 
 // ─── Analytics Tab ───
 const AnalyticsTab = () => {
-  const [analytics, setAnalytics] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [range, setRange] = useState<"7d" | "30d">("7d");
+  const [countryBreakdown, setCountryBreakdown] = useState<{ country: string; count: number }[]>([]);
 
   useEffect(() => {
-    const fetchAnalytics = async () => {
+    const fetchData = async () => {
       setLoading(true);
-      try {
-        const end = new Date();
-        const start = new Date();
-        start.setDate(end.getDate() - (range === "7d" ? 7 : 30));
-        const fmt = (d: Date) => d.toISOString().split("T")[0];
+      const { data } = await supabase
+        .from("profiles")
+        .select("country")
+        .not("country", "is", null);
 
-        const res = await fetch(
-          `https://qxxehbdtfxbapxanqefv.supabase.co/functions/v1/lovable-analytics?startdate=${fmt(start)}&enddate=${fmt(end)}&granularity=daily`,
-          { headers: { Authorization: `Bearer ${(await import("@/integrations/supabase/client")).supabase.supabaseKey}` } }
-        );
-
-        // Fallback: use hardcoded structure from the analytics API
-        // The analytics data comes from the project analytics tool, not an edge function
-        // We'll fetch from the profiles table to get user agent info instead
-        const { data: profiles } = await (await import("@/integrations/supabase/client")).supabase
-          .from("profiles")
-          .select("id, created_at, country, city")
-          .order("created_at", { ascending: false });
-
-        setAnalytics({ profiles: profiles || [] });
-      } catch (err) {
-        console.error("Analytics fetch error:", err);
-      }
+      const countryCounts: Record<string, number> = {};
+      (data || []).forEach((p: any) => {
+        const c = p.country || "Unknown";
+        countryCounts[c] = (countryCounts[c] || 0) + 1;
+      });
+      setCountryBreakdown(
+        Object.entries(countryCounts)
+          .map(([country, count]) => ({ country, count }))
+          .sort((a, b) => b.count - a.count)
+      );
       setLoading(false);
     };
-    fetchAnalytics();
-  }, [range]);
+    fetchData();
+  }, []);
 
   // Since we don't have real-time device tracking in the DB,
   // we'll show a static snapshot from project analytics
