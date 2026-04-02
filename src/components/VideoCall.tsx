@@ -608,7 +608,7 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
           <div className="relative h-full w-full overflow-hidden bg-black">
             <div
               ref={containerRef}
-              className="absolute inset-0"
+              className="absolute inset-0 overflow-hidden"
             />
 
             {/* Connection lost overlay */}
