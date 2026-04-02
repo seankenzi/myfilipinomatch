@@ -1226,7 +1226,7 @@ const Discover = () => {
                             ) : (
                               <button
                                 onClick={() => handleListLike(profile)}
-                                className="flex flex-1 items-center justify-center gap-1 rounded-lg bg-primary/10 min-h-[44px] text-[11px] font-medium text-primary hover:bg-primary/20 transition-colors active:scale-95"
+                                className="flex flex-1 items-center justify-center gap-1 rounded-lg bg-primary/10 h-9 text-[11px] font-medium text-primary hover:bg-primary/20 transition-colors active:scale-95"
                               >
                                 <Heart className="h-3.5 w-3.5" /> Like
                               </button>
