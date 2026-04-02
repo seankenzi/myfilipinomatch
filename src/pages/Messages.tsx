@@ -53,6 +53,7 @@ interface Match {
     read: boolean | null;
   };
   unread_count: number;
+  type: string;
 }
 
 interface Message {
