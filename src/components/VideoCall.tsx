@@ -153,8 +153,14 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
     setLimitReached(false);
 
     try {
-      const { data: sessionData } = await supabase.auth.getSession();
-      const token = sessionData?.session?.access_token;
+      // Ensure we have a fresh auth token (avoids random "Unauthorized" errors)
+      let { data: sessionData } = await supabase.auth.getSession();
+      let token = sessionData?.session?.access_token;
+      if (!token) {
+        // Try refreshing once
+        const { data: refreshed } = await supabase.auth.refreshSession();
+        token = refreshed?.session?.access_token;
+      }
 
       if (!token) {
         setError("Please log in to make video calls.");
@@ -186,9 +192,38 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
         }
       );
 
-      const data = await res.json();
+      let data = await res.json();
 
-      if (!res.ok) {
+      // If unauthorized, refresh token and retry once
+      if (res.status === 401) {
+        const { data: refreshed } = await supabase.auth.refreshSession();
+        const newToken = refreshed?.session?.access_token;
+        if (newToken) {
+          const retryRes = await fetch(
+            `https://${projectId}.supabase.co/functions/v1/daily-video`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${newToken}`,
+              },
+              body: JSON.stringify({ match_id: matchId }),
+            }
+          );
+          data = await retryRes.json();
+          if (!retryRes.ok) {
+            const message = data.error || "Failed to start video call";
+            setError(message);
+            setLoading(false);
+            return;
+          }
+          // Fall through to success handling below
+        } else {
+          setError("Session expired. Please log in again.");
+          setLoading(false);
+          return;
+        }
+      } else if (!res.ok) {
         const message = data.error || "Failed to start video call";
 
         if (res.status === 429 || data.code === "MONTHLY_LIMIT_REACHED") {
