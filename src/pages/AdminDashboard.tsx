@@ -364,7 +364,9 @@ const ModerationTab = () => {
             {verifications.map(v => (
               <div key={v.id} className="rounded-xl border border-border bg-card p-4 flex items-center gap-4">
                 {v.document_url && (
-                  <img src={v.document_url} alt={`Verification document for ${v.user_name}`} loading="lazy" className="h-14 w-14 rounded-lg object-cover border border-border" />
+                  <button onClick={() => setPreviewImage({ url: v.document_url, name: v.user_name, pose: v.pose_instruction })} className="shrink-0">
+                    <img src={v.document_url} alt={`Verification document for ${v.user_name}`} loading="lazy" className="h-14 w-14 rounded-lg object-cover border border-border cursor-pointer hover:opacity-80 transition-opacity" />
+                  </button>
                 )}
                 <div className="flex-1">
                   <p className="font-medium text-sm">{v.user_name}</p>
