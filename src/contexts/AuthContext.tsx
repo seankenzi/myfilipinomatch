@@ -61,12 +61,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
             if (profile?.welcome_email_sent) return;
 
-            // Mark sent immediately to prevent race conditions
-            await supabase
-              .from('profiles')
-              .update({ welcome_email_sent: true })
-              .eq('id', u.id);
-
             // Welcome email to user
             await supabase.functions.invoke('send-transactional-email', {
               body: {
