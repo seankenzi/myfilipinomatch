@@ -1339,6 +1339,7 @@ const AnalyticsTab = () => {
   const [referrerData, setReferrerData] = useState<{ source: string; count: number }[]>([]);
   const [totalVisits, setTotalVisits] = useState(0);
   const [uniqueVisitors, setUniqueVisitors] = useState(0);
+  const [userVisits, setUserVisits] = useState<{ email: string; full_name: string; device_type: string; browser: string; os: string; referrer: string; last_visit: string; visit_count: number }[]>([]);
 
   const iconMap: Record<string, typeof Monitor> = { desktop: Monitor, mobile: Smartphone, tablet: Tablet };
   const colorMap: Record<string, { color: string; bg: string }> = {
@@ -1408,6 +1409,49 @@ const AnalyticsTab = () => {
         refCounts[source] = (refCounts[source] || 0) + 1;
       });
       setReferrerData(Object.entries(refCounts).map(([source, count]) => ({ source, count })).sort((a, b) => b.count - a.count).slice(0, 10));
+
+      // Per-user visit details: aggregate by user_id
+      const userIds = [...new Set(visits.filter((v: any) => v.user_id).map((v: any) => v.user_id))] as string[];
+      let profileMap = new Map<string, { full_name: string; email: string }>();
+      if (userIds.length > 0) {
+        const { data: profiles } = await supabase
+          .from("profiles")
+          .select("id, full_name, email")
+          .in("id", userIds.slice(0, 100));
+        (profiles || []).forEach((p: any) => profileMap.set(p.id, { full_name: p.full_name || "Unknown", email: p.email || "" }));
+      }
+
+      const userMap = new Map<string, { email: string; full_name: string; device_type: string; browser: string; os: string; referrer: string; last_visit: string; visit_count: number }>();
+      visits.forEach((v: any) => {
+        const key = v.user_id || v.user_agent || "anonymous";
+        const existing = userMap.get(key);
+        const profile = v.user_id ? profileMap.get(v.user_id) : undefined;
+        let source = "Direct";
+        if (v.referrer) { try { source = new URL(v.referrer).hostname; } catch { source = v.referrer; } }
+
+        if (!existing) {
+          userMap.set(key, {
+            email: profile?.email || (v.user_id ? "—" : "Anonymous"),
+            full_name: profile?.full_name || (v.user_id ? "—" : "Anonymous"),
+            device_type: v.device_type || "desktop",
+            browser: v.browser || "Other",
+            os: v.os || "Other",
+            referrer: source,
+            last_visit: v.created_at,
+            visit_count: 1,
+          });
+        } else {
+          existing.visit_count++;
+          if (v.created_at > existing.last_visit) {
+            existing.last_visit = v.created_at;
+            existing.device_type = v.device_type || existing.device_type;
+            existing.browser = v.browser || existing.browser;
+            existing.os = v.os || existing.os;
+            if (source !== "Direct") existing.referrer = source;
+          }
+        }
+      });
+      setUserVisits(Array.from(userMap.values()).sort((a, b) => b.last_visit.localeCompare(a.last_visit)));
 
       setLoading(false);
     };
@@ -1577,6 +1621,66 @@ const AnalyticsTab = () => {
             })}
           </div>
         </div>
+      </div>
+
+      {/* Per-User Visit Details */}
+      <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
+        <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+          <Users className="h-5 w-5 text-primary" /> User Visit Details
+        </h3>
+        {userVisits.length === 0 ? (
+          <p className="text-sm text-muted-foreground">No user visit data yet.</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border text-left">
+                  <th className="pb-3 pr-4 font-medium text-muted-foreground">User</th>
+                  <th className="pb-3 pr-4 font-medium text-muted-foreground">Device</th>
+                  <th className="pb-3 pr-4 font-medium text-muted-foreground">Browser</th>
+                  <th className="pb-3 pr-4 font-medium text-muted-foreground">OS</th>
+                  <th className="pb-3 pr-4 font-medium text-muted-foreground">Came From</th>
+                  <th className="pb-3 pr-4 font-medium text-muted-foreground">Visits</th>
+                  <th className="pb-3 font-medium text-muted-foreground">Last Seen</th>
+                </tr>
+              </thead>
+              <tbody>
+                {userVisits.slice(0, 50).map((u, i) => {
+                  const deviceIcon = u.device_type === "mobile" ? Smartphone : u.device_type === "tablet" ? Tablet : Monitor;
+                  const DeviceIcon = deviceIcon;
+                  return (
+                    <tr key={i} className="border-b border-border/50 hover:bg-muted/30 transition-colors">
+                      <td className="py-3 pr-4">
+                        <div className="flex flex-col">
+                          <span className="font-medium text-foreground truncate max-w-[160px]">{u.full_name}</span>
+                          <span className="text-xs text-muted-foreground truncate max-w-[160px]">{u.email}</span>
+                        </div>
+                      </td>
+                      <td className="py-3 pr-4">
+                        <div className="flex items-center gap-1.5">
+                          <DeviceIcon className="h-4 w-4 text-muted-foreground" />
+                          <span className="capitalize text-foreground">{u.device_type}</span>
+                        </div>
+                      </td>
+                      <td className="py-3 pr-4 text-foreground">{u.browser}</td>
+                      <td className="py-3 pr-4 text-foreground">{u.os}</td>
+                      <td className="py-3 pr-4">
+                        <span className="text-foreground truncate max-w-[140px] block">{u.referrer}</span>
+                      </td>
+                      <td className="py-3 pr-4 text-center font-medium text-foreground">{u.visit_count}</td>
+                      <td className="py-3 text-muted-foreground text-xs whitespace-nowrap">
+                        {new Date(u.last_visit).toLocaleDateString()} {new Date(u.last_visit).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+            {userVisits.length > 50 && (
+              <p className="text-xs text-muted-foreground mt-3 text-center">Showing top 50 of {userVisits.length} visitors</p>
+            )}
+          </div>
+        )}
       </div>
 
       <p className="text-xs text-muted-foreground text-center">
