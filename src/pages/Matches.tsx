@@ -28,6 +28,49 @@ const getLastActiveLabel = (lastSeen: string | null) => {
   return formatDistanceToNow(date, { addSuffix: true });
 };
 
+const MatchCard = ({ match, isDM }: { match: DisplayMatch; isDM?: boolean }) => (
+  <Link
+    key={match.id}
+    to={`/messages?match=${match.id}`}
+    className={`flex items-center gap-4 rounded-2xl border p-4 shadow-card transition-all hover:shadow-card-hover ${
+      isDM ? "border-accent/30 bg-accent/5" : "border-border bg-card"
+    }`}
+  >
+    <div className="relative">
+      {match.image ? (
+        <img src={match.image} alt={match.name} loading="lazy" className="h-16 w-16 rounded-xl object-cover" />
+      ) : (
+        <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-muted text-lg">👤</div>
+      )}
+      {match.newMatch && (
+        <div className="absolute -right-1 -top-1 h-4 w-4 rounded-full border-2 border-card gradient-hero" />
+      )}
+    </div>
+    <div className="flex-1">
+      <div className="flex items-center gap-2">
+        <h3 className="font-semibold">
+          {match.name}{match.age ? `, ${match.age}` : ""}
+        </h3>
+        {isDM && (
+          <span className="rounded-full bg-accent/10 px-2 py-0.5 text-[10px] font-medium text-accent flex items-center gap-1">
+            <Sparkles className="h-3 w-3" /> DM
+          </span>
+        )}
+        {match.newMatch && !isDM && (
+          <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary">New</span>
+        )}
+      </div>
+      <p className="text-sm text-muted-foreground">
+        {[match.city, match.country].filter(Boolean).join(", ") || "Location not set"}
+      </p>
+    </div>
+    <div className="flex flex-col items-end gap-1">
+      <MessageCircle className="h-5 w-5 text-muted-foreground" />
+      <span className="text-[10px] text-muted-foreground">{match.lastActive}</span>
+    </div>
+  </Link>
+);
+
 const Matches = () => {
   const { user } = useAuth();
   const [matches, setMatches] = useState<DisplayMatch[]>([]);
