@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import Daily, { type DailyCall } from "@daily-co/daily-js";
+import Daily, { type DailyCall, type DailyParticipant } from "@daily-co/daily-js";
 import { VideoOff, Video, PhoneOff, Loader2, Crown, Clock, WifiOff, Mic, MicOff, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
@@ -12,7 +12,7 @@ interface VideoCallProps {
   otherUserName: string;
   open: boolean;
   onClose: () => void;
-  joinRoomUrl?: string; // If provided, skip room creation and join directly
+  joinRoomUrl?: string;
 }
 
 /** Extract base room URL (without query params) and token from a full Daily URL */
@@ -35,22 +35,34 @@ const formatTime = (totalSeconds: number) => {
   return `${m}:${String(s).padStart(2, "0")}`;
 };
 
-const NO_VIDEO_PROCESSING_INPUT_SETTINGS = {
-  video: {
-    processor: {
-      type: "none" as const,
-    },
-  },
+/** Attach a MediaStreamTrack to a <video> or <audio> element */
+const attachTrack = (
+  el: HTMLVideoElement | HTMLAudioElement | null,
+  track: MediaStreamTrack | null | undefined
+) => {
+  if (!el) return;
+  if (!track) {
+    el.srcObject = null;
+    return;
+  }
+  // Avoid re-attaching the same track
+  const existing = el.srcObject as MediaStream | null;
+  if (existing?.getTracks()[0]?.id === track.id) return;
+  el.srcObject = new MediaStream([track]);
 };
 
 const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: VideoCallProps) => {
   const { toast } = useToast();
   const navigate = useNavigate();
-  const containerRef = useRef<HTMLDivElement>(null);
   const dailyCallRef = useRef<DailyCall | null>(null);
   const localDisplayNameRef = useRef("You");
 
-  // Helper: destroy the Daily call frame instance
+  // Video / audio element refs
+  const remoteVideoRef = useRef<HTMLVideoElement>(null);
+  const localVideoRef = useRef<HTMLVideoElement>(null);
+  const remoteAudioRef = useRef<HTMLAudioElement>(null);
+
+  // Helper: destroy the Daily call object instance
   const destroyCallFrame = useCallback(() => {
     const cf = dailyCallRef.current;
     dailyCallRef.current = null;
@@ -58,6 +70,7 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
       void cf.destroy().catch(() => undefined);
     }
   }, []);
+
   const [loading, setLoading] = useState(false);
   const [roomUrl, setRoomUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -73,7 +86,7 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
   const isClosingRef = useRef(false);
   const [connectionLost, setConnectionLost] = useState(false);
   const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const RECONNECT_TIMEOUT_MS = 30000; // 30s before giving up
+  const RECONNECT_TIMEOUT_MS = 30000;
   const [callEstablished, setCallEstablished] = useState(false);
   const remainingSecondsRef = useRef(7200);
   const [isMuted, setIsMuted] = useState(false);
@@ -87,7 +100,6 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
         timerRef.current = null;
       }
 
-      // Build duration summary
       const duration = callStartTimeRef.current > 0
         ? Math.round((Date.now() - callStartTimeRef.current) / 1000)
         : 0;
@@ -120,17 +132,13 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
 
   const fetchLocalDisplayName = useCallback(async (): Promise<string> => {
     try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
+      const { data: { user } } = await supabase.auth.getUser();
       const metadataName =
         typeof user?.user_metadata?.full_name === "string"
           ? user.user_metadata.full_name.trim()
           : "";
       const emailFallback = user?.email?.split("@")[0]?.trim() ?? "";
       const fallbackName = metadataName || emailFallback || "You";
-
       if (!user) return fallbackName;
 
       const { data: profile } = await supabase
@@ -141,7 +149,6 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
 
       const profileName =
         typeof profile?.full_name === "string" ? profile.full_name.trim() : "";
-
       return profileName || fallbackName;
     } catch {
       return "You";
@@ -149,18 +156,15 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
   }, []);
 
   const endSession = useCallback(async () => {
-    // Only the caller (initiator) has a session to end
     if (!sessionId || joinRoomUrl) return;
     let duration = callStartTimeRef.current > 0
       ? Math.round((Date.now() - callStartTimeRef.current) / 1000)
       : 0;
-    // Safety cap: never report more than 2 hours
     duration = Math.min(duration, 7200);
     try {
       const { data: sessionData } = await supabase.auth.getSession();
       const token = sessionData?.session?.access_token;
       if (!token) return;
-
       const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
       await fetch(
         `https://${projectId}.supabase.co/functions/v1/daily-video?action=end-session`,
@@ -186,11 +190,9 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
     setLimitReached(false);
 
     try {
-      // Ensure we have a fresh auth token (avoids random "Unauthorized" errors)
       let { data: sessionData } = await supabase.auth.getSession();
       let token = sessionData?.session?.access_token;
       if (!token) {
-        // Try refreshing once
         const { data: refreshed } = await supabase.auth.refreshSession();
         token = refreshed?.session?.access_token;
       }
@@ -201,13 +203,11 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
         return;
       }
 
-      // If joining an existing room (accepted incoming call), skip edge function
       if (joinRoomUrl) {
         setRoomUrl(joinRoomUrl);
         remainingSecondsRef.current = 7200;
         setRemainingSeconds(7200);
         setElapsedSeconds(0);
-        // Timer will start when "participant-joined" is received from Daily
         setLoading(false);
         return;
       }
@@ -227,7 +227,6 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
 
       let data = await res.json();
 
-      // If unauthorized, refresh token and retry once
       if (res.status === 401) {
         const { data: refreshed } = await supabase.auth.refreshSession();
         const newToken = refreshed?.session?.access_token;
@@ -245,12 +244,10 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
           );
           data = await retryRes.json();
           if (!retryRes.ok) {
-            const message = data.error || "Failed to start video call";
-            setError(message);
+            setError(data.error || "Failed to start video call");
             setLoading(false);
             return;
           }
-          // Fall through to success handling below
         } else {
           setError("Session expired. Please log in again.");
           setLoading(false);
@@ -258,7 +255,6 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
         }
       } else if (!res.ok) {
         const message = data.error || "Failed to start video call";
-
         if (res.status === 429 || data.code === "MONTHLY_LIMIT_REACHED") {
           setLimitReached(true);
         } else if (res.status === 403 && message.includes("1-year")) {
@@ -272,7 +268,6 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
         return;
       }
 
-      // Store raw URL; token is appended as query param
       const fullUrl = data.token
         ? `${data.room_url}${data.room_url.includes("?") ? "&" : "?"}t=${encodeURIComponent(data.token)}`
         : data.room_url;
@@ -281,7 +276,6 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
       remainingSecondsRef.current = data.remaining_seconds || 7200;
       setRemainingSeconds(data.remaining_seconds || 7200);
       setElapsedSeconds(0);
-      // Timer will start when "participant-joined" is received from Daily
     } catch {
       setError("Something went wrong. Please try again.");
     }
@@ -300,8 +294,6 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
       setCallEstablished(false);
     }
   }, [open]);
-
-  
 
   // Listen for signal status changes (ended, declined, missed)
   const channelIdRef = useRef(0);
@@ -392,7 +384,6 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
     if (isClosingRef.current) return;
     isClosingRef.current = true;
 
-    // Update signal to "ended" FIRST so the other participant gets notified
     try {
       const { data: signals } = await supabase
         .from("video_call_signals")
@@ -416,9 +407,22 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
     closeUi();
   }, [endSession, closeUi, matchId]);
 
-  // Create the Daily call frame when roomUrl is available
+  /** Sync tracks from a Daily participant to video/audio elements */
+  const syncTracks = useCallback((participant: DailyParticipant) => {
+    if (participant.local) {
+      const vTrack = participant.tracks?.video?.persistentTrack;
+      attachTrack(localVideoRef.current, participant.video ? vTrack : null);
+    } else {
+      const vTrack = participant.tracks?.video?.persistentTrack;
+      const aTrack = participant.tracks?.audio?.persistentTrack;
+      attachTrack(remoteVideoRef.current, participant.video ? vTrack : null);
+      attachTrack(remoteAudioRef.current, participant.audio ? aTrack : null);
+    }
+  }, []);
+
+  // Create the Daily call object when roomUrl is available
   useEffect(() => {
-    if (!open || !roomUrl || !containerRef.current) return;
+    if (!open || !roomUrl) return;
 
     // Clean up any previous instance
     destroyCallFrame();
@@ -426,34 +430,20 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
     const isCaller = !joinRoomUrl;
     const { url, token } = parseDailyUrl(roomUrl);
 
-    const CROP_TOP = 48;
-    const CROP_BOTTOM = 80;
-    const callFrame = Daily.createFrame(containerRef.current, {
-      iframeStyle: {
-        position: "absolute",
-        top: `-${CROP_TOP}px`,
-        left: "0",
-        width: "100%",
-        height: `calc(100% + ${CROP_TOP + CROP_BOTTOM}px)`,
-        border: "0",
-      },
-      showLeaveButton: false,
-      showFullscreenButton: false,
-      showParticipantsBar: false,
-      showLocalVideo: true,
-      activeSpeakerMode: false,
-      inputSettings: NO_VIDEO_PROCESSING_INPUT_SETTINGS,
+    const callFrame = Daily.createCallObject({
+      videoSource: true,
+      audioSource: true,
     });
     dailyCallRef.current = callFrame;
 
-    /** Safely run a Daily frame operation; show a toast on unexpected errors */
+    /** Safely run a Daily operation; show a toast on unexpected errors */
     const safeDailyOp = async (op: () => unknown) => {
       try {
         if (callFrame.isDestroyed()) return;
         await op();
       } catch (err: any) {
         if (err?.message?.includes("postMessage") || callFrame.isDestroyed()) return;
-        console.warn("Daily frame operation failed:", err);
+        console.warn("Daily operation failed:", err);
         toast({
           title: "Video call issue",
           description: "A minor issue occurred. The call should continue normally.",
@@ -462,40 +452,22 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
       }
     };
 
-    const enforceNoVideoProcessing = () => {
-      void safeDailyOp(() => callFrame.updateInputSettings(NO_VIDEO_PROCESSING_INPUT_SETTINGS));
-    };
-
-    enforceNoVideoProcessing();
-
     callFrame.on("joined-meeting", () => {
       void safeDailyOp(async () => {
-        enforceNoVideoProcessing();
         await callFrame.setUserName(localDisplayNameRef.current, { thisMeetingOnly: true });
       });
-      setTimeout(() => {
-        if (dailyCallRef.current && !dailyCallRef.current.isDestroyed()) enforceNoVideoProcessing();
-      }, 1500);
-      setTimeout(() => {
-        if (dailyCallRef.current && !dailyCallRef.current.isDestroyed()) enforceNoVideoProcessing();
-      }, 3000);
+      // Sync local tracks after joining
+      const localP = callFrame.participants()?.local;
+      if (localP) syncTracks(localP);
     });
 
-    callFrame.on("started-camera", () => enforceNoVideoProcessing());
-    callFrame.on("camera-error", () => enforceNoVideoProcessing());
+    // Track start/stop events — attach/detach media
+    callFrame.on("track-started", (event) => {
+      if (event?.participant) syncTracks(event.participant);
+    });
 
-    // Catch any unhandled Daily errors gracefully
-    callFrame.on("error", (event) => {
-      console.error("Daily error event:", event);
-      if (isClosingRef.current) return;
-      toast({
-        title: "Video call error",
-        description: "Something went wrong with the video call. Please try again.",
-        variant: "destructive",
-      });
-      isClosingRef.current = true;
-      void endSession();
-      closeUi();
+    callFrame.on("track-stopped", (event) => {
+      if (event?.participant) syncTracks(event.participant);
     });
 
     // Handle remote participant joining -> start timer
@@ -504,6 +476,9 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
       setCallEstablished(true);
       callStartTimeRef.current = Date.now();
       setElapsedSeconds(0);
+
+      // Sync their tracks
+      syncTracks(event.participant);
 
       if (isCaller) {
         if (timerRef.current) clearInterval(timerRef.current);
@@ -530,14 +505,75 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
       }
     });
 
+    // When remote participant leaves
+    callFrame.on("participant-left", (event) => {
+      if (event?.participant?.local) return;
+      attachTrack(remoteVideoRef.current, null);
+      attachTrack(remoteAudioRef.current, null);
+      setRemoteVideoOff(true);
+    });
+
     // Sync local media state when it changes
     callFrame.on("participant-updated", (event) => {
-      if (event?.participant?.local) {
+      if (!event?.participant) return;
+      syncTracks(event.participant);
+
+      if (event.participant.local) {
         setIsMuted(!event.participant.audio);
         setIsCameraOff(!event.participant.video);
       } else {
-        setRemoteVideoOff(!event?.participant?.video);
+        setRemoteVideoOff(!event.participant.video);
       }
+    });
+
+    // Catch any unhandled Daily errors gracefully
+    callFrame.on("error", (event) => {
+      console.error("Daily error event:", event);
+      if (isClosingRef.current) return;
+      toast({
+        title: "Video call error",
+        description: "Something went wrong with the video call. Please try again.",
+        variant: "destructive",
+      });
+      isClosingRef.current = true;
+      void endSession();
+      closeUi();
+    });
+
+    // Network connection monitoring via Daily events
+    callFrame.on("network-connection", (event) => {
+      if (event?.type === "disconnected") {
+        if (isClosingRef.current) return;
+        setConnectionLost(true);
+        toast({
+          title: "Connection lost",
+          description: "Trying to reconnect… The call will end if connection isn't restored in 30 seconds.",
+          variant: "destructive",
+        });
+        reconnectTimerRef.current = setTimeout(() => {
+          if (isClosingRef.current) return;
+          isClosingRef.current = true;
+          void endSession();
+          closeUi({
+            title: "Call disconnected",
+            description: "The connection couldn't be restored. Please try calling again.",
+          });
+        }, RECONNECT_TIMEOUT_MS);
+      } else if (event?.type === "connected") {
+        setConnectionLost(false);
+        if (reconnectTimerRef.current) {
+          clearTimeout(reconnectTimerRef.current);
+          reconnectTimerRef.current = null;
+        }
+        toast({ title: "Reconnected", description: "Your connection has been restored." });
+      }
+    });
+
+    callFrame.on("left-meeting", () => {
+      if (isClosingRef.current) return;
+      isClosingRef.current = true;
+      void endSession();
+      closeUi({ title: "Call ended", description: "You were disconnected from the call." });
     });
 
     // Join the room
@@ -550,11 +586,9 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
         url: string;
         token?: string;
         userName?: string;
-        inputSettings: typeof NO_VIDEO_PROCESSING_INPUT_SETTINGS;
       } = {
         url,
         userName: displayName,
-        inputSettings: NO_VIDEO_PROCESSING_INPUT_SETTINGS,
       };
       if (token) joinOpts.token = token;
 
@@ -564,7 +598,7 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
         if (!isCancelled && !callFrame.isDestroyed()) {
           await callFrame
             .setUserName(displayName, { thisMeetingOnly: true })
-            .catch((setNameError) => {
+            .catch((setNameError: unknown) => {
               console.warn("Failed to set Daily display name:", setNameError);
             });
         }
@@ -589,75 +623,35 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
     };
   }, [open, roomUrl, fetchLocalDisplayName]);
 
-
-  // Monitor connection health via Daily postMessage events & online status
+  // Browser online/offline listeners
   useEffect(() => {
     if (!open || !roomUrl) return;
 
     const handleOnline = () => {
-      if (!connectionLost) return;
       setConnectionLost(false);
       if (reconnectTimerRef.current) {
         clearTimeout(reconnectTimerRef.current);
         reconnectTimerRef.current = null;
       }
-      toast({ title: "Reconnected", description: "Your connection has been restored." });
     };
 
     const handleOffline = () => {
       if (isClosingRef.current) return;
       setConnectionLost(true);
-      toast({
-        title: "Connection lost",
-        description: "Trying to reconnect… The call will end if connection isn't restored in 30 seconds.",
-        variant: "destructive",
-      });
-      reconnectTimerRef.current = setTimeout(() => {
-        if (isClosingRef.current) return;
-        isClosingRef.current = true;
-        void endSession();
-        closeUi({
-          title: "Call disconnected",
-          description: "The connection couldn't be restored. Please try calling again.",
-        });
-      }, RECONNECT_TIMEOUT_MS);
-    };
-
-    // Listen for Daily iframe error events
-    const handleMessage = (event: MessageEvent) => {
-      if (typeof event.data !== "object" || !event.data?.action) return;
-      const action = event.data.action as string;
-
-      if (action === "error" || action === "network-connection") {
-        if (event.data?.errorMsg?.includes("disconnected") || event.data?.type === "disconnected") {
-          handleOffline();
-        } else if (event.data?.type === "connected") {
-          handleOnline();
-        }
-      }
-
-      // Daily sends "left-meeting" when participant is kicked/disconnected
-      if (action === "left-meeting" && !isClosingRef.current) {
-        isClosingRef.current = true;
-        void endSession();
-        closeUi({ title: "Call ended", description: "You were disconnected from the call." });
-      }
     };
 
     window.addEventListener("online", handleOnline);
     window.addEventListener("offline", handleOffline);
-    window.addEventListener("message", handleMessage);
 
     return () => {
       window.removeEventListener("online", handleOnline);
       window.removeEventListener("offline", handleOffline);
-      window.removeEventListener("message", handleMessage);
       if (reconnectTimerRef.current) {
         clearTimeout(reconnectTimerRef.current);
         reconnectTimerRef.current = null;
       }
     };
-  }, [open, roomUrl, connectionLost, endSession, closeUi, toast]);
+  }, [open, roomUrl]);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -669,7 +663,7 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
   }, [destroyCallFrame]);
 
   const timeRemaining = Math.max(0, remainingSeconds - elapsedSeconds);
-  const isLowTime = timeRemaining <= 300; // 5 minutes
+  const isLowTime = timeRemaining <= 300;
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && handleClose()}>
@@ -734,10 +728,49 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
 
         {roomUrl && (
           <div className="relative h-full w-full overflow-hidden bg-black">
-            <div
-              ref={containerRef}
-              className="absolute inset-0 overflow-hidden"
+            {/* Remote video — fullscreen */}
+            <video
+              ref={remoteVideoRef}
+              autoPlay
+              playsInline
+              className="absolute inset-0 w-full h-full object-cover"
             />
+            {/* Remote audio (separate element so it plays even when video is off) */}
+            <audio ref={remoteAudioRef} autoPlay />
+
+            {/* Waiting / no remote video — dark background with icon */}
+            {(!callEstablished || remoteVideoOff) && !connectionLost && (
+              <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-black/80">
+                <div className="flex flex-col items-center gap-3">
+                  <div className="flex h-24 w-24 items-center justify-center rounded-full bg-muted/30 backdrop-blur-sm">
+                    <User className="h-12 w-12 text-muted-foreground" />
+                  </div>
+                  <span className="text-base font-medium text-white drop-shadow-md">
+                    {callEstablished
+                      ? `${otherUserName}'s camera is off`
+                      : `Waiting for ${otherUserName}…`}
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {/* Local video — small PiP in bottom-right */}
+            <div className="absolute bottom-24 right-4 z-20 w-28 h-40 sm:w-32 sm:h-44 rounded-xl overflow-hidden shadow-xl border-2 border-white/20 bg-black">
+              <video
+                ref={localVideoRef}
+                autoPlay
+                playsInline
+                muted
+                className="w-full h-full object-cover"
+                style={{ transform: "scaleX(-1)" }}
+              />
+              {isCameraOff && (
+                <div className="absolute inset-0 flex flex-col items-center justify-center bg-muted/90">
+                  <User className="h-6 w-6 text-muted-foreground" />
+                  <span className="text-[10px] text-muted-foreground mt-1">Camera off</span>
+                </div>
+              )}
+            </div>
 
             {/* Connection lost overlay */}
             {connectionLost && (
@@ -748,21 +781,7 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
               </div>
             )}
 
-            {/* Remote camera-off name overlay */}
-            {callEstablished && remoteVideoOff && !connectionLost && (
-              <div className="absolute inset-0 z-10 flex flex-col items-center justify-center pointer-events-none">
-                <div className="flex flex-col items-center gap-3">
-                  <div className="flex h-20 w-20 items-center justify-center rounded-full bg-muted/60 backdrop-blur-sm">
-                    <User className="h-10 w-10 text-muted-foreground" />
-                  </div>
-                  <span className="text-sm font-medium text-white drop-shadow-md">
-                    {otherUserName}&#39;s camera is off
-                  </span>
-                </div>
-              </div>
-            )}
-
-            {/* Timer overlay - only show for the caller (initiator), not the callee */}
+            {/* Timer overlay — only for the caller (initiator), not the callee */}
             {!joinRoomUrl && (
               callEstablished ? (
                 <div
@@ -792,14 +811,14 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
                   className={`h-12 w-12 rounded-full shadow-lg ${
                     isMuted ? "bg-muted/90 text-destructive" : "bg-card/80 text-foreground"
                   }`}
-                   onClick={() => {
-                     const cf = dailyCallRef.current;
-                     if (cf && !cf.isDestroyed()) {
-                       const nextAudio = !cf.localAudio();
-                       cf.setLocalAudio(nextAudio);
-                       setIsMuted(!nextAudio);
-                     }
-                   }}
+                  onClick={() => {
+                    const cf = dailyCallRef.current;
+                    if (cf && !cf.isDestroyed()) {
+                      const nextAudio = !cf.localAudio();
+                      cf.setLocalAudio(nextAudio);
+                      setIsMuted(!nextAudio);
+                    }
+                  }}
                 >
                   {isMuted ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
                 </Button>
@@ -819,14 +838,14 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
                   className={`h-12 w-12 rounded-full shadow-lg ${
                     isCameraOff ? "bg-muted/90 text-destructive" : "bg-card/80 text-foreground"
                   }`}
-                   onClick={() => {
-                     const cf = dailyCallRef.current;
-                     if (cf && !cf.isDestroyed()) {
-                       const nextVideo = !cf.localVideo();
-                       cf.setLocalVideo(nextVideo);
-                       setIsCameraOff(!nextVideo);
-                     }
-                   }}
+                  onClick={() => {
+                    const cf = dailyCallRef.current;
+                    if (cf && !cf.isDestroyed()) {
+                      const nextVideo = !cf.localVideo();
+                      cf.setLocalVideo(nextVideo);
+                      setIsCameraOff(!nextVideo);
+                    }
+                  }}
                 >
                   {isCameraOff ? <VideoOff className="h-5 w-5" /> : <Video className="h-5 w-5" />}
                 </Button>
