@@ -446,23 +446,33 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
     });
     dailyCallRef.current = callFrame;
 
+    /** Safely run a Daily frame operation; show a toast on unexpected errors */
+    const safeDailyOp = async (op: () => unknown) => {
+      try {
+        if (callFrame.isDestroyed()) return;
+        await op();
+      } catch (err: any) {
+        if (err?.message?.includes("postMessage") || callFrame.isDestroyed()) return;
+        console.warn("Daily frame operation failed:", err);
+        toast({
+          title: "Video call issue",
+          description: "A minor issue occurred. The call should continue normally.",
+          variant: "destructive",
+        });
+      }
+    };
+
     const enforceNoVideoProcessing = () => {
-      if (callFrame.isDestroyed()) return;
-      void callFrame.updateInputSettings(NO_VIDEO_PROCESSING_INPUT_SETTINGS).catch((updateError) => {
-        console.warn("Failed to disable Daily video processing:", updateError);
-      });
+      void safeDailyOp(() => callFrame.updateInputSettings(NO_VIDEO_PROCESSING_INPUT_SETTINGS));
     };
 
     enforceNoVideoProcessing();
 
     callFrame.on("joined-meeting", () => {
-      enforceNoVideoProcessing();
-      if (!callFrame.isDestroyed()) {
-        void callFrame
-          .setUserName(localDisplayNameRef.current, { thisMeetingOnly: true })
-          .catch(() => undefined);
-      }
-      // Re-apply after a short delay to override any async camera init blur
+      void safeDailyOp(async () => {
+        enforceNoVideoProcessing();
+        await callFrame.setUserName(localDisplayNameRef.current, { thisMeetingOnly: true });
+      });
       setTimeout(() => {
         if (dailyCallRef.current && !dailyCallRef.current.isDestroyed()) enforceNoVideoProcessing();
       }, 1500);
@@ -471,14 +481,21 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
       }, 3000);
     });
 
-    // Also disable when camera actually starts (blur may re-apply here)
-    callFrame.on("started-camera", () => {
-      enforceNoVideoProcessing();
-    });
+    callFrame.on("started-camera", () => enforceNoVideoProcessing());
+    callFrame.on("camera-error", () => enforceNoVideoProcessing());
 
-    callFrame.on("camera-error", () => {
-      // Even on error/retry, ensure no blur
-      enforceNoVideoProcessing();
+    // Catch any unhandled Daily errors gracefully
+    callFrame.on("error", (event) => {
+      console.error("Daily error event:", event);
+      if (isClosingRef.current) return;
+      toast({
+        title: "Video call error",
+        description: "Something went wrong with the video call. Please try again.",
+        variant: "destructive",
+      });
+      isClosingRef.current = true;
+      void endSession();
+      closeUi();
     });
 
     // Handle remote participant joining -> start timer
@@ -552,8 +569,17 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
             });
         }
       } catch (err: any) {
-        if (err?.message?.includes("postMessage")) return; // Frame was destroyed during join
+        if (err?.message?.includes("postMessage") || callFrame.isDestroyed()) return;
         console.error("Daily join error:", err);
+        toast({
+          title: "Failed to join call",
+          description: "Something went wrong connecting to the video call. Please try again.",
+          variant: "destructive",
+        });
+        if (!isClosingRef.current) {
+          isClosingRef.current = true;
+          closeUi();
+        }
       }
     })();
 
