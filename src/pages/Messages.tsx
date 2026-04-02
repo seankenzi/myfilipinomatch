@@ -317,12 +317,21 @@ const Messages = () => {
 
     if (!error && data) {
       setMessages(data as Message[]);
-      await supabase
-        .from("messages")
-        .update({ read: true })
-        .eq("match_id", selectedMatch.id)
-        .neq("sender_id", user.id)
-        .eq("read", false);
+      // Mark unread messages as read in the DB
+      const unreadIds = data.filter((m: any) => m.sender_id !== user.id && !m.read).map((m: any) => m.id);
+      if (unreadIds.length > 0) {
+        await supabase
+          .from("messages")
+          .update({ read: true })
+          .in("id", unreadIds);
+
+        // Update the sidebar unread count immediately
+        setMatches((prev) =>
+          prev.map((m) =>
+            m.id === selectedMatch.id ? { ...m, unread_count: 0 } : m
+          )
+        );
+      }
     }
   }, [selectedMatch, user]);
 
