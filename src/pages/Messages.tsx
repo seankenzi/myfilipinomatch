@@ -758,7 +758,7 @@ const Messages = () => {
                                   </span>
                                   {isMe && (
                                     msg.read
-                                      ? <CheckCheck className="h-3.5 w-3.5 text-primary-foreground/70" />
+                                      ? <CheckCheck className="h-3.5 w-3.5 text-blue-400" />
                                       : <Check className="h-3.5 w-3.5 text-primary-foreground/40" />
                                   )}
                                 </div>
