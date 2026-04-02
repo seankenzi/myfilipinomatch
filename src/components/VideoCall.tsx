@@ -196,7 +196,11 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
         return;
       }
 
-      setRoomUrl(buildDailyEmbedUrl(data.room_url, data.token));
+      // Store raw URL; token is appended as query param
+      const fullUrl = data.token
+        ? `${data.room_url}${data.room_url.includes("?") ? "&" : "?"}t=${encodeURIComponent(data.token)}`
+        : data.room_url;
+      setRoomUrl(fullUrl);
       setSessionId(data.session_id);
       remainingSecondsRef.current = data.remaining_seconds || 7200;
       setRemainingSeconds(data.remaining_seconds || 7200);
