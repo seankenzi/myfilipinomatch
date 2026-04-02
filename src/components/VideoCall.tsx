@@ -458,27 +458,44 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
         await callFrame.setUserName(localDisplayNameRef.current, { thisMeetingOnly: true });
 
         // Request HD camera input (1280x720 @ 30fps)
-        await callFrame.updateInputSettings({
-          video: {
-            processor: { type: 'none' as const },
-            settings: {
-              width: { min: 640, ideal: 1280 },
-              height: { min: 480, ideal: 720 },
-              frameRate: { ideal: 30 },
+        try {
+          await callFrame.updateInputSettings({
+            video: {
+              processor: { type: 'none' as const },
+              settings: {
+                width: { min: 640, ideal: 1280 },
+                height: { min: 480, ideal: 720 },
+                frameRate: { ideal: 30 },
+              },
             },
-          },
-        });
+          });
+        } catch (e) {
+          console.warn("Failed to set HD input settings:", e);
+        }
 
         // Set higher send quality
-        await callFrame.updateSendSettings({
-          video: {
-            maxQuality: 'high',
-            encodings: {
-              low: { maxBitrate: 200000, maxFramerate: 15 },
-              high: { maxBitrate: 2500000, maxFramerate: 30 },
+        try {
+          await callFrame.updateSendSettings({
+            video: {
+              maxQuality: 'high',
+              encodings: {
+                low: { maxBitrate: 200000, maxFramerate: 15 },
+                high: { maxBitrate: 2500000, maxFramerate: 30 },
+              },
             },
-          },
-        });
+          });
+        } catch (e) {
+          console.warn("Failed to set send settings:", e);
+        }
+
+        // Request high-quality receive from remote participants
+        try {
+          await callFrame.updateReceiveSettings({
+            '*': { video: { layer: 2 } },
+          });
+        } catch (e) {
+          console.warn("Failed to set receive settings:", e);
+        }
       });
       // Sync local tracks after joining
       const localP = callFrame.participants()?.local;
