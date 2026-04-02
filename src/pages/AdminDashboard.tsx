@@ -259,7 +259,7 @@ const UsersTab = () => {
                     </td>
                     <td className="p-3 text-muted-foreground text-xs">{format(new Date(u.created_at), "MMM d, yyyy")}</td>
                     <td className="p-3">
-                      <div className="flex gap-1 justify-end">
+                      <div className="flex gap-1 justify-end" onClick={(e) => e.stopPropagation()}>
                         <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => handleVerify(u.id, !u.is_verified)}>
                           {u.is_verified ? "Unverify" : "Verify"}
                         </Button>
