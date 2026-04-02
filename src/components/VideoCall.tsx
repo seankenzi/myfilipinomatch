@@ -951,7 +951,7 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
                 <Button
                   variant="outline"
                   size="icon"
-                  className="h-12 w-12 rounded-full shadow-lg bg-card/80 text-foreground hidden md:flex"
+                  className="h-12 w-12 rounded-full shadow-lg bg-card/80 text-foreground"
                   onClick={() => setIsGridMode((prev) => !prev)}
                   title={isGridMode ? "Switch to spotlight" : "Switch to grid"}
                 >
