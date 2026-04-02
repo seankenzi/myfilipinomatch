@@ -156,7 +156,7 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
 
       // If joining an existing room (accepted incoming call), skip edge function
       if (joinRoomUrl) {
-        setRoomUrl(buildDailyEmbedUrl(joinRoomUrl));
+        setRoomUrl(joinRoomUrl);
         remainingSecondsRef.current = 7200;
         setRemainingSeconds(7200);
         setElapsedSeconds(0);
