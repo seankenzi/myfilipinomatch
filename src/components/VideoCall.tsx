@@ -542,6 +542,7 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
       if (token) joinOpts.token = token;
 
       try {
+        if (isCancelled || callFrame.isDestroyed()) return;
         await callFrame.join(joinOpts);
         if (!isCancelled && !callFrame.isDestroyed()) {
           await callFrame
@@ -550,7 +551,8 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
               console.warn("Failed to set Daily display name:", setNameError);
             });
         }
-      } catch (err) {
+      } catch (err: any) {
+        if (err?.message?.includes("postMessage")) return; // Frame was destroyed during join
         console.error("Daily join error:", err);
       }
     })();
