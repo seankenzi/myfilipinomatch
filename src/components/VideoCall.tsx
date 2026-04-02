@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import Daily, { type DailyCall } from "@daily-co/daily-js";
-import { VideoOff, Video, PhoneOff, Loader2, Crown, Clock, WifiOff, Mic, MicOff } from "lucide-react";
+import { VideoOff, Video, PhoneOff, Loader2, Crown, Clock, WifiOff, Mic, MicOff, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
@@ -78,6 +78,7 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
   const remainingSecondsRef = useRef(7200);
   const [isMuted, setIsMuted] = useState(false);
   const [isCameraOff, setIsCameraOff] = useState(false);
+  const [remoteVideoOff, setRemoteVideoOff] = useState(false);
 
   const closeUi = useCallback(
     (toastMessage?: { title: string; description?: string }) => {
@@ -100,6 +101,7 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
       setCallEstablished(false);
       setIsMuted(false);
       setIsCameraOff(false);
+      setRemoteVideoOff(false);
       destroyCallFrame();
 
       if (toastMessage) {
@@ -506,9 +508,12 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
 
     // Sync local media state when it changes
     callFrame.on("participant-updated", (event) => {
-      if (!event?.participant?.local) return;
-      setIsMuted(!event.participant.audio);
-      setIsCameraOff(!event.participant.video);
+      if (event?.participant?.local) {
+        setIsMuted(!event.participant.audio);
+        setIsCameraOff(!event.participant.video);
+      } else {
+        setRemoteVideoOff(!event?.participant?.video);
+      }
     });
 
     // Join the room
@@ -705,6 +710,20 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
                 <WifiOff className="h-10 w-10 text-destructive animate-pulse" />
                 <p className="text-sm font-medium text-foreground">Connection lost</p>
                 <p className="text-xs text-muted-foreground">Attempting to reconnect…</p>
+              </div>
+            )}
+
+            {/* Remote camera-off name overlay */}
+            {callEstablished && remoteVideoOff && !connectionLost && (
+              <div className="absolute inset-0 z-10 flex flex-col items-center justify-center pointer-events-none">
+                <div className="flex flex-col items-center gap-3">
+                  <div className="flex h-20 w-20 items-center justify-center rounded-full bg-muted/60 backdrop-blur-sm">
+                    <User className="h-10 w-10 text-muted-foreground" />
+                  </div>
+                  <span className="text-sm font-medium text-white drop-shadow-md">
+                    {otherUserName}&#39;s camera is off
+                  </span>
+                </div>
               </div>
             )}
 
