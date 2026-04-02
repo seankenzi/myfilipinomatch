@@ -60,6 +60,31 @@ Deno.serve(async (req) => {
       });
     }
 
+    const resolveDisplayName = async () => {
+      const metadataName =
+        typeof user.user_metadata?.full_name === "string"
+          ? user.user_metadata.full_name.trim()
+          : "";
+      const emailFallback = user.email?.split("@")[0]?.trim() ?? "";
+      const fallbackName = metadataName || emailFallback || "Member";
+
+      const { data: profile, error: profileError } = await supabaseAdmin
+        .from("profiles")
+        .select("full_name")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      if (profileError) {
+        console.warn("Failed to load profile name for Daily token:", profileError.message);
+        return fallbackName;
+      }
+
+      const profileName =
+        typeof profile?.full_name === "string" ? profile.full_name.trim() : "";
+
+      return profileName || fallbackName;
+    };
+
     const url = new URL(req.url);
     const action = url.searchParams.get("action");
 
@@ -103,6 +128,7 @@ Deno.serve(async (req) => {
       }
 
       const roomInfo = await roomCheck.json();
+      const displayName = await resolveDisplayName();
 
       // Create a unique meeting token for the callee
       const calleeTokenRes = await fetch(`${DAILY_API_URL}/meeting-tokens`, {
@@ -114,7 +140,7 @@ Deno.serve(async (req) => {
         body: JSON.stringify({
          properties: {
             room_name: joinRoomName,
-            user_name: user.id,
+            user_name: displayName,
             exp: Math.floor(Date.now() / 1000) + 3600,
             is_owner: false,
           },
@@ -315,7 +341,6 @@ Deno.serve(async (req) => {
       enable_screenshare: false,
       enable_advanced_chat: false,
       enable_video_processing_ui: false,
-      enable_advanced_chat: false,
     };
 
     if (existingRoom.ok) {
@@ -350,6 +375,8 @@ Deno.serve(async (req) => {
       roomUrl = roomData.url;
     }
 
+    const displayName = await resolveDisplayName();
+
     // Create a meeting token for this user
     const tokenRes = await fetch(`${DAILY_API_URL}/meeting-tokens`, {
       method: "POST",
@@ -360,7 +387,7 @@ Deno.serve(async (req) => {
        body: JSON.stringify({
         properties: {
           room_name: roomName,
-          user_name: user.id,
+          user_name: displayName,
           exp: Math.floor(Date.now() / 1000) + roomExpSeconds,
           is_owner: false,
         },
