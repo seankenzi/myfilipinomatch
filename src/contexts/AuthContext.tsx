@@ -62,7 +62,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             if (profile?.welcome_email_sent) return;
 
             // Welcome email to user
-            await supabase.functions.invoke('send-transactional-email', {
+            const { error: welcomeError } = await supabase.functions.invoke('send-transactional-email', {
               body: {
                 templateName: 'welcome-email',
                 recipientEmail: u.email,
@@ -71,11 +71,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
               },
             });
 
+            if (welcomeError) {
+              console.error('[Welcome email] invoke failed:', welcomeError);
+              return; // Don't set flag — retry on next sign-in
+            }
+
             // Notify admins about new signup via email
             const { data: adminEmails } = await supabase.rpc('get_admin_emails');
             if (adminEmails) {
               for (const row of adminEmails as { email: string }[]) {
-                await supabase.functions.invoke('send-transactional-email', {
+                const { error: adminError } = await supabase.functions.invoke('send-transactional-email', {
                   body: {
                     templateName: 'admin-new-signup',
                     recipientEmail: row.email,
@@ -86,10 +91,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                     },
                   },
                 });
+                if (adminError) {
+                  console.error('[Admin signup email] invoke failed:', adminError);
+                }
               }
             }
 
-            // Mark sent AFTER emails are successfully enqueued
+            // Mark sent ONLY after welcome email was successfully enqueued
             await supabase
               .from('profiles')
               .update({ welcome_email_sent: true })
