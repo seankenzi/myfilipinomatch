@@ -23,25 +23,45 @@ const IncomingCallHandler = () => {
 
     // Get a unique token for the callee via the join action
     try {
-      const { data: sessionData } = await supabase.auth.getSession();
-      const token = sessionData?.session?.access_token;
+      let { data: sessionData } = await supabase.auth.getSession();
+      let token = sessionData?.session?.access_token;
+
+      // Refresh if missing
+      if (!token) {
+        const { data: refreshed } = await supabase.auth.refreshSession();
+        token = refreshed?.session?.access_token;
+      }
+
       if (!token) {
         navigate(`/messages?match=${call.match_id}&openVideo=1`);
         return;
       }
 
       const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
-      const res = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/daily-video?action=join`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ match_id: call.match_id }),
+
+      const doJoin = async (authToken: string) =>
+        fetch(
+          `https://${projectId}.supabase.co/functions/v1/daily-video?action=join`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${authToken}`,
+            },
+            body: JSON.stringify({ match_id: call.match_id }),
+          }
+        );
+
+      let res = await doJoin(token);
+
+      // Retry once on 401
+      if (res.status === 401) {
+        const { data: refreshed } = await supabase.auth.refreshSession();
+        const newToken = refreshed?.session?.access_token;
+        if (newToken) {
+          res = await doJoin(newToken);
         }
-      );
+      }
 
       if (res.ok) {
         const data = await res.json();
