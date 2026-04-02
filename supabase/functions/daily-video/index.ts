@@ -117,7 +117,6 @@ Deno.serve(async (req) => {
             user_name: user.id,
             exp: Math.floor(Date.now() / 1000) + 3600,
             is_owner: false,
-            enable_video_processing_ui: false,
           },
         }),
       });
