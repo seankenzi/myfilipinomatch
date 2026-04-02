@@ -447,7 +447,7 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
     dailyCallRef.current = callFrame;
 
     /** Safely run a Daily frame operation; show a toast on unexpected errors */
-    const safeDailyOp = async (op: () => void | Promise<void>) => {
+    const safeDailyOp = async (op: () => unknown) => {
       try {
         if (callFrame.isDestroyed()) return;
         await op();
