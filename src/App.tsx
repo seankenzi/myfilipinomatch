@@ -67,6 +67,7 @@ const App = () => {
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
+          <PageVisitTracker />
           <ScrollToTop />
           <IncomingCallHandler />
           <div className="flex min-h-screen flex-col">
