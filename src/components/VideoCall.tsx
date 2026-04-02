@@ -596,8 +596,9 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
                     isMuted ? "bg-muted/90 text-destructive" : "bg-card/80 text-foreground"
                   }`}
                   onClick={() => {
-                    iframeRef.current?.contentWindow?.postMessage({ action: "toggle-audio" }, "*");
-                    setIsMuted((prev) => !prev);
+                    const newMuted = !isMuted;
+                    iframeRef.current?.contentWindow?.postMessage({ action: "set-local-audio", state: !newMuted }, "*");
+                    setIsMuted(newMuted);
                   }}
                 >
                   {isMuted ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
