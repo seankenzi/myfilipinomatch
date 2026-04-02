@@ -447,6 +447,7 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
     dailyCallRef.current = callFrame;
 
     const enforceNoVideoProcessing = () => {
+      if (callFrame.isDestroyed()) return;
       void callFrame.updateInputSettings(NO_VIDEO_PROCESSING_INPUT_SETTINGS).catch((updateError) => {
         console.warn("Failed to disable Daily video processing:", updateError);
       });
@@ -456,12 +457,18 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
 
     callFrame.on("joined-meeting", () => {
       enforceNoVideoProcessing();
-      void callFrame
-        .setUserName(localDisplayNameRef.current, { thisMeetingOnly: true })
-        .catch(() => undefined);
+      if (!callFrame.isDestroyed()) {
+        void callFrame
+          .setUserName(localDisplayNameRef.current, { thisMeetingOnly: true })
+          .catch(() => undefined);
+      }
       // Re-apply after a short delay to override any async camera init blur
-      setTimeout(enforceNoVideoProcessing, 1500);
-      setTimeout(enforceNoVideoProcessing, 3000);
+      setTimeout(() => {
+        if (dailyCallRef.current && !dailyCallRef.current.isDestroyed()) enforceNoVideoProcessing();
+      }, 1500);
+      setTimeout(() => {
+        if (dailyCallRef.current && !dailyCallRef.current.isDestroyed()) enforceNoVideoProcessing();
+      }, 3000);
     });
 
     // Also disable when camera actually starts (blur may re-apply here)
@@ -535,6 +542,7 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
       if (token) joinOpts.token = token;
 
       try {
+        if (isCancelled || callFrame.isDestroyed()) return;
         await callFrame.join(joinOpts);
         if (!isCancelled && !callFrame.isDestroyed()) {
           await callFrame
@@ -543,7 +551,8 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
               console.warn("Failed to set Daily display name:", setNameError);
             });
         }
-      } catch (err) {
+      } catch (err: any) {
+        if (err?.message?.includes("postMessage")) return; // Frame was destroyed during join
         console.error("Daily join error:", err);
       }
     })();
