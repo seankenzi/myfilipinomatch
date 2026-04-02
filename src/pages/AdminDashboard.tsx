@@ -1410,6 +1410,49 @@ const AnalyticsTab = () => {
       });
       setReferrerData(Object.entries(refCounts).map(([source, count]) => ({ source, count })).sort((a, b) => b.count - a.count).slice(0, 10));
 
+      // Per-user visit details: aggregate by user_id
+      const userIds = [...new Set(visits.filter((v: any) => v.user_id).map((v: any) => v.user_id))] as string[];
+      let profileMap = new Map<string, { full_name: string; email: string }>();
+      if (userIds.length > 0) {
+        const { data: profiles } = await supabase
+          .from("profiles")
+          .select("id, full_name, email")
+          .in("id", userIds.slice(0, 100));
+        (profiles || []).forEach((p: any) => profileMap.set(p.id, { full_name: p.full_name || "Unknown", email: p.email || "" }));
+      }
+
+      const userMap = new Map<string, { email: string; full_name: string; device_type: string; browser: string; os: string; referrer: string; last_visit: string; visit_count: number }>();
+      visits.forEach((v: any) => {
+        const key = v.user_id || v.user_agent || "anonymous";
+        const existing = userMap.get(key);
+        const profile = v.user_id ? profileMap.get(v.user_id) : undefined;
+        let source = "Direct";
+        if (v.referrer) { try { source = new URL(v.referrer).hostname; } catch { source = v.referrer; } }
+
+        if (!existing) {
+          userMap.set(key, {
+            email: profile?.email || (v.user_id ? "—" : "Anonymous"),
+            full_name: profile?.full_name || (v.user_id ? "—" : "Anonymous"),
+            device_type: v.device_type || "desktop",
+            browser: v.browser || "Other",
+            os: v.os || "Other",
+            referrer: source,
+            last_visit: v.created_at,
+            visit_count: 1,
+          });
+        } else {
+          existing.visit_count++;
+          if (v.created_at > existing.last_visit) {
+            existing.last_visit = v.created_at;
+            existing.device_type = v.device_type || existing.device_type;
+            existing.browser = v.browser || existing.browser;
+            existing.os = v.os || existing.os;
+            if (source !== "Direct") existing.referrer = source;
+          }
+        }
+      });
+      setUserVisits(Array.from(userMap.values()).sort((a, b) => b.last_visit.localeCompare(a.last_visit)));
+
       setLoading(false);
     };
     fetchData();
