@@ -87,26 +87,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 },
               }).catch(() => { /* non-critical */ });
 
-              // Notify admins about new signup via email
-              supabase.from('user_roles').select('user_id').eq('role', 'admin').then(({ data: admins }) => {
-                if (!admins?.length) return;
-                const adminIds = admins.map(a => a.user_id);
-                supabase.from('profiles').select('email').in('id', adminIds).then(({ data: adminProfiles }) => {
-                  adminProfiles?.forEach(admin => {
-                    if (admin.email) {
-                      supabase.functions.invoke('send-transactional-email', {
-                        body: {
-                          templateName: 'admin-new-signup',
-                          recipientEmail: admin.email,
-                          idempotencyKey: `admin-new-signup-${u.id}-${admin.email}`,
-                          templateData: {
-                            userName: u.user_metadata?.full_name || undefined,
-                            userEmail: u.email,
-                          },
-                        },
-                      }).catch(() => { /* non-critical */ });
-                    }
-                  });
+              // Notify admins about new signup via email (uses security definer RPC to bypass RLS)
+              supabase.rpc('get_admin_emails').then(({ data: adminEmails }) => {
+                adminEmails?.forEach((row: { email: string }) => {
+                  supabase.functions.invoke('send-transactional-email', {
+                    body: {
+                      templateName: 'admin-new-signup',
+                      recipientEmail: row.email,
+                      idempotencyKey: `admin-new-signup-${u.id}-${row.email}`,
+                      templateData: {
+                        userName: u.user_metadata?.full_name || undefined,
+                        userEmail: u.email,
+                      },
+                    },
+                  }).catch(() => { /* non-critical */ });
                 });
               });
             } catch {
