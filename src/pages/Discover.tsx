@@ -1233,7 +1233,7 @@ const Discover = () => {
                             )}
                             <button
                               onClick={() => void handleVideoCallClick(profile)}
-                              className="flex items-center justify-center rounded-lg bg-secondary/10 min-w-0 w-[44px] shrink-0 min-h-[44px] text-secondary hover:bg-secondary/20 transition-colors active:scale-95"
+                              className="flex items-center justify-center rounded-lg bg-secondary/10 w-9 h-9 shrink-0 text-secondary hover:bg-secondary/20 transition-colors active:scale-95"
                               title="Video Call"
                             >
                               <Video className="h-4 w-4" />
