@@ -57,6 +57,11 @@ const LazyFallback = () => (
   </div>
 );
 
+const PageVisitTracker = () => {
+  usePageVisitTracker();
+  return null;
+};
+
 const App = () => {
   useOnlineStatus();
   return (
