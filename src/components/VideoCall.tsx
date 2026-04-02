@@ -358,13 +358,15 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
     const isCaller = !joinRoomUrl;
     const { url, token } = parseDailyUrl(roomUrl);
 
+    const CROP_TOP = 48;
+    const CROP_BOTTOM = 80;
     const callFrame = Daily.createFrame(containerRef.current, {
       iframeStyle: {
         position: "absolute",
-        top: "0",
+        top: `-${CROP_TOP}px`,
         left: "0",
         width: "100%",
-        height: "100%",
+        height: `calc(100% + ${CROP_TOP + CROP_BOTTOM}px)`,
         border: "0",
       },
       showLeaveButton: false,
@@ -606,7 +608,7 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
           <div className="relative h-full w-full overflow-hidden bg-black">
             <div
               ref={containerRef}
-              className="absolute inset-0"
+              className="absolute inset-0 overflow-hidden"
             />
 
             {/* Connection lost overlay */}
