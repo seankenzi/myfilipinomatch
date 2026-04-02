@@ -456,12 +456,18 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
 
     callFrame.on("joined-meeting", () => {
       enforceNoVideoProcessing();
-      void callFrame
-        .setUserName(localDisplayNameRef.current, { thisMeetingOnly: true })
-        .catch(() => undefined);
+      if (!callFrame.isDestroyed()) {
+        void callFrame
+          .setUserName(localDisplayNameRef.current, { thisMeetingOnly: true })
+          .catch(() => undefined);
+      }
       // Re-apply after a short delay to override any async camera init blur
-      setTimeout(enforceNoVideoProcessing, 1500);
-      setTimeout(enforceNoVideoProcessing, 3000);
+      setTimeout(() => {
+        if (dailyCallRef.current && !dailyCallRef.current.isDestroyed()) enforceNoVideoProcessing();
+      }, 1500);
+      setTimeout(() => {
+        if (dailyCallRef.current && !dailyCallRef.current.isDestroyed()) enforceNoVideoProcessing();
+      }, 3000);
     });
 
     // Also disable when camera actually starts (blur may re-apply here)
