@@ -64,6 +64,7 @@ interface NavbarProps {
 
 const Navbar = ({ bannerSubtitle }: NavbarProps) => {
   const { user, loading, isPremium, premiumLoading, signOut } = useAuth();
+  const { isAdmin } = useAdmin();
   const navigate = useNavigate();
   const newLikesCount = useNewLikesCount();
 
