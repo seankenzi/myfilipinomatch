@@ -541,8 +541,9 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
     });
 
     // Network connection monitoring via Daily events
-    callFrame.on("network-connection", (event) => {
-      if (event?.type === "disconnected") {
+    callFrame.on("network-connection", (event: any) => {
+      const connType = event?.type as string;
+      if (connType === "disconnected") {
         if (isClosingRef.current) return;
         setConnectionLost(true);
         toast({
@@ -559,7 +560,7 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
             description: "The connection couldn't be restored. Please try calling again.",
           });
         }, RECONNECT_TIMEOUT_MS);
-      } else if (event?.type === "connected") {
+      } else if (connType === "connected") {
         setConnectionLost(false);
         if (reconnectTimerRef.current) {
           clearTimeout(reconnectTimerRef.current);
