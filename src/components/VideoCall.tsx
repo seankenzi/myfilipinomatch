@@ -548,7 +548,11 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
               ref={iframeRef}
               src={roomUrl}
               allow="camera; microphone; fullscreen; display-capture"
-              className="absolute inset-0 w-full h-full border-0"
+              className="absolute left-0 w-full border-0"
+              style={{
+                top: `-${DAILY_IFRAME_CROP.top}px`,
+                height: `calc(100% + ${DAILY_IFRAME_CROP.top + DAILY_IFRAME_CROP.bottom}px)`,
+              }}
               title={`Video call with ${otherUserName}`}
             />
 
