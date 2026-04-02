@@ -771,7 +771,7 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
         )}
 
         {roomUrl && (
-          <div className={`relative h-full w-full overflow-hidden bg-black ${isGridMode ? "flex" : ""}`}>
+          <div className={`relative h-full w-full overflow-hidden bg-black ${isGridMode ? "flex flex-col md:flex-row" : ""}`}>
             {isGridMode ? (
               /* ── Grid mode: side-by-side (desktop) ── */
               <>
