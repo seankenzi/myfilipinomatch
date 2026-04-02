@@ -482,7 +482,7 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && handleClose()}>
-      <DialogContent className="max-w-4xl w-full h-[80vh] p-0 overflow-hidden">
+      <DialogContent className="max-w-[95vw] w-full h-[95vh] p-0 overflow-hidden rounded-xl">
         {loading && (
           <div className="flex flex-col items-center justify-center h-full gap-4">
             <Loader2 className="h-10 w-10 animate-spin text-primary" />
