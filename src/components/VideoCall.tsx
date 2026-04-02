@@ -48,6 +48,7 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
   const navigate = useNavigate();
   const containerRef = useRef<HTMLDivElement>(null);
   const dailyCallRef = useRef<DailyCall | null>(null);
+  const localDisplayNameRef = useRef("You");
 
   // Helper: destroy the Daily call frame instance
   const destroyCallFrame = useCallback(() => {
@@ -114,6 +115,36 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
     },
     [destroyCallFrame, onClose, toast]
   );
+
+  const fetchLocalDisplayName = useCallback(async (): Promise<string> => {
+    try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      const metadataName =
+        typeof user?.user_metadata?.full_name === "string"
+          ? user.user_metadata.full_name.trim()
+          : "";
+      const emailFallback = user?.email?.split("@")[0]?.trim() ?? "";
+      const fallbackName = metadataName || emailFallback || "You";
+
+      if (!user) return fallbackName;
+
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("full_name")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      const profileName =
+        typeof profile?.full_name === "string" ? profile.full_name.trim() : "";
+
+      return profileName || fallbackName;
+    } catch {
+      return "You";
+    }
+  }, []);
 
   const endSession = useCallback(async () => {
     // Only the caller (initiator) has a session to end
@@ -423,6 +454,9 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
 
     callFrame.on("joined-meeting", () => {
       enforceNoVideoProcessing();
+      void callFrame
+        .setUserName(localDisplayNameRef.current, { thisMeetingOnly: true })
+        .catch(() => undefined);
       // Re-apply after a short delay to override any async camera init blur
       setTimeout(enforceNoVideoProcessing, 1500);
       setTimeout(enforceNoVideoProcessing, 3000);
@@ -477,24 +511,12 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
       setIsCameraOff(!event.participant.video);
     });
 
-    // Fetch current user's display name for the video tile
-    const fetchUserName = async (): Promise<string> => {
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-          const { data: profile } = await supabase
-            .from("profiles")
-            .select("full_name")
-            .eq("id", user.id)
-            .single();
-          if (profile?.full_name) return profile.full_name;
-        }
-      } catch { /* fallback */ }
-      return "You";
-    };
-
     // Join the room
-    fetchUserName().then((displayName) => {
+    let isCancelled = false;
+    void (async () => {
+      const displayName = await fetchLocalDisplayName();
+      localDisplayNameRef.current = displayName;
+
       const joinOpts: {
         url: string;
         token?: string;
@@ -506,15 +528,26 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
         inputSettings: NO_VIDEO_PROCESSING_INPUT_SETTINGS,
       };
       if (token) joinOpts.token = token;
-      callFrame.join(joinOpts).catch((err) => {
+
+      try {
+        await callFrame.join(joinOpts);
+        if (!isCancelled && !callFrame.isDestroyed()) {
+          await callFrame
+            .setUserName(displayName, { thisMeetingOnly: true })
+            .catch((setNameError) => {
+              console.warn("Failed to set Daily display name:", setNameError);
+            });
+        }
+      } catch (err) {
         console.error("Daily join error:", err);
-      });
-    });
+      }
+    })();
 
     return () => {
+      isCancelled = true;
       destroyCallFrame();
     };
-  }, [open, roomUrl]);
+  }, [open, roomUrl, fetchLocalDisplayName]);
 
 
   // Monitor connection health via Daily postMessage events & online status
