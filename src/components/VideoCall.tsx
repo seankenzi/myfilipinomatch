@@ -569,8 +569,17 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
             });
         }
       } catch (err: any) {
-        if (err?.message?.includes("postMessage")) return; // Frame was destroyed during join
+        if (err?.message?.includes("postMessage") || callFrame.isDestroyed()) return;
         console.error("Daily join error:", err);
+        toast({
+          title: "Failed to join call",
+          description: "Something went wrong connecting to the video call. Please try again.",
+          variant: "destructive",
+        });
+        if (!isClosingRef.current) {
+          isClosingRef.current = true;
+          closeUi();
+        }
       }
     })();
 
