@@ -853,16 +853,16 @@ const Messages = () => {
                       <div className="flex-1 relative">
                         <textarea
                           placeholder="Type a message..."
-                          className="w-full rounded-2xl border border-input bg-muted/30 px-5 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all placeholder:text-muted-foreground/60 min-h-[48px] max-h-[120px] resize-none overflow-y-auto leading-snug"
+                          className="w-full rounded-2xl border border-input bg-muted/30 px-5 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all placeholder:text-muted-foreground/60 min-h-[48px] max-h-[200px] resize-none overflow-y-auto leading-snug"
                           value={newMessage}
-                          onChange={(e) => { setNewMessage(e.target.value.slice(0, 1000)); broadcastTyping(); }}
+                          onChange={(e) => { setNewMessage(e.target.value.slice(0, 2000)); broadcastTyping(); }}
                           onKeyDown={handleKeyDown}
-                          maxLength={1000}
+                          maxLength={2000}
                           rows={1}
                           onInput={(e) => {
                             const target = e.target as HTMLTextAreaElement;
                             target.style.height = "auto";
-                            target.style.height = Math.min(target.scrollHeight, 120) + "px";
+                            target.style.height = Math.min(target.scrollHeight, 200) + "px";
                           }}
                         />
                       </div>
