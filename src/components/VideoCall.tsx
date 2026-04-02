@@ -153,8 +153,14 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
     setLimitReached(false);
 
     try {
-      const { data: sessionData } = await supabase.auth.getSession();
-      const token = sessionData?.session?.access_token;
+      // Ensure we have a fresh auth token (avoids random "Unauthorized" errors)
+      let { data: sessionData } = await supabase.auth.getSession();
+      let token = sessionData?.session?.access_token;
+      if (!token) {
+        // Try refreshing once
+        const { data: refreshed } = await supabase.auth.refreshSession();
+        token = refreshed?.session?.access_token;
+      }
 
       if (!token) {
         setError("Please log in to make video calls.");
