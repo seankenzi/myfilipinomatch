@@ -46,13 +46,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setUser(session?.user ?? null);
       setLoading(false);
 
-      // Send welcome email on first sign-in after email confirmation
+      // Fallback only: signup emails are primarily triggered from the backend.
       if (_event === 'SIGNED_IN' && session?.user) {
         const u = session.user;
+        const normalizedUserEmail = u.email?.trim().toLowerCase();
+
+        if (!normalizedUserEmail) return;
 
         (async () => {
           try {
-            // Check DB flag — reliable across devices/browsers
             const { data: profile } = await supabase
               .from('profiles')
               .select('welcome_email_sent')
@@ -61,49 +63,61 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
             if (profile?.welcome_email_sent) return;
 
-            // Welcome email to user
-            const { error: welcomeError } = await supabase.functions.invoke('send-transactional-email', {
+            const { data: welcomeResult, error: welcomeError } = await supabase.functions.invoke('send-transactional-email', {
               body: {
                 templateName: 'welcome-email',
                 recipientEmail: u.email,
-                idempotencyKey: `welcome-${u.id}`,
+                idempotencyKey: `welcome-signup-${normalizedUserEmail}`,
                 templateData: { name: u.user_metadata?.full_name || undefined },
               },
             });
 
-            if (welcomeError) {
-              console.error('[Welcome email] invoke failed:', welcomeError);
-              return; // Don't set flag — retry on next sign-in
+            if (welcomeError || welcomeResult?.queued !== true) {
+              console.error('[Welcome email] fallback enqueue failed:', welcomeError ?? welcomeResult);
+              return;
             }
 
-            // Notify admins about new signup via email
-            const { data: adminEmails } = await supabase.rpc('get_admin_emails');
-            if (adminEmails) {
-              for (const row of adminEmails as { email: string }[]) {
-                const { error: adminError } = await supabase.functions.invoke('send-transactional-email', {
+            const { data: adminEmails, error: adminEmailsError } = await supabase.rpc('get_admin_emails');
+
+            if (adminEmailsError) {
+              console.error('[Admin signup email] failed to load admin emails:', adminEmailsError);
+              return;
+            }
+
+            const adminResults = await Promise.allSettled(
+              (adminEmails ?? []).map(async (row: { email: string }) => {
+                const normalizedAdminEmail = row.email.trim().toLowerCase();
+
+                const { data, error } = await supabase.functions.invoke('send-transactional-email', {
                   body: {
                     templateName: 'admin-new-signup',
                     recipientEmail: row.email,
-                    idempotencyKey: `admin-new-signup-${u.id}-${row.email}`,
+                    idempotencyKey: `admin-new-signup-${normalizedUserEmail}-${normalizedAdminEmail}`,
                     templateData: {
                       userName: u.user_metadata?.full_name || undefined,
                       userEmail: u.email,
                     },
                   },
                 });
-                if (adminError) {
-                  console.error('[Admin signup email] invoke failed:', adminError);
+
+                if (error || data?.queued !== true) {
+                  throw error ?? new Error('Admin signup email was not queued');
                 }
-              }
+              })
+            );
+
+            const failedAdminEmails = adminResults.filter((result) => result.status === 'rejected');
+            if (failedAdminEmails.length > 0) {
+              console.error('[Admin signup email] fallback enqueue failed:', failedAdminEmails);
+              return;
             }
 
-            // Mark sent ONLY after welcome email was successfully enqueued
             await supabase
               .from('profiles')
               .update({ welcome_email_sent: true })
               .eq('id', u.id);
           } catch (err) {
-            console.error('[Welcome/Admin email]', err);
+            console.error('[Welcome/Admin email fallback]', err);
           }
         })();
       }
