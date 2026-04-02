@@ -341,6 +341,9 @@ Deno.serve(async (req) => {
       enable_screenshare: false,
       enable_advanced_chat: false,
       enable_video_processing_ui: false,
+      enable_network_ui: false,
+      sfu_switchover: 0.5,
+      geo: "nearest",
     };
 
     if (existingRoom.ok) {
