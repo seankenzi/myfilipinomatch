@@ -421,6 +421,39 @@ const ModerationTab = () => {
           </div>
         )}
       </div>
+
+      {/* Image Preview Modal */}
+      {previewImage && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
+          onClick={() => setPreviewImage(null)}
+        >
+          <div
+            className="relative max-w-2xl w-full mx-4 rounded-2xl bg-card p-4 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setPreviewImage(null)}
+              className="absolute top-3 right-3 p-1.5 rounded-full bg-muted hover:bg-muted/80 text-foreground z-10"
+            >
+              <XCircle className="h-5 w-5" />
+            </button>
+            <img
+              src={previewImage.url}
+              alt={`Verification photo for ${previewImage.name}`}
+              className="w-full max-h-[70vh] object-contain rounded-xl"
+            />
+            <div className="mt-3 text-center">
+              <p className="font-medium text-foreground">{previewImage.name}</p>
+              {previewImage.pose && (
+                <p className="text-sm text-muted-foreground mt-1">
+                  Pose instruction: <span className="font-medium text-foreground">{previewImage.pose}</span>
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
