@@ -53,44 +53,28 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
         // Quick local guard to avoid unnecessary DB query on every sign-in
         if (!localStorage.getItem(welcomeKey)) {
-          // Database-level check: only send if profile was created < 5 min ago
-          // AND no welcome email has ever been logged for this user
+          // Mark sent immediately to prevent race conditions across tabs
+          localStorage.setItem(welcomeKey, '1');
+
+          // Idempotency keys ensure duplicate calls are safely ignored server-side,
+          // so no time-window restriction is needed.
           (async () => {
             try {
-              const { data: profile } = await supabase
-                .from('profiles')
-                .select('created_at')
-                .eq('id', u.id)
-                .single();
-
-              if (!profile) return;
-
-              const profileCreatedAt = new Date(profile.created_at).getTime();
-              const now = Date.now();
-
-              // Profile must have been created within the last 5 minutes
-              if (now - profileCreatedAt > 300_000) {
-                localStorage.setItem(welcomeKey, '1');
-                return;
-              }
-
-              // Mark sent immediately to prevent race conditions
-              localStorage.setItem(welcomeKey, '1');
-
               // Welcome email to user
-              supabase.functions.invoke('send-transactional-email', {
+              await supabase.functions.invoke('send-transactional-email', {
                 body: {
                   templateName: 'welcome-email',
                   recipientEmail: u.email,
                   idempotencyKey: `welcome-${u.id}`,
                   templateData: { name: u.user_metadata?.full_name || undefined },
                 },
-              }).catch(() => { /* non-critical */ });
+              });
 
-              // Notify admins about new signup via email (uses security definer RPC to bypass RLS)
-              supabase.rpc('get_admin_emails').then(({ data: adminEmails }) => {
-                adminEmails?.forEach((row: { email: string }) => {
-                  supabase.functions.invoke('send-transactional-email', {
+              // Notify admins about new signup via email
+              const { data: adminEmails } = await supabase.rpc('get_admin_emails');
+              if (adminEmails) {
+                for (const row of adminEmails as { email: string }[]) {
+                  await supabase.functions.invoke('send-transactional-email', {
                     body: {
                       templateName: 'admin-new-signup',
                       recipientEmail: row.email,
@@ -100,11 +84,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                         userEmail: u.email,
                       },
                     },
-                  }).catch(() => { /* non-critical */ });
-                });
-              });
-            } catch {
-              /* non-critical */
+                  });
+                }
+              }
+            } catch (err) {
+              console.error('[Welcome/Admin email]', err);
             }
           })();
         }
