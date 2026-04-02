@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Heart, MessageCircle } from "lucide-react";
+import { Heart, MessageCircle, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
 import { Button } from "@/components/ui/button";
