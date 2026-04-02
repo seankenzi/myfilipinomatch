@@ -49,49 +49,55 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       // Send welcome email on first sign-in after email confirmation
       if (_event === 'SIGNED_IN' && session?.user) {
         const u = session.user;
-        const welcomeKey = `welcome_sent_${u.id}`;
 
-        // Quick local guard to avoid unnecessary DB query on every sign-in
-        if (!localStorage.getItem(welcomeKey)) {
-          // Mark sent immediately to prevent race conditions across tabs
-          localStorage.setItem(welcomeKey, '1');
+        (async () => {
+          try {
+            // Check DB flag — reliable across devices/browsers
+            const { data: profile } = await supabase
+              .from('profiles')
+              .select('welcome_email_sent')
+              .eq('id', u.id)
+              .single();
 
-          // Idempotency keys ensure duplicate calls are safely ignored server-side,
-          // so no time-window restriction is needed.
-          (async () => {
-            try {
-              // Welcome email to user
-              await supabase.functions.invoke('send-transactional-email', {
-                body: {
-                  templateName: 'welcome-email',
-                  recipientEmail: u.email,
-                  idempotencyKey: `welcome-${u.id}`,
-                  templateData: { name: u.user_metadata?.full_name || undefined },
-                },
-              });
+            if (profile?.welcome_email_sent) return;
 
-              // Notify admins about new signup via email
-              const { data: adminEmails } = await supabase.rpc('get_admin_emails');
-              if (adminEmails) {
-                for (const row of adminEmails as { email: string }[]) {
-                  await supabase.functions.invoke('send-transactional-email', {
-                    body: {
-                      templateName: 'admin-new-signup',
-                      recipientEmail: row.email,
-                      idempotencyKey: `admin-new-signup-${u.id}-${row.email}`,
-                      templateData: {
-                        userName: u.user_metadata?.full_name || undefined,
-                        userEmail: u.email,
-                      },
+            // Mark sent immediately to prevent race conditions
+            await supabase
+              .from('profiles')
+              .update({ welcome_email_sent: true })
+              .eq('id', u.id);
+
+            // Welcome email to user
+            await supabase.functions.invoke('send-transactional-email', {
+              body: {
+                templateName: 'welcome-email',
+                recipientEmail: u.email,
+                idempotencyKey: `welcome-${u.id}`,
+                templateData: { name: u.user_metadata?.full_name || undefined },
+              },
+            });
+
+            // Notify admins about new signup via email
+            const { data: adminEmails } = await supabase.rpc('get_admin_emails');
+            if (adminEmails) {
+              for (const row of adminEmails as { email: string }[]) {
+                await supabase.functions.invoke('send-transactional-email', {
+                  body: {
+                    templateName: 'admin-new-signup',
+                    recipientEmail: row.email,
+                    idempotencyKey: `admin-new-signup-${u.id}-${row.email}`,
+                    templateData: {
+                      userName: u.user_metadata?.full_name || undefined,
+                      userEmail: u.email,
                     },
-                  });
-                }
+                  },
+                });
               }
-            } catch (err) {
-              console.error('[Welcome/Admin email]', err);
             }
-          })();
-        }
+          } catch (err) {
+            console.error('[Welcome/Admin email]', err);
+          }
+        })();
       }
     });
 
