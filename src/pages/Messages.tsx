@@ -139,6 +139,17 @@ const Messages = () => {
       ? Math.max(0, FREE_DAILY_MESSAGE_LIMIT - mySentTodayCount)
       : Math.max(0, FREE_MESSAGE_LIMIT - mySentCount);
 
+  // Close emoji picker on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (emojiPickerRef.current && !emojiPickerRef.current.contains(e.target as Node)) {
+        setShowEmojiPicker(false);
+      }
+    };
+    if (showEmojiPicker) document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [showEmojiPicker]);
+
   useEffect(() => {
     if (!user) return;
     supabase
