@@ -456,6 +456,29 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
     callFrame.on("joined-meeting", () => {
       void safeDailyOp(async () => {
         await callFrame.setUserName(localDisplayNameRef.current, { thisMeetingOnly: true });
+
+        // Request HD camera input (1280x720 @ 30fps)
+        await callFrame.updateInputSettings({
+          video: {
+            processor: { type: 'none' as const },
+            settings: {
+              width: { min: 640, ideal: 1280 },
+              height: { min: 480, ideal: 720 },
+              frameRate: { ideal: 30 },
+            },
+          },
+        });
+
+        // Set higher send quality
+        await callFrame.updateSendSettings({
+          video: {
+            maxQuality: 'high',
+            encodings: {
+              low: { maxBitrate: 200000, maxFramerate: 15 },
+              high: { maxBitrate: 2500000, maxFramerate: 30 },
+            },
+          },
+        });
       });
       // Sync local tracks after joining
       const localP = callFrame.participants()?.local;
