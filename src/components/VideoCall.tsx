@@ -713,8 +713,6 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
               </div>
             )}
 
-            {/* Timer overlay - only show for the caller (initiator), not the callee */}
-
             {/* Remote camera-off name overlay */}
             {callEstablished && remoteVideoOff && !connectionLost && (
               <div className="absolute inset-0 z-10 flex flex-col items-center justify-center pointer-events-none">
