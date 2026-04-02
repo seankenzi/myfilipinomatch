@@ -288,14 +288,17 @@ const ModerationTab = () => {
   const { toast } = useToast();
   const [reports, setReports] = useState<any[]>([]);
   const [verifications, setVerifications] = useState<any[]>([]);
+  const [pastVerifications, setPastVerifications] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [previewImage, setPreviewImage] = useState<{ url: string; name: string; pose?: string } | null>(null);
+  const [showHistory, setShowHistory] = useState(false);
 
   const fetchData = async () => {
     setLoading(true);
-    const [reportsRes, verificationsRes] = await Promise.all([
+    const [reportsRes, verificationsRes, pastVerificationsRes] = await Promise.all([
       supabase.from("reports").select("*").order("created_at", { ascending: false }).limit(50),
       supabase.from("verifications").select("*").eq("status", "pending").order("created_at", { ascending: false }).limit(50),
+      supabase.from("verifications").select("*").in("status", ["approved", "rejected"]).order("reviewed_at", { ascending: false }).limit(100),
     ]);
 
     // Enrich with profile names
@@ -303,6 +306,7 @@ const ModerationTab = () => {
       ...new Set([
         ...(reportsRes.data || []).flatMap(r => [r.reporter_id, r.reported_id]),
         ...(verificationsRes.data || []).map(v => v.user_id),
+        ...(pastVerificationsRes.data || []).map(v => v.user_id),
       ])
     ];
 
@@ -329,6 +333,21 @@ const ModerationTab = () => {
       })
     );
     setVerifications(enrichedVerifications);
+
+    const enrichedPast = await Promise.all(
+      (pastVerificationsRes.data || []).map(async (v: any) => {
+        let signedDocUrl = v.document_url;
+        if (v.document_url) {
+          signedDocUrl = await getSignedPhotoUrl(v.document_url);
+        }
+        return {
+          ...v,
+          user_name: profileMap.get(v.user_id)?.full_name || "Unknown",
+          document_url: signedDocUrl,
+        };
+      })
+    );
+    setPastVerifications(enrichedPast);
 
     setLoading(false);
   };
@@ -419,6 +438,46 @@ const ModerationTab = () => {
               </div>
             ))}
           </div>
+        )}
+      </div>
+
+      {/* Verification History */}
+      <div>
+        <button
+          onClick={() => setShowHistory(!showHistory)}
+          className="text-lg font-semibold mb-3 flex items-center gap-2 hover:text-primary transition-colors"
+        >
+          <CheckCircle className="h-5 w-5 text-secondary" /> Verification History ({pastVerifications.length})
+          <span className="text-xs text-muted-foreground ml-1">{showHistory ? "▲ Hide" : "▼ Show"}</span>
+        </button>
+        {showHistory && (
+          pastVerifications.length === 0 ? (
+            <p className="text-sm text-muted-foreground">No past verifications.</p>
+          ) : (
+            <div className="space-y-2">
+              {pastVerifications.map(v => (
+                <div key={v.id} className="rounded-xl border border-border bg-card p-4 flex items-center gap-4">
+                  {v.document_url && (
+                    <button onClick={() => setPreviewImage({ url: v.document_url, name: v.user_name, pose: v.pose_instruction })} className="shrink-0">
+                      <img src={v.document_url} alt={`Verification document for ${v.user_name}`} loading="lazy" className="h-14 w-14 rounded-lg object-cover border border-border cursor-pointer hover:opacity-80 transition-opacity" />
+                    </button>
+                  )}
+                  <div className="flex-1">
+                    <p className="font-medium text-sm">{v.user_name}</p>
+                    <p className="text-xs text-muted-foreground">
+                      Type: {v.type} · Submitted {format(new Date(v.created_at), "MMM d, yyyy")}
+                      {v.reviewed_at && ` · Reviewed ${format(new Date(v.reviewed_at), "MMM d, yyyy")}`}
+                    </p>
+                  </div>
+                  <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${
+                    v.status === "approved" ? "bg-secondary/10 text-secondary" : "bg-destructive/10 text-destructive"
+                  }`}>
+                    {v.status === "approved" ? "✅ Approved" : "❌ Rejected"}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )
         )}
       </div>
 
