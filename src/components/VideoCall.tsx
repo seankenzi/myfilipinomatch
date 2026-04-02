@@ -15,43 +15,15 @@ interface VideoCallProps {
   joinRoomUrl?: string; // If provided, skip room creation and join directly
 }
 
-const DAILY_EMBED_PARAMS: Record<string, string> = {
-  prejoin: "false",
-  showParticipantsBar: "false",
-  showUserNameChangeUI: "false",
-  showLeaveButton: "false",
-  showFullscreenButton: "false",
-  showLocalVideo: "true",
-  showChat: "false",
-  activeSpeakerMode: "false",
-  showHeader: "false",
-  showControls: "false",
-  enable_prejoin_ui: "false",
-  enable_people_ui: "false",
-  enable_network_ui: "false",
-  enable_video_processing_ui: "false",
-  video_processor: "none",
-};
-
-const DAILY_IFRAME_CROP = {
-  top: 48,
-  bottom: 80,
-};
-
-const buildDailyEmbedUrl = (baseUrl: string, token?: string) => {
+/** Extract base room URL (without query params) and token from a full Daily URL */
+const parseDailyUrl = (fullUrl: string): { url: string; token?: string } => {
   try {
-    const url = new URL(baseUrl);
-    if (token) url.searchParams.set("t", token);
-    Object.entries(DAILY_EMBED_PARAMS).forEach(([key, value]) => {
-      url.searchParams.set(key, value);
-    });
-    return url.toString();
+    const u = new URL(fullUrl);
+    const token = u.searchParams.get("t") || undefined;
+    u.search = "";
+    return { url: u.toString().replace(/\/$/, ""), token };
   } catch {
-    const withToken = token
-      ? `${baseUrl}${baseUrl.includes("?") ? "&" : "?"}t=${encodeURIComponent(token)}`
-      : baseUrl;
-    const params = new URLSearchParams(DAILY_EMBED_PARAMS).toString();
-    return `${withToken}${withToken.includes("?") ? "&" : "?"}${params}`;
+    return { url: fullUrl };
   }
 };
 
@@ -66,7 +38,7 @@ const formatTime = (totalSeconds: number) => {
 const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: VideoCallProps) => {
   const { toast } = useToast();
   const navigate = useNavigate();
-  const iframeRef = useRef<HTMLIFrameElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const dailyCallRef = useRef<DailyCall | null>(null);
 
   // Helper: destroy the Daily call frame instance
@@ -75,21 +47,6 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
     dailyCallRef.current = null;
     if (cf && !cf.isDestroyed()) {
       void cf.destroy().catch(() => undefined);
-    }
-  }, []);
-
-  // Helper: get or create a Daily call-frame wrapper around the iframe
-  const getCallFrame = useCallback(() => {
-    const existing = dailyCallRef.current;
-    if (existing && !existing.isDestroyed()) return existing;
-    if (!iframeRef.current) return null;
-    try {
-      const cf = Daily.wrap(iframeRef.current);
-      dailyCallRef.current = cf;
-      return cf;
-    } catch (e) {
-      console.error("Daily.wrap error:", e);
-      return null;
     }
   }, []);
   const [loading, setLoading] = useState(false);
@@ -199,7 +156,7 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
 
       // If joining an existing room (accepted incoming call), skip edge function
       if (joinRoomUrl) {
-        setRoomUrl(buildDailyEmbedUrl(joinRoomUrl));
+        setRoomUrl(joinRoomUrl);
         remainingSecondsRef.current = 7200;
         setRemainingSeconds(7200);
         setElapsedSeconds(0);
@@ -239,7 +196,11 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
         return;
       }
 
-      setRoomUrl(buildDailyEmbedUrl(data.room_url, data.token));
+      // Store raw URL; token is appended as query param
+      const fullUrl = data.token
+        ? `${data.room_url}${data.room_url.includes("?") ? "&" : "?"}t=${encodeURIComponent(data.token)}`
+        : data.room_url;
+      setRoomUrl(fullUrl);
       setSessionId(data.session_id);
       remainingSecondsRef.current = data.remaining_seconds || 7200;
       setRemainingSeconds(data.remaining_seconds || 7200);
@@ -379,55 +340,84 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
     closeUi();
   }, [endSession, closeUi, matchId]);
 
-  // Start timer only when a second participant joins (call is truly established)
-  // Start timer only when a second participant joins (call is truly established)
-  // Usage limits (countdown, warnings, auto-hangup) only apply to the caller (initiator)
+  // Create the Daily call frame when roomUrl is available
   useEffect(() => {
-    if (!open || !roomUrl) return;
+    if (!open || !roomUrl || !containerRef.current) return;
+
+    // Clean up any previous instance
+    destroyCallFrame();
 
     const isCaller = !joinRoomUrl;
+    const { url, token } = parseDailyUrl(roomUrl);
 
-    const handleDailyMessage = (event: MessageEvent) => {
-      if (typeof event.data !== "object" || !event.data?.action) return;
-      const action = event.data.action as string;
+    const callFrame = Daily.createFrame(containerRef.current, {
+      iframeStyle: {
+        position: "absolute",
+        top: "0",
+        left: "0",
+        width: "100%",
+        height: "100%",
+        border: "0",
+      },
+      showLeaveButton: false,
+      showFullscreenButton: false,
+      showParticipantsBar: false,
+      showLocalVideo: true,
+      activeSpeakerMode: false,
+    });
+    dailyCallRef.current = callFrame;
 
-      // "participant-joined" fires when the OTHER person joins the room
-      if (action === "participant-joined" && !event.data?.participant?.local) {
-        if (callEstablished) return;
-        setCallEstablished(true);
-        callStartTimeRef.current = Date.now();
-        setElapsedSeconds(0);
+    // Handle remote participant joining -> start timer
+    callFrame.on("participant-joined", (event) => {
+      if (event?.participant?.local) return;
+      setCallEstablished(true);
+      callStartTimeRef.current = Date.now();
+      setElapsedSeconds(0);
 
-        // Only run the usage countdown timer for the caller (initiator)
-        if (isCaller) {
-          if (timerRef.current) clearInterval(timerRef.current);
-          const maxSeconds = remainingSecondsRef.current;
-          timerRef.current = setInterval(() => {
-            setElapsedSeconds((prev) => {
-              const next = prev + 1;
-              if (next >= maxSeconds) {
-                handleClose();
-                toast({
-                  title: "Time's up!",
-                  description: "You've used your 2 free video call hours this month.",
-                });
-              }
-              if (maxSeconds - next === 300) {
-                toast({
-                  title: "⏰ 5 minutes remaining",
-                  description: "Your monthly video call time is almost up.",
-                });
-              }
-              return next;
-            });
-          }, 1000);
-        }
+      if (isCaller) {
+        if (timerRef.current) clearInterval(timerRef.current);
+        const maxSeconds = remainingSecondsRef.current;
+        timerRef.current = setInterval(() => {
+          setElapsedSeconds((prev) => {
+            const next = prev + 1;
+            if (next >= maxSeconds) {
+              handleClose();
+              toast({
+                title: "Time's up!",
+                description: "You've used your 2 free video call hours this month.",
+              });
+            }
+            if (maxSeconds - next === 300) {
+              toast({
+                title: "⏰ 5 minutes remaining",
+                description: "Your monthly video call time is almost up.",
+              });
+            }
+            return next;
+          });
+        }, 1000);
       }
-    };
+    });
 
-    window.addEventListener("message", handleDailyMessage);
-    return () => window.removeEventListener("message", handleDailyMessage);
-  }, [open, roomUrl, callEstablished, toast, handleClose, joinRoomUrl]);
+    // Sync local media state when it changes
+    callFrame.on("participant-updated", (event) => {
+      if (!event?.participant?.local) return;
+      setIsMuted(!event.participant.audio);
+      setIsCameraOff(!event.participant.video);
+    });
+
+    // Join the room
+    const joinOpts: { url: string; token?: string } = { url };
+    if (token) joinOpts.token = token;
+    callFrame.join(joinOpts).catch((err) => {
+      console.error("Daily join error:", err);
+    });
+
+    return () => {
+      destroyCallFrame();
+    };
+  }, [open, roomUrl]);
+
 
   // Monitor connection health via Daily postMessage events & online status
   useEffect(() => {
@@ -573,16 +563,9 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
 
         {roomUrl && (
           <div className="relative h-full w-full overflow-hidden bg-black">
-            <iframe
-              ref={iframeRef}
-              src={roomUrl}
-              allow="camera; microphone; fullscreen; display-capture"
-              className="absolute left-0 w-full border-0"
-              style={{
-                top: `-${DAILY_IFRAME_CROP.top}px`,
-                height: `calc(100% + ${DAILY_IFRAME_CROP.top + DAILY_IFRAME_CROP.bottom}px)`,
-              }}
-              title={`Video call with ${otherUserName}`}
+            <div
+              ref={containerRef}
+              className="absolute inset-0"
             />
 
             {/* Connection lost overlay */}
@@ -598,7 +581,7 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
             {!joinRoomUrl && (
               callEstablished ? (
                 <div
-                  className={`absolute top-14 right-4 z-20 flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium shadow-lg backdrop-blur-sm ${
+                  className={`absolute top-4 right-4 z-20 flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium shadow-lg backdrop-blur-sm ${
                     isLowTime
                       ? "bg-destructive/90 text-destructive-foreground animate-pulse"
                       : "bg-card/80 text-foreground"
@@ -608,14 +591,14 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
                   {formatTime(timeRemaining)}
                 </div>
               ) : (
-                <div className="absolute top-14 right-4 z-20 flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium shadow-lg backdrop-blur-sm bg-card/80 text-muted-foreground">
+                <div className="absolute top-4 right-4 z-20 flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium shadow-lg backdrop-blur-sm bg-card/80 text-muted-foreground">
                   <Loader2 className="h-3.5 w-3.5 animate-spin" />
                   Waiting for {otherUserName}…
                 </div>
               )
             )}
 
-            {/* Floating controls - keeps Daily's toolbar hidden without creating white bars */}
+            {/* Floating controls */}
             <div className="absolute inset-x-0 bottom-6 z-30 flex justify-center px-4">
               <div className="flex max-w-full items-center gap-3 rounded-full border border-border/40 bg-foreground/55 px-4 py-3 shadow-lg backdrop-blur-md">
                 <Button
@@ -625,13 +608,11 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
                     isMuted ? "bg-muted/90 text-destructive" : "bg-card/80 text-foreground"
                   }`}
                    onClick={() => {
-                     const cf = getCallFrame();
-                     if (cf) {
+                     const cf = dailyCallRef.current;
+                     if (cf && !cf.isDestroyed()) {
                        const nextAudio = !cf.localAudio();
                        cf.setLocalAudio(nextAudio);
                        setIsMuted(!nextAudio);
-                     } else {
-                       setIsMuted((prev) => !prev);
                      }
                    }}
                 >
@@ -654,13 +635,11 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
                     isCameraOff ? "bg-muted/90 text-destructive" : "bg-card/80 text-foreground"
                   }`}
                    onClick={() => {
-                     const cf = getCallFrame();
-                     if (cf) {
+                     const cf = dailyCallRef.current;
+                     if (cf && !cf.isDestroyed()) {
                        const nextVideo = !cf.localVideo();
                        cf.setLocalVideo(nextVideo);
                        setIsCameraOff(!nextVideo);
-                     } else {
-                       setIsCameraOff((prev) => !prev);
                      }
                    }}
                 >
