@@ -503,8 +503,9 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
       if (reconnectTimerRef.current) clearTimeout(reconnectTimerRef.current);
+      destroyCallFrame();
     };
-  }, []);
+  }, [destroyCallFrame]);
 
   const timeRemaining = Math.max(0, remainingSeconds - elapsedSeconds);
   const isLowTime = timeRemaining <= 300; // 5 minutes
