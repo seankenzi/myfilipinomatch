@@ -447,6 +447,7 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
     dailyCallRef.current = callFrame;
 
     const enforceNoVideoProcessing = () => {
+      if (callFrame.isDestroyed()) return;
       void callFrame.updateInputSettings(NO_VIDEO_PROCESSING_INPUT_SETTINGS).catch((updateError) => {
         console.warn("Failed to disable Daily video processing:", updateError);
       });
