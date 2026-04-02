@@ -1,0 +1,1 @@
+UPDATE public.profiles SET welcome_email_sent = true WHERE welcome_email_sent = false;
