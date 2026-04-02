@@ -386,6 +386,19 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
 
     callFrame.on("joined-meeting", () => {
       enforceNoVideoProcessing();
+      // Re-apply after a short delay to override any async camera init blur
+      setTimeout(enforceNoVideoProcessing, 1500);
+      setTimeout(enforceNoVideoProcessing, 3000);
+    });
+
+    // Also disable when camera actually starts (blur may re-apply here)
+    callFrame.on("started-camera", () => {
+      enforceNoVideoProcessing();
+    });
+
+    callFrame.on("camera-error", () => {
+      // Even on error/retry, ensure no blur
+      enforceNoVideoProcessing();
     });
 
     // Handle remote participant joining -> start timer
