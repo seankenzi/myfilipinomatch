@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
+import Daily, { type DailyCall } from "@daily-co/daily-js";
 import { VideoOff, Video, PhoneOff, Loader2, Crown, Clock, WifiOff, Mic, MicOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
@@ -66,6 +67,31 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
   const { toast } = useToast();
   const navigate = useNavigate();
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const dailyCallRef = useRef<DailyCall | null>(null);
+
+  // Helper: destroy the Daily call frame instance
+  const destroyCallFrame = useCallback(() => {
+    const cf = dailyCallRef.current;
+    dailyCallRef.current = null;
+    if (cf && !cf.isDestroyed()) {
+      void cf.destroy().catch(() => undefined);
+    }
+  }, []);
+
+  // Helper: get or create a Daily call-frame wrapper around the iframe
+  const getCallFrame = useCallback(() => {
+    const existing = dailyCallRef.current;
+    if (existing && !existing.isDestroyed()) return existing;
+    if (!iframeRef.current) return null;
+    try {
+      const cf = Daily.wrap(iframeRef.current);
+      dailyCallRef.current = cf;
+      return cf;
+    } catch (e) {
+      console.error("Daily.wrap error:", e);
+      return null;
+    }
+  }, []);
   const [loading, setLoading] = useState(false);
   const [roomUrl, setRoomUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -108,6 +134,7 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
       setCallEstablished(false);
       setIsMuted(false);
       setIsCameraOff(false);
+      destroyCallFrame();
 
       if (toastMessage) {
         toast({
@@ -120,7 +147,7 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
 
       onClose();
     },
-    [onClose, toast]
+    [destroyCallFrame, onClose, toast]
   );
 
   const endSession = useCallback(async () => {
@@ -476,8 +503,9 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
       if (reconnectTimerRef.current) clearTimeout(reconnectTimerRef.current);
+      destroyCallFrame();
     };
-  }, []);
+  }, [destroyCallFrame]);
 
   const timeRemaining = Math.max(0, remainingSeconds - elapsedSeconds);
   const isLowTime = timeRemaining <= 300; // 5 minutes
@@ -596,11 +624,16 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
                   className={`h-12 w-12 rounded-full shadow-lg ${
                     isMuted ? "bg-muted/90 text-destructive" : "bg-card/80 text-foreground"
                   }`}
-                  onClick={() => {
-                    const newMuted = !isMuted;
-                    iframeRef.current?.contentWindow?.postMessage({ action: "set-local-audio", state: !newMuted }, "*");
-                    setIsMuted(newMuted);
-                  }}
+                   onClick={() => {
+                     const cf = getCallFrame();
+                     if (cf) {
+                       const nextAudio = !cf.localAudio();
+                       cf.setLocalAudio(nextAudio);
+                       setIsMuted(!nextAudio);
+                     } else {
+                       setIsMuted((prev) => !prev);
+                     }
+                   }}
                 >
                   {isMuted ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
                 </Button>
@@ -620,11 +653,16 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
                   className={`h-12 w-12 rounded-full shadow-lg ${
                     isCameraOff ? "bg-muted/90 text-destructive" : "bg-card/80 text-foreground"
                   }`}
-                  onClick={() => {
-                    const newCameraOff = !isCameraOff;
-                    iframeRef.current?.contentWindow?.postMessage({ action: "set-local-video", state: !newCameraOff }, "*");
-                    setIsCameraOff(newCameraOff);
-                  }}
+                   onClick={() => {
+                     const cf = getCallFrame();
+                     if (cf) {
+                       const nextVideo = !cf.localVideo();
+                       cf.setLocalVideo(nextVideo);
+                       setIsCameraOff(!nextVideo);
+                     } else {
+                       setIsCameraOff((prev) => !prev);
+                     }
+                   }}
                 >
                   {isCameraOff ? <VideoOff className="h-5 w-5" /> : <Video className="h-5 w-5" />}
                 </Button>
