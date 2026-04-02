@@ -651,11 +651,16 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
                   className={`h-12 w-12 rounded-full shadow-lg ${
                     isCameraOff ? "bg-muted/90 text-destructive" : "bg-card/80 text-foreground"
                   }`}
-                  onClick={() => {
-                    const newCameraOff = !isCameraOff;
-                    iframeRef.current?.contentWindow?.postMessage({ action: "set-local-video", state: !newCameraOff }, "*");
-                    setIsCameraOff(newCameraOff);
-                  }}
+                   onClick={() => {
+                     const cf = getCallFrame();
+                     if (cf) {
+                       const nextVideo = !cf.localVideo();
+                       cf.setLocalVideo(nextVideo);
+                       setIsCameraOff(!nextVideo);
+                     } else {
+                       setIsCameraOff((prev) => !prev);
+                     }
+                   }}
                 >
                   {isCameraOff ? <VideoOff className="h-5 w-5" /> : <Video className="h-5 w-5" />}
                 </Button>
