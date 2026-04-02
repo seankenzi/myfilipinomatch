@@ -433,17 +433,6 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
     const callFrame = Daily.createCallObject({
       videoSource: true,
       audioSource: true,
-      sendSettings: {
-        video: {
-          maxQuality: 'high',
-          encodings: {
-            high: {
-              maxBitrate: 2500000,
-              maxFramerate: 30,
-            },
-          },
-        },
-      },
     });
 
     dailyCallRef.current = callFrame;
