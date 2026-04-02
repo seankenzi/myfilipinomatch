@@ -754,7 +754,7 @@ const Messages = () => {
                               <div
                                 className={`max-w-[75%] px-4 py-2.5 ${
                                   isMe
-                                    ? `gradient-hero text-primary-foreground shadow-sm ${isLastInGroup ? "rounded-2xl rounded-br-lg" : "rounded-2xl"}`
+                                    ? `bg-gradient-to-br from-rose-400 to-rose-500 text-white shadow-sm ${isLastInGroup ? "rounded-2xl rounded-br-lg" : "rounded-2xl"}`
                                     : `bg-card text-foreground border border-border shadow-sm ${isLastInGroup ? "rounded-2xl rounded-bl-lg" : "rounded-2xl"}`
                                 }`}
                               >
