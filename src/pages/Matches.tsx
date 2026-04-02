@@ -49,7 +49,7 @@ const Matches = () => {
 
       const { data: matchesData, error } = await supabase
         .from("matches")
-        .select("id, user1_id, user2_id, created_at")
+        .select("id, user1_id, user2_id, created_at, type")
         .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`)
         .order("created_at", { ascending: false });
 
