@@ -841,6 +841,12 @@ export type Database = {
         Args: { payload: Json; queue_name: string }
         Returns: number
       }
+      get_admin_emails: {
+        Args: never
+        Returns: {
+          email: string
+        }[]
+      }
       get_monthly_video_usage: { Args: { p_user_id: string }; Returns: number }
       get_profile_by_id: {
         Args: { profile_id: string }
