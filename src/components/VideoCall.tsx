@@ -31,10 +31,8 @@ const DAILY_EMBED_PARAMS: Record<string, string> = {
 };
 
 const DAILY_IFRAME_CROP = {
-  top: 76,
-  bottom: 136,
-  topRightHeight: 320,
-  topRightWidth: 360,
+  top: 0,
+  bottom: 80,
 };
 
 const buildDailyEmbedUrl = (baseUrl: string, token?: string) => {
@@ -557,24 +555,11 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
               title={`Video call with ${otherUserName}`}
             />
 
-            {/* Fallback masks for stubborn Daily UI strips */}
+            {/* Slim bottom mask to hide Daily's native toolbar */}
             <div
               aria-hidden
-              className="pointer-events-none absolute inset-x-0 top-0 z-20 bg-gradient-to-b from-foreground via-foreground to-transparent"
-              style={{ height: DAILY_IFRAME_CROP.top + 48 }}
-            />
-            <div
-              aria-hidden
-              className="pointer-events-none absolute top-0 right-0 z-20 hidden md:block bg-gradient-to-bl from-foreground via-foreground to-transparent"
-              style={{
-                height: DAILY_IFRAME_CROP.topRightHeight,
-                width: DAILY_IFRAME_CROP.topRightWidth,
-              }}
-            />
-            <div
-              aria-hidden
-              className="pointer-events-none absolute inset-x-0 bottom-0 z-20 bg-gradient-to-t from-foreground via-foreground to-transparent"
-              style={{ height: DAILY_IFRAME_CROP.bottom + 32 }}
+              className="pointer-events-none absolute inset-x-0 bottom-0 z-20 bg-foreground"
+              style={{ height: 4 }}
             />
 
             {/* Connection lost overlay */}
