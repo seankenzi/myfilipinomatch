@@ -1494,9 +1494,10 @@ const AdminDashboard = () => {
           </div>
 
           <Tabs defaultValue="dashboard" className="space-y-6" onValueChange={(v) => { if (v === "subscriptions") setSubsRefreshKey(k => k + 1); }}>
-            <TabsList className="grid w-full grid-cols-9 max-w-5xl">
+            <TabsList className="grid w-full grid-cols-10 max-w-5xl">
               <TabsTrigger value="dashboard" className="text-xs"><TrendingUp className="h-3.5 w-3.5 mr-1" /> Overview</TabsTrigger>
               <TabsTrigger value="users" className="text-xs"><Users className="h-3.5 w-3.5 mr-1" /> Users</TabsTrigger>
+              <TabsTrigger value="analytics" className="text-xs"><Activity className="h-3.5 w-3.5 mr-1" /> Analytics</TabsTrigger>
               <TabsTrigger value="moderation" className="text-xs"><Shield className="h-3.5 w-3.5 mr-1" /> Moderation</TabsTrigger>
               <TabsTrigger value="subscriptions" className="text-xs"><CreditCard className="h-3.5 w-3.5 mr-1" /> Subs</TabsTrigger>
               <TabsTrigger value="features" className="text-xs"><ToggleRight className="h-3.5 w-3.5 mr-1" /> Features</TabsTrigger>
@@ -1508,6 +1509,7 @@ const AdminDashboard = () => {
 
             <TabsContent value="dashboard"><DashboardTab /></TabsContent>
             <TabsContent value="users"><UsersTab /></TabsContent>
+            <TabsContent value="analytics"><AnalyticsTab /></TabsContent>
             <TabsContent value="moderation"><ModerationTab /></TabsContent>
             <TabsContent value="subscriptions"><SubscriptionsTab refreshKey={subsRefreshKey} /></TabsContent>
             <TabsContent value="features"><FeatureFlagsTab /></TabsContent>
