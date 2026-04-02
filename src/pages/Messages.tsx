@@ -252,6 +252,7 @@ const Messages = () => {
         },
         last_message: e.lastMsg,
         unread_count: e.unreadCount,
+        type: e.matchType,
       };
     });
 
