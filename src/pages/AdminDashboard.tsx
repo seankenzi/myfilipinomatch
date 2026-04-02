@@ -314,10 +314,20 @@ const ModerationTab = () => {
       reported_name: profileMap.get(r.reported_id)?.full_name || "Unknown",
     })));
 
-    setVerifications((verificationsRes.data || []).map(v => ({
-      ...v,
-      user_name: profileMap.get(v.user_id)?.full_name || "Unknown",
-    })));
+    const enrichedVerifications = await Promise.all(
+      (verificationsRes.data || []).map(async (v: any) => {
+        let signedDocUrl = v.document_url;
+        if (v.document_url) {
+          signedDocUrl = await getSignedPhotoUrl(v.document_url);
+        }
+        return {
+          ...v,
+          user_name: profileMap.get(v.user_id)?.full_name || "Unknown",
+          document_url: signedDocUrl,
+        };
+      })
+    );
+    setVerifications(enrichedVerifications);
 
     setLoading(false);
   };
