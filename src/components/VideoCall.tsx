@@ -134,6 +134,7 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
       setCallEstablished(false);
       setIsMuted(false);
       setIsCameraOff(false);
+      destroyCallFrame();
 
       if (toastMessage) {
         toast({
