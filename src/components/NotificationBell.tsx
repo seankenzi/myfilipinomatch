@@ -111,7 +111,7 @@ export default function NotificationBell() {
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-80 p-0" align="end" sideOffset={8} collisionPadding={16}>
+      <PopoverContent className="w-96 p-0" align="end" sideOffset={8} collisionPadding={16}>
         <div className="flex items-center justify-between px-4 py-3 border-b border-border">
           <h3 className="font-semibold text-sm">Notifications</h3>
           {unreadCount > 0 && (
