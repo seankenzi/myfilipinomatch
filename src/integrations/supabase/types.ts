@@ -434,6 +434,7 @@ export type Database = {
           user_type: string | null
           want_children: string | null
           weight_kg: number | null
+          welcome_email_sent: boolean
         }
         Insert: {
           age?: number | null
@@ -465,6 +466,7 @@ export type Database = {
           user_type?: string | null
           want_children?: string | null
           weight_kg?: number | null
+          welcome_email_sent?: boolean
         }
         Update: {
           age?: number | null
@@ -496,6 +498,7 @@ export type Database = {
           user_type?: string | null
           want_children?: string | null
           weight_kg?: number | null
+          welcome_email_sent?: boolean
         }
         Relationships: []
       }
