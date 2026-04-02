@@ -1,4 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import data from "@emoji-mart/data";
+import Picker from "@emoji-mart/react";
 import {
   Send, ArrowLeft, Shield, Lock, MessageCircle, Sparkles,
   Flag, Ban, AlertTriangle, MoreVertical, MapPin, Crown, Video, Heart,
