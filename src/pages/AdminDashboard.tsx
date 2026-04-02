@@ -132,7 +132,7 @@ const UsersTab = () => {
     setLoading(false);
   };
 
-  useEffect(() => { fetchUsers(); }, [onboardingFilter]);
+  useEffect(() => { fetchUsers(); }, [onboardingFilter, search]);
 
   const handleVerify = async (userId: string, verified: boolean) => {
     await supabase.from("profiles").update({ is_verified: verified }).eq("id", userId);
