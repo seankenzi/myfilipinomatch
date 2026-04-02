@@ -863,6 +863,30 @@ const Messages = () => {
                   )}
                   <div className="p-3">
                     <div className="mx-auto max-w-2xl flex items-center gap-2.5">
+                      <div className="relative" ref={emojiPickerRef}>
+                        <button
+                          type="button"
+                          onClick={() => setShowEmojiPicker((v) => !v)}
+                          className="flex h-12 w-12 items-center justify-center rounded-full text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+                          aria-label="Emoji picker"
+                        >
+                          <Smile className="h-5 w-5" />
+                        </button>
+                        {showEmojiPicker && (
+                          <div className="absolute bottom-14 left-0 z-50 shadow-xl rounded-xl">
+                            <Picker
+                              data={data}
+                              onEmojiSelect={(emoji: { native: string }) => {
+                                setNewMessage((prev) => prev + emoji.native);
+                                setShowEmojiPicker(false);
+                              }}
+                              theme="light"
+                              previewPosition="none"
+                              skinTonePosition="none"
+                            />
+                          </div>
+                        )}
+                      </div>
                       <div className="flex-1 relative">
                         <textarea
                           placeholder="Type a message..."
