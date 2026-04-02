@@ -1246,7 +1246,7 @@ const Discover = () => {
                             </button>
                             <button
                               onClick={() => handleReport(profile)}
-                              className="flex items-center justify-center rounded-lg bg-muted min-w-0 w-[44px] shrink-0 min-h-[44px] text-muted-foreground hover:text-destructive transition-colors active:scale-95"
+                              className="flex items-center justify-center rounded-lg bg-muted w-9 h-9 shrink-0 text-muted-foreground hover:text-destructive transition-colors active:scale-95"
                             >
                               <Flag className="h-4 w-4" />
                             </button>
