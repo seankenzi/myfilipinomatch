@@ -542,24 +542,13 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
         )}
 
         {roomUrl && (
-          <div className="relative h-full w-full overflow-hidden bg-foreground">
+          <div className="relative h-full w-full overflow-hidden bg-black">
             <iframe
               ref={iframeRef}
               src={roomUrl}
               allow="camera; microphone; fullscreen; display-capture"
-              className="absolute left-0 right-0 w-full border-0 bg-foreground"
-              style={{
-                top: `-${DAILY_IFRAME_CROP.top}px`,
-                height: `calc(100% + ${DAILY_IFRAME_CROP.top + DAILY_IFRAME_CROP.bottom}px)`,
-              }}
+              className="absolute inset-0 w-full h-full border-0"
               title={`Video call with ${otherUserName}`}
-            />
-
-            {/* Slim bottom mask to hide Daily's native toolbar */}
-            <div
-              aria-hidden
-              className="pointer-events-none absolute inset-x-0 bottom-0 z-20 bg-foreground"
-              style={{ height: 4 }}
             />
 
             {/* Connection lost overlay */}
