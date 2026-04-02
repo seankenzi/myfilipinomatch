@@ -397,7 +397,7 @@ const Messages = () => {
 
   const handleSend = async () => {
     if (!newMessage.trim() || !selectedMatch || !user || sending || isLocked) return;
-    if (newMessage.trim().length > 1000) {
+    if (newMessage.trim().length > 2000) {
       toast({ title: "Message too long", description: "Max 1000 characters.", variant: "destructive" });
       return;
     }
