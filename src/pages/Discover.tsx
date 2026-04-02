@@ -1240,7 +1240,7 @@ const Discover = () => {
                             </button>
                             <button
                               onClick={() => handlePriorityLike(profile)}
-                              className="flex items-center justify-center rounded-lg bg-accent/10 min-w-0 w-[44px] shrink-0 min-h-[44px] text-accent hover:bg-accent/20 transition-colors active:scale-95"
+                              className="flex items-center justify-center rounded-lg bg-accent/10 w-9 h-9 shrink-0 text-accent hover:bg-accent/20 transition-colors active:scale-95"
                             >
                               <Star className="h-4 w-4 fill-accent" />
                             </button>
