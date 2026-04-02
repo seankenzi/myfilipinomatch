@@ -4,7 +4,7 @@ import {
   Users, Heart, MessageSquare, Shield, CreditCard, TrendingUp,
   BarChart3, ArrowLeft, Search, Ban, CheckCircle, XCircle,
   Clock, Eye, Star, AlertTriangle, RefreshCw, ToggleLeft, ToggleRight,
-  Plus, Trash2, Bug, Video, Mail, Inbox
+  Plus, Trash2, Bug, Video, Mail, Inbox, ExternalLink
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -248,6 +248,7 @@ const UsersTab = () => {
                           {u.avatar_url ? <img src={u.avatar_url} alt={`${u.full_name || 'User'} avatar`} loading="lazy" className="h-full w-full object-cover" /> : <Users className="h-full w-full p-1.5 text-muted-foreground" />}
                         </div>
                         <span className="font-medium truncate max-w-[150px]">{u.full_name || "—"}</span>
+                        <ExternalLink className="h-3 w-3 text-muted-foreground/50 flex-shrink-0" />
                       </div>
                     </td>
                     <td className="p-3 text-muted-foreground truncate max-w-[200px]">{u.email || "—"}</td>
