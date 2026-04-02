@@ -38,7 +38,7 @@ const formatTime = (totalSeconds: number) => {
 const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: VideoCallProps) => {
   const { toast } = useToast();
   const navigate = useNavigate();
-  const iframeRef = useRef<HTMLIFrameElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const dailyCallRef = useRef<DailyCall | null>(null);
 
   // Helper: destroy the Daily call frame instance
@@ -47,21 +47,6 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
     dailyCallRef.current = null;
     if (cf && !cf.isDestroyed()) {
       void cf.destroy().catch(() => undefined);
-    }
-  }, []);
-
-  // Helper: get or create a Daily call-frame wrapper around the iframe
-  const getCallFrame = useCallback(() => {
-    const existing = dailyCallRef.current;
-    if (existing && !existing.isDestroyed()) return existing;
-    if (!iframeRef.current) return null;
-    try {
-      const cf = Daily.wrap(iframeRef.current);
-      dailyCallRef.current = cf;
-      return cf;
-    } catch (e) {
-      console.error("Daily.wrap error:", e);
-      return null;
     }
   }, []);
   const [loading, setLoading] = useState(false);
