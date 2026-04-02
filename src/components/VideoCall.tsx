@@ -340,55 +340,85 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
     closeUi();
   }, [endSession, closeUi, matchId]);
 
-  // Start timer only when a second participant joins (call is truly established)
-  // Start timer only when a second participant joins (call is truly established)
-  // Usage limits (countdown, warnings, auto-hangup) only apply to the caller (initiator)
+  // Create the Daily call frame when roomUrl is available
   useEffect(() => {
-    if (!open || !roomUrl) return;
+    if (!open || !roomUrl || !containerRef.current) return;
+
+    // Clean up any previous instance
+    destroyCallFrame();
 
     const isCaller = !joinRoomUrl;
+    const { url, token } = parseDailyUrl(roomUrl);
 
-    const handleDailyMessage = (event: MessageEvent) => {
-      if (typeof event.data !== "object" || !event.data?.action) return;
-      const action = event.data.action as string;
+    const callFrame = Daily.createFrame(containerRef.current, {
+      iframeStyle: {
+        position: "absolute",
+        top: "0",
+        left: "0",
+        width: "100%",
+        height: "100%",
+        border: "0",
+      },
+      showLeaveButton: false,
+      showFullscreenButton: false,
+      showParticipantsBar: false,
+      showLocalVideo: true,
+      showChat: false,
+      activeSpeakerMode: false,
+    });
+    dailyCallRef.current = callFrame;
 
-      // "participant-joined" fires when the OTHER person joins the room
-      if (action === "participant-joined" && !event.data?.participant?.local) {
-        if (callEstablished) return;
-        setCallEstablished(true);
-        callStartTimeRef.current = Date.now();
-        setElapsedSeconds(0);
+    // Handle remote participant joining -> start timer
+    callFrame.on("participant-joined", (event) => {
+      if (event?.participant?.local) return;
+      setCallEstablished(true);
+      callStartTimeRef.current = Date.now();
+      setElapsedSeconds(0);
 
-        // Only run the usage countdown timer for the caller (initiator)
-        if (isCaller) {
-          if (timerRef.current) clearInterval(timerRef.current);
-          const maxSeconds = remainingSecondsRef.current;
-          timerRef.current = setInterval(() => {
-            setElapsedSeconds((prev) => {
-              const next = prev + 1;
-              if (next >= maxSeconds) {
-                handleClose();
-                toast({
-                  title: "Time's up!",
-                  description: "You've used your 2 free video call hours this month.",
-                });
-              }
-              if (maxSeconds - next === 300) {
-                toast({
-                  title: "⏰ 5 minutes remaining",
-                  description: "Your monthly video call time is almost up.",
-                });
-              }
-              return next;
-            });
-          }, 1000);
-        }
+      if (isCaller) {
+        if (timerRef.current) clearInterval(timerRef.current);
+        const maxSeconds = remainingSecondsRef.current;
+        timerRef.current = setInterval(() => {
+          setElapsedSeconds((prev) => {
+            const next = prev + 1;
+            if (next >= maxSeconds) {
+              handleClose();
+              toast({
+                title: "Time's up!",
+                description: "You've used your 2 free video call hours this month.",
+              });
+            }
+            if (maxSeconds - next === 300) {
+              toast({
+                title: "⏰ 5 minutes remaining",
+                description: "Your monthly video call time is almost up.",
+              });
+            }
+            return next;
+          });
+        }, 1000);
       }
-    };
+    });
 
-    window.addEventListener("message", handleDailyMessage);
-    return () => window.removeEventListener("message", handleDailyMessage);
-  }, [open, roomUrl, callEstablished, toast, handleClose, joinRoomUrl]);
+    // Sync local media state when it changes
+    callFrame.on("participant-updated", (event) => {
+      if (!event?.participant?.local) return;
+      setIsMuted(!event.participant.audio);
+      setIsCameraOff(!event.participant.video);
+    });
+
+    // Join the room
+    const joinOpts: { url: string; token?: string } = { url };
+    if (token) joinOpts.token = token;
+    callFrame.join(joinOpts).catch((err) => {
+      console.error("Daily join error:", err);
+    });
+
+    return () => {
+      destroyCallFrame();
+    };
+  }, [open, roomUrl]);
+
 
   // Monitor connection health via Daily postMessage events & online status
   useEffect(() => {
