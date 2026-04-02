@@ -358,12 +358,13 @@ Deno.serve(async (req) => {
         Authorization: `Bearer ${DAILY_API_KEY}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
+       body: JSON.stringify({
         properties: {
           room_name: roomName,
           user_name: user.id,
           exp: Math.floor(Date.now() / 1000) + roomExpSeconds,
           is_owner: false,
+          enable_video_processing_ui: false,
         },
       }),
     });
