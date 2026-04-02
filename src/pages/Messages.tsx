@@ -769,7 +769,8 @@ const Messages = () => {
                               <div
                                 className={`max-w-[75%] px-4 py-2.5 ${
                                   isMe
-                                    ? `bg-gradient-to-br from-rose-400 to-rose-500 text-white shadow-sm ${isLastInGroup ? "rounded-2xl rounded-br-lg" : "rounded-2xl"}`
+? `text-white shadow-sm ${isLastInGroup ? "rounded-2xl rounded-br-lg" : "rounded-2xl"}`
+                                style={isMe ? { background: 'linear-gradient(135deg, #e8637a 0%, #d4456a 50%, #c43d5f 100%)' } : undefined}
                                     : `bg-card text-foreground border border-border shadow-sm ${isLastInGroup ? "rounded-2xl rounded-bl-lg" : "rounded-2xl"}`
                                 }`}
                               >
