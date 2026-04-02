@@ -308,9 +308,28 @@ Deno.serve(async (req) => {
 
     let roomUrl: string;
 
+    const roomProps = {
+      exp: Math.floor(Date.now() / 1000) + roomExpSeconds,
+      max_participants: 2,
+      enable_chat: false,
+      enable_screenshare: false,
+      enable_advanced_chat: false,
+      enable_video_processing_ui: false,
+    };
+
     if (existingRoom.ok) {
       const roomData = await existingRoom.json();
       roomUrl = roomData.url;
+
+      // Update existing room to ensure latest properties are applied
+      await fetch(`${DAILY_API_URL}/rooms/${roomName}`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${DAILY_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ properties: roomProps }),
+      });
     } else {
       const createRes = await fetch(`${DAILY_API_URL}/rooms`, {
         method: "POST",
@@ -318,17 +337,7 @@ Deno.serve(async (req) => {
           Authorization: `Bearer ${DAILY_API_KEY}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          name: roomName,
-          properties: {
-            exp: Math.floor(Date.now() / 1000) + roomExpSeconds,
-            max_participants: 2,
-            enable_chat: false,
-            enable_screenshare: false,
-            enable_advanced_chat: false,
-            enable_video_processing_ui: false,
-          },
-        }),
+        body: JSON.stringify({ name: roomName, properties: roomProps }),
       });
 
       if (!createRes.ok) {
