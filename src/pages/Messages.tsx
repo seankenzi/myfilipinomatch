@@ -1,8 +1,10 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import data from "@emoji-mart/data";
+import Picker from "@emoji-mart/react";
 import {
   Send, ArrowLeft, Shield, Lock, MessageCircle, Sparkles,
   Flag, Ban, AlertTriangle, MoreVertical, MapPin, Crown, Video, Heart,
-  Check, CheckCheck
+  Check, CheckCheck, Smile
 } from "lucide-react";
 import VideoCallModal from "@/components/VideoCallModal";
 import { detectContactInfo } from "@/lib/contactFilter";
@@ -98,6 +100,8 @@ const Messages = () => {
   const [newMessage, setNewMessage] = useState("");
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const emojiPickerRef = useRef<HTMLDivElement>(null);
   const [myProfile, setMyProfile] = useState<{ is_premium: boolean | null } | null>(null);
 
   const [reportDialog, setReportDialog] = useState(false);
@@ -134,6 +138,17 @@ const Messages = () => {
     : isMutualMatch
       ? Math.max(0, FREE_DAILY_MESSAGE_LIMIT - mySentTodayCount)
       : Math.max(0, FREE_MESSAGE_LIMIT - mySentCount);
+
+  // Close emoji picker on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (emojiPickerRef.current && !emojiPickerRef.current.contains(e.target as Node)) {
+        setShowEmojiPicker(false);
+      }
+    };
+    if (showEmojiPicker) document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [showEmojiPicker]);
 
   useEffect(() => {
     if (!user) return;
@@ -859,6 +874,30 @@ const Messages = () => {
                   )}
                   <div className="p-3">
                     <div className="mx-auto max-w-2xl flex items-center gap-2.5">
+                      <div className="relative" ref={emojiPickerRef}>
+                        <button
+                          type="button"
+                          onClick={() => setShowEmojiPicker((v) => !v)}
+                          className="flex h-12 w-12 items-center justify-center rounded-full text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+                          aria-label="Emoji picker"
+                        >
+                          <Smile className="h-5 w-5" />
+                        </button>
+                        {showEmojiPicker && (
+                          <div className="absolute bottom-14 left-0 z-50 shadow-xl rounded-xl">
+                            <Picker
+                              data={data}
+                              onEmojiSelect={(emoji: { native: string }) => {
+                                setNewMessage((prev) => prev + emoji.native);
+                                setShowEmojiPicker(false);
+                              }}
+                              theme="light"
+                              previewPosition="none"
+                              skinTonePosition="none"
+                            />
+                          </div>
+                        )}
+                      </div>
                       <div className="flex-1 relative">
                         <textarea
                           placeholder="Type a message..."
