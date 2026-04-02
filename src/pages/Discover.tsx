@@ -1220,7 +1220,7 @@ const Discover = () => {
                           {/* Action buttons */}
                           <div className="flex gap-1">
                             {likedIds.has(profile.id) ? (
-                              <div className="flex flex-1 items-center justify-center gap-1 rounded-lg bg-primary/20 min-h-[44px] text-[11px] font-medium text-primary">
+                              <div className="flex flex-1 items-center justify-center gap-1 rounded-lg bg-primary/20 h-9 text-[11px] font-medium text-primary">
                                 <Heart className="h-3.5 w-3.5 fill-primary" /> Liked
                               </div>
                             ) : (
