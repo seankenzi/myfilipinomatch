@@ -363,7 +363,6 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
       showFullscreenButton: false,
       showParticipantsBar: false,
       showLocalVideo: true,
-      showChat: false,
       activeSpeakerMode: false,
     });
     dailyCallRef.current = callFrame;
