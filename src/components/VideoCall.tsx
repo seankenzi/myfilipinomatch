@@ -622,11 +622,16 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
                   className={`h-12 w-12 rounded-full shadow-lg ${
                     isMuted ? "bg-muted/90 text-destructive" : "bg-card/80 text-foreground"
                   }`}
-                  onClick={() => {
-                    const newMuted = !isMuted;
-                    iframeRef.current?.contentWindow?.postMessage({ action: "set-local-audio", state: !newMuted }, "*");
-                    setIsMuted(newMuted);
-                  }}
+                   onClick={() => {
+                     const cf = getCallFrame();
+                     if (cf) {
+                       const nextAudio = !cf.localAudio();
+                       cf.setLocalAudio(nextAudio);
+                       setIsMuted(!nextAudio);
+                     } else {
+                       setIsMuted((prev) => !prev);
+                     }
+                   }}
                 >
                   {isMuted ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
                 </Button>
