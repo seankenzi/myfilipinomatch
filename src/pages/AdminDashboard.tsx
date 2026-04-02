@@ -334,6 +334,21 @@ const ModerationTab = () => {
     );
     setVerifications(enrichedVerifications);
 
+    const enrichedPast = await Promise.all(
+      (pastVerificationsRes.data || []).map(async (v: any) => {
+        let signedDocUrl = v.document_url;
+        if (v.document_url) {
+          signedDocUrl = await getSignedPhotoUrl(v.document_url);
+        }
+        return {
+          ...v,
+          user_name: profileMap.get(v.user_id)?.full_name || "Unknown",
+          document_url: signedDocUrl,
+        };
+      })
+    );
+    setPastVerifications(enrichedPast);
+
     setLoading(false);
   };
 
