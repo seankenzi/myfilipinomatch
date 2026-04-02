@@ -18,7 +18,7 @@ const IncomingCallOverlay = ({ call, onAccept, onDecline }: IncomingCallOverlayP
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -80 }}
           transition={{ type: "spring", damping: 20, stiffness: 300 }}
-          className="fixed top-4 left-1/2 -translate-x-1/2 z-[100] w-[90vw] max-w-sm"
+          className="fixed top-4 inset-x-0 mx-auto z-[100] w-[90vw] max-w-sm"
         >
           <div className="rounded-2xl bg-card border border-border shadow-2xl p-5 flex flex-col items-center gap-4">
             {/* Pulsing ring animation */}
