@@ -1,4 +1,5 @@
 import { lazy, Suspense } from "react";
+import { usePageVisitTracker } from "@/hooks/usePageVisitTracker";
 import useOnlineStatus from "@/hooks/useOnlineStatus";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
