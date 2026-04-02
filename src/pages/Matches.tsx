@@ -18,6 +18,7 @@ interface DisplayMatch {
   image: string | null;
   lastActive: string;
   newMatch: boolean;
+  type: string;
 }
 
 const getLastActiveLabel = (lastSeen: string | null) => {
