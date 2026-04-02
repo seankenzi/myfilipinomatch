@@ -28,6 +28,7 @@ const DAILY_EMBED_PARAMS: Record<string, string> = {
   enable_prejoin_ui: "false",
   enable_people_ui: "false",
   enable_network_ui: "false",
+  enable_video_processing_ui: "false",
 };
 
 const DAILY_IFRAME_CROP = {

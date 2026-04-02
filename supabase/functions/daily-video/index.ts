@@ -325,6 +325,8 @@ Deno.serve(async (req) => {
             max_participants: 2,
             enable_chat: false,
             enable_screenshare: false,
+            enable_advanced_chat: false,
+            enable_video_processing_ui: false,
           },
         }),
       });
