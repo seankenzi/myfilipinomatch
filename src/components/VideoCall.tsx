@@ -32,7 +32,7 @@ const DAILY_EMBED_PARAMS: Record<string, string> = {
 
 const DAILY_IFRAME_CROP = {
   top: 0,
-  bottom: 80,
+  bottom: 0,
 };
 
 const buildDailyEmbedUrl = (baseUrl: string, token?: string) => {
@@ -482,7 +482,7 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && handleClose()}>
-      <DialogContent className="max-w-4xl w-full h-[80vh] p-0 overflow-hidden">
+      <DialogContent className="max-w-[95vw] w-full h-[95vh] p-0 overflow-hidden rounded-xl">
         {loading && (
           <div className="flex flex-col items-center justify-center h-full gap-4">
             <Loader2 className="h-10 w-10 animate-spin text-primary" />
@@ -542,24 +542,13 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
         )}
 
         {roomUrl && (
-          <div className="relative h-full w-full overflow-hidden bg-foreground">
+          <div className="relative h-full w-full overflow-hidden bg-black">
             <iframe
               ref={iframeRef}
               src={roomUrl}
               allow="camera; microphone; fullscreen; display-capture"
-              className="absolute left-0 right-0 w-full border-0 bg-foreground"
-              style={{
-                top: `-${DAILY_IFRAME_CROP.top}px`,
-                height: `calc(100% + ${DAILY_IFRAME_CROP.top + DAILY_IFRAME_CROP.bottom}px)`,
-              }}
+              className="absolute inset-0 w-full h-full border-0"
               title={`Video call with ${otherUserName}`}
-            />
-
-            {/* Slim bottom mask to hide Daily's native toolbar */}
-            <div
-              aria-hidden
-              className="pointer-events-none absolute inset-x-0 bottom-0 z-20 bg-foreground"
-              style={{ height: 4 }}
             />
 
             {/* Connection lost overlay */}
