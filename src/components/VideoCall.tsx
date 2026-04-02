@@ -147,7 +147,7 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
 
       onClose();
     },
-    [onClose, toast]
+    [destroyCallFrame, onClose, toast]
   );
 
   const endSession = useCallback(async () => {
