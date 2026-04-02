@@ -133,6 +133,14 @@ const Navbar = ({ bannerSubtitle }: NavbarProps) => {
                   </Tooltip>
                 </TooltipProvider>
               )}
+              {isAdmin && (
+                <Link to="/admin">
+                  <Button variant="ghost" size="sm" className="text-primary">
+                    <ShieldCheck className="mr-1 h-4 w-4" />
+                    Admin
+                  </Button>
+                </Link>
+              )}
               <NotificationBell />
               <Link to="/profile">
                 <Button variant="ghost" size="sm">
