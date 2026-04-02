@@ -241,7 +241,7 @@ const UsersTab = () => {
               </thead>
               <tbody className="divide-y divide-border">
                 {users.map((u) => (
-                  <tr key={u.id} className="hover:bg-muted/30 transition-colors">
+                  <tr key={u.id} className="hover:bg-muted/30 transition-colors cursor-pointer" onClick={() => window.open(`/profile/${u.id}`, '_blank')}>
                     <td className="p-3">
                       <div className="flex items-center gap-2">
                         <div className="h-8 w-8 rounded-full bg-muted overflow-hidden flex-shrink-0">
