@@ -100,6 +100,8 @@ const Messages = () => {
   const [newMessage, setNewMessage] = useState("");
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const emojiPickerRef = useRef<HTMLDivElement>(null);
   const [myProfile, setMyProfile] = useState<{ is_premium: boolean | null } | null>(null);
 
   const [reportDialog, setReportDialog] = useState(false);
