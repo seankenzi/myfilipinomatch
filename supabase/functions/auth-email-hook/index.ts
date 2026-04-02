@@ -25,7 +25,6 @@ const EMAIL_SUBJECTS: Record<string, string> = {
   reauthentication: 'Your verification code',
 }
 
-// Template mapping
 const EMAIL_TEMPLATES: Record<string, React.ComponentType<any>> = {
   signup: SignupEmail,
   invite: InviteEmail,
@@ -35,17 +34,11 @@ const EMAIL_TEMPLATES: Record<string, React.ComponentType<any>> = {
   reauthentication: ReauthenticationEmail,
 }
 
-// Configuration
 const SITE_NAME = "MyFilipinoMatch"
 const SENDER_DOMAIN = "notify.myfilipinomatch.com"
 const ROOT_DOMAIN = "myfilipinomatch.com"
-const FROM_DOMAIN = "myfilipinomatch.com" // Domain shown in From address (may be root or sender subdomain)
+const FROM_DOMAIN = "myfilipinomatch.com"
 
-// Sample data for preview mode ONLY (not used in actual email sending).
-// URLs are baked in at scaffold time from the project's real data.
-// The sample email uses a fixed placeholder (RFC 6761 .test TLD) so the Go backend
-// can always find-and-replace it with the actual recipient when sending test emails,
-// even if the project's domain has changed since the template was scaffolded.
 const SAMPLE_PROJECT_URL = "https://myfilipinomatch.lovable.app"
 const SAMPLE_EMAIL = "user@example.test"
 const SAMPLE_DATA: Record<string, object> = {
@@ -79,7 +72,119 @@ const SAMPLE_DATA: Record<string, object> = {
   },
 }
 
-// Preview endpoint handler - returns rendered HTML without sending email
+type ServiceSupabaseClient = ReturnType<typeof createClient>
+
+function normalizeEmail(email: string): string {
+  return email.trim().toLowerCase()
+}
+
+async function enqueueTransactionalTemplate(
+  supabase: ServiceSupabaseClient,
+  body: Record<string, unknown>
+): Promise<boolean> {
+  const { data, error } = await supabase.functions.invoke('send-transactional-email', {
+    body,
+  })
+
+  if (error) {
+    console.error('Failed to invoke signup app email', {
+      error,
+      templateName: body.templateName,
+      recipientEmail: body.recipientEmail,
+    })
+    return false
+  }
+
+  if (!data || typeof data !== 'object' || !('queued' in data) || data.queued !== true) {
+    console.error('Signup app email was not queued', {
+      templateName: body.templateName,
+      recipientEmail: body.recipientEmail,
+      data,
+    })
+    return false
+  }
+
+  return true
+}
+
+async function triggerSignupAppEmails(
+  supabase: ServiceSupabaseClient,
+  payload: any
+): Promise<void> {
+  const userEmail = payload?.data?.email
+  if (!userEmail) return
+
+  const userName =
+    payload?.data?.user_metadata?.full_name ||
+    payload?.data?.full_name ||
+    payload?.data?.user?.user_metadata?.full_name ||
+    payload?.user?.user_metadata?.full_name ||
+    undefined
+
+  const normalizedUserEmail = normalizeEmail(userEmail)
+
+  const welcomeQueued = await enqueueTransactionalTemplate(supabase, {
+    templateName: 'welcome-email',
+    recipientEmail: userEmail,
+    idempotencyKey: `welcome-signup-${normalizedUserEmail}`,
+    templateData: { name: userName },
+  })
+
+  const { data: adminEmails, error: adminEmailsError } = await supabase.rpc('get_admin_emails')
+  if (adminEmailsError) {
+    console.error('Failed to load admin emails for signup notification', {
+      error: adminEmailsError,
+      userEmail,
+    })
+    return
+  }
+
+  const adminResults = await Promise.allSettled(
+    (adminEmails ?? []).map((row: { email: string }) =>
+      enqueueTransactionalTemplate(supabase, {
+        templateName: 'admin-new-signup',
+        recipientEmail: row.email,
+        idempotencyKey: `admin-new-signup-${normalizedUserEmail}-${normalizeEmail(row.email)}`,
+        templateData: {
+          userName,
+          userEmail,
+        },
+      })
+    )
+  )
+
+  const adminQueued = adminResults.every(
+    (result) => result.status === 'fulfilled' && result.value === true
+  )
+
+  if (!welcomeQueued || !adminQueued) {
+    console.error('Signup app emails did not fully queue', {
+      userEmail,
+      welcomeQueued,
+      adminResults,
+    })
+    return
+  }
+
+  const userId =
+    payload?.data?.user_id ||
+    payload?.data?.user?.id ||
+    payload?.user?.id ||
+    null
+
+  const updateResult = userId
+    ? await supabase.from('profiles').update({ welcome_email_sent: true }).eq('id', userId)
+    : await supabase.from('profiles').update({ welcome_email_sent: true }).eq('email', userEmail)
+
+  if (updateResult.error) {
+    console.error('Failed to mark signup emails as queued', {
+      error: updateResult.error,
+      userEmail,
+      userId,
+    })
+  }
+}
+
 async function handlePreview(req: Request): Promise<Response> {
   const previewCorsHeaders = {
     'Access-Control-Allow-Origin': '*',
@@ -104,7 +209,7 @@ async function handlePreview(req: Request): Promise<Response> {
   try {
     const body = await req.json()
     type = body.type
-  } catch (error) {
+  } catch (_error) {
     return new Response(JSON.stringify({ error: 'Invalid JSON in request body' }), {
       status: 400,
       headers: { ...previewCorsHeaders, 'Content-Type': 'application/json' },
@@ -129,7 +234,6 @@ async function handlePreview(req: Request): Promise<Response> {
   })
 }
 
-// Webhook handler - verifies signature and sends email
 async function handleWebhook(req: Request): Promise<Response> {
   const apiKey = Deno.env.get('LOVABLE_API_KEY')
 
@@ -141,7 +245,6 @@ async function handleWebhook(req: Request): Promise<Response> {
     )
   }
 
-  // Verify signature + timestamp, then parse payload.
   let payload: any
   let run_id = ''
   try {
@@ -203,8 +306,6 @@ async function handleWebhook(req: Request): Promise<Response> {
     )
   }
 
-  // The email action type is in payload.data.action_type (e.g., "signup", "recovery")
-  // payload.type is the hook event type ("auth")
   const emailType = payload.data.action_type
   console.log('Received auth event', { emailType, email: payload.data.email, run_id })
 
@@ -217,7 +318,6 @@ async function handleWebhook(req: Request): Promise<Response> {
     )
   }
 
-  // Build template props from payload.data (HookData structure)
   const templateProps = {
     siteName: SITE_NAME,
     siteUrl: `https://${ROOT_DOMAIN}`,
@@ -228,13 +328,11 @@ async function handleWebhook(req: Request): Promise<Response> {
     newEmail: payload.data.new_email,
   }
 
-  // Render React Email to HTML and plain text
   const html = await renderAsync(React.createElement(EmailTemplate, templateProps))
   const text = await renderAsync(React.createElement(EmailTemplate, templateProps), {
     plainText: true,
   })
 
-  // Enqueue email for async processing by the dispatcher (process-email-queue).
   const supabase = createClient(
     Deno.env.get('SUPABASE_URL')!,
     Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
@@ -242,7 +340,6 @@ async function handleWebhook(req: Request): Promise<Response> {
 
   const messageId = crypto.randomUUID()
 
-  // Log pending BEFORE enqueue so we have a record even if enqueue crashes
   await supabase.from('email_send_log').insert({
     message_id: messageId,
     template_name: emailType,
@@ -284,6 +381,18 @@ async function handleWebhook(req: Request): Promise<Response> {
 
   console.log('Auth email enqueued', { emailType, email: payload.data.email, run_id })
 
+  if (emailType === 'signup') {
+    try {
+      await triggerSignupAppEmails(supabase, payload)
+    } catch (error) {
+      console.error('Failed to trigger signup app emails', {
+        error,
+        email: payload.data.email,
+        run_id,
+      })
+    }
+  }
+
   return new Response(
     JSON.stringify({ success: true, queued: true }),
     { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -293,17 +402,14 @@ async function handleWebhook(req: Request): Promise<Response> {
 Deno.serve(async (req) => {
   const url = new URL(req.url)
 
-  // Handle CORS preflight for main endpoint
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
 
-  // Route to preview handler for /preview path
   if (url.pathname.endsWith('/preview')) {
     return handlePreview(req)
   }
 
-  // Main webhook handler
   try {
     return await handleWebhook(req)
   } catch (error) {
