@@ -53,6 +53,7 @@ interface Match {
     read: boolean | null;
   };
   unread_count: number;
+  type: string;
 }
 
 interface Message {
@@ -119,19 +120,9 @@ const Messages = () => {
   const [isMutualMatch, setIsMutualMatch] = useState(true);
 
   useEffect(() => {
-    if (!selectedMatch || !user) return;
-    const checkMutual = async () => {
-      const otherId = selectedMatch.other_user.id;
-      const { data } = await supabase
-        .from("likes")
-        .select("id")
-        .eq("liker_id", otherId)
-        .eq("liked_id", user.id)
-        .limit(1);
-      setIsMutualMatch(!!(data && data.length > 0));
-    };
-    checkMutual();
-  }, [selectedMatch, user]);
+    if (!selectedMatch) return;
+    setIsMutualMatch(selectedMatch.type === 'mutual');
+  }, [selectedMatch]);
 
   const isLocked = !isPremium && (
     isMutualMatch
@@ -217,6 +208,7 @@ const Messages = () => {
 
         return {
           matchId: m.id,
+          matchType: (m as any).type || 'mutual',
           profile,
           photoPath: getPhoto(profile),
           lastMsg: lastMsg || undefined,
@@ -250,6 +242,7 @@ const Messages = () => {
         },
         last_message: e.lastMsg,
         unread_count: e.unreadCount,
+        type: e.matchType,
       };
     });
 
@@ -582,6 +575,11 @@ const Messages = () => {
                           {match.other_user.is_verified && (
                             <Shield className="h-3.5 w-3.5 text-secondary fill-secondary/30 flex-shrink-0" />
                           )}
+                          {match.type === 'direct_message' && (
+                            <span className="rounded-full bg-accent/10 px-1.5 py-0.5 text-[9px] font-medium text-accent flex-shrink-0 flex items-center gap-0.5">
+                              <Sparkles className="h-2.5 w-2.5" /> DM
+                            </span>
+                          )}
                         </div>
                         {match.last_message && (
                           <span className="text-[10px] text-muted-foreground flex-shrink-0 ml-2">
@@ -646,6 +644,11 @@ const Messages = () => {
                       </h2>
                       {selectedMatch.other_user.is_verified && (
                         <Shield className="h-3.5 w-3.5 text-secondary fill-secondary/30 flex-shrink-0" />
+                      )}
+                      {selectedMatch.type === 'direct_message' && (
+                        <span className="rounded-full bg-accent/10 px-1.5 py-0.5 text-[9px] font-medium text-accent flex-shrink-0 flex items-center gap-0.5">
+                          <Sparkles className="h-2.5 w-2.5" /> DM
+                        </span>
                       )}
                     </div>
                     {location ? (

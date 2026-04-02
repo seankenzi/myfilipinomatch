@@ -353,10 +353,10 @@ const ProfileDetail = () => {
                   if (matchId) {
                     navigate(`/messages?match=${matchId}`);
                   } else if (isPremium) {
-                    // Premium user: force-create a match for direct messaging
+                    // Premium user: create a direct_message conversation (not a mutual match)
                     const { data: insertData, error } = await supabase
                       .from("matches")
-                      .insert({ user1_id: user.id, user2_id: profile.id })
+                      .insert({ user1_id: user.id, user2_id: profile.id, type: 'direct_message' })
                       .select("id")
                       .single();
                     if (!error && insertData) {
