@@ -315,6 +315,7 @@ Deno.serve(async (req) => {
       enable_screenshare: false,
       enable_advanced_chat: false,
       enable_video_processing_ui: false,
+      video_processor_default: { type: "none" },
     };
 
     if (existingRoom.ok) {
