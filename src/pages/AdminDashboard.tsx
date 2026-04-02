@@ -306,6 +306,7 @@ const ModerationTab = () => {
       ...new Set([
         ...(reportsRes.data || []).flatMap(r => [r.reporter_id, r.reported_id]),
         ...(verificationsRes.data || []).map(v => v.user_id),
+        ...(pastVerificationsRes.data || []).map(v => v.user_id),
       ])
     ];
 
