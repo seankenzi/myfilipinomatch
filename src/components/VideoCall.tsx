@@ -35,6 +35,14 @@ const formatTime = (totalSeconds: number) => {
   return `${m}:${String(s).padStart(2, "0")}`;
 };
 
+const NO_VIDEO_PROCESSING_INPUT_SETTINGS = {
+  video: {
+    processor: {
+      type: "none" as const,
+    },
+  },
+};
+
 const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: VideoCallProps) => {
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -364,8 +372,21 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
       showParticipantsBar: false,
       showLocalVideo: true,
       activeSpeakerMode: false,
+      inputSettings: NO_VIDEO_PROCESSING_INPUT_SETTINGS,
     });
     dailyCallRef.current = callFrame;
+
+    const enforceNoVideoProcessing = () => {
+      void callFrame.updateInputSettings(NO_VIDEO_PROCESSING_INPUT_SETTINGS).catch((updateError) => {
+        console.warn("Failed to disable Daily video processing:", updateError);
+      });
+    };
+
+    enforceNoVideoProcessing();
+
+    callFrame.on("joined-meeting", () => {
+      enforceNoVideoProcessing();
+    });
 
     // Handle remote participant joining -> start timer
     callFrame.on("participant-joined", (event) => {
@@ -407,7 +428,14 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
     });
 
     // Join the room
-    const joinOpts: { url: string; token?: string } = { url };
+    const joinOpts: {
+      url: string;
+      token?: string;
+      inputSettings: typeof NO_VIDEO_PROCESSING_INPUT_SETTINGS;
+    } = {
+      url,
+      inputSettings: NO_VIDEO_PROCESSING_INPUT_SETTINGS,
+    };
     if (token) joinOpts.token = token;
     callFrame.join(joinOpts).catch((err) => {
       console.error("Daily join error:", err);
