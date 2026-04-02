@@ -18,14 +18,17 @@ export const detectContactInfo = (text: string): string | null => {
 
   // Social media handles/platforms
   const socialPatterns = [
-    /(?:facebook|fb)[\s.:\/]*(?:\.com|me|profile|@|\w{3,})/i,
-    /(?:instagram|ig|insta)[\s.:\/]*(?:\.com|@|\w{3,})/i,
-    /(?:twitter|x\.com)[\s.:\/]*(?:\.com|@|\w{3,})/i,
-    /(?:whatsapp|whats\s*app|wa\.me|viber|telegram|tg)[\s.:\/]*(?:\.me|@|\+?\d|\w{3,})/i,
-    /(?:snapchat|snap|tiktok|tik\s*tok)[\s.:\/]*(?:\.com|@|\w{3,})/i,
-    /(?:line|wechat|kakaotalk|kakao)[\s.:\/]*(?:\.me|id|@|\w{3,})/i,
-    /(?:skype|discord|zoom)[\s.:\/]*(?:\.com|@|#|\w{3,})/i,
-    /@[a-zA-Z0-9._]{3,}/, // Generic @username
+    /\b(?:facebook|fb)\b[\s.:\/]*(?:\.com|me|profile|@|\w{3,})/i,
+    /\b(?:instagram|insta)\b[\s.:\/]*(?:\.com|@|\w{3,})/i,
+    /(?:^|\s)ig[\s.:\/]+(?:\.com|@|\w{3,})/i,
+    /\b(?:twitter|x\.com)\b[\s.:\/]*(?:\.com|@|\w{3,})/i,
+    /\b(?:whatsapp|whats\s*app|wa\.me|viber|telegram)\b[\s.:\/]*(?:\.me|@|\+?\d|\w{3,})/i,
+    /(?:^|\s)tg[\s.:\/]+(?:\.me|@|\+?\d|\w{3,})/i,
+    /\b(?:snapchat|snap|tiktok|tik\s*tok)\b[\s.:\/]*(?:\.com|@|\w{3,})/i,
+    /\b(?:wechat|kakaotalk|kakao)\b[\s.:\/]*(?:\.me|id|@|\w{3,})/i,
+    /(?:^|\s)line[\s.:\/]+(?:\.me|id\s|@|\w{3,})/i,
+    /\b(?:skype|discord|zoom)\b[\s.:\/]*(?:\.com|@|#|\w{3,})/i,
+    /(?:^|\s)@[a-zA-Z0-9._]{3,}/,
   ];
   for (const pattern of socialPatterns) {
     if (pattern.test(text)) return "social media accounts";
