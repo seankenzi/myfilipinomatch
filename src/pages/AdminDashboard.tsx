@@ -289,6 +289,7 @@ const ModerationTab = () => {
   const [reports, setReports] = useState<any[]>([]);
   const [verifications, setVerifications] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [previewImage, setPreviewImage] = useState<{ url: string; name: string; pose?: string } | null>(null);
 
   const fetchData = async () => {
     setLoading(true);
