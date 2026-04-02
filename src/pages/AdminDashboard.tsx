@@ -241,7 +241,7 @@ const UsersTab = () => {
               </thead>
               <tbody className="divide-y divide-border">
                 {users.map((u) => (
-                  <tr key={u.id} className="hover:bg-muted/30 transition-colors">
+                  <tr key={u.id} className="hover:bg-muted/30 transition-colors cursor-pointer" onClick={() => window.open(`/profile/${u.id}`, '_blank')}>
                     <td className="p-3">
                       <div className="flex items-center gap-2">
                         <div className="h-8 w-8 rounded-full bg-muted overflow-hidden flex-shrink-0">
@@ -259,7 +259,7 @@ const UsersTab = () => {
                     </td>
                     <td className="p-3 text-muted-foreground text-xs">{format(new Date(u.created_at), "MMM d, yyyy")}</td>
                     <td className="p-3">
-                      <div className="flex gap-1 justify-end">
+                      <div className="flex gap-1 justify-end" onClick={(e) => e.stopPropagation()}>
                         <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => handleVerify(u.id, !u.is_verified)}>
                           {u.is_verified ? "Unverify" : "Verify"}
                         </Button>
