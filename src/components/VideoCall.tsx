@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import Daily, { type DailyCall, type DailyParticipant } from "@daily-co/daily-js";
-import { VideoOff, Video, PhoneOff, Loader2, Crown, Clock, WifiOff, Mic, MicOff, User } from "lucide-react";
+import { VideoOff, Video, PhoneOff, Loader2, Crown, Clock, WifiOff, Mic, MicOff, User, LayoutGrid, Maximize } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
@@ -92,6 +92,7 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
   const [isMuted, setIsMuted] = useState(false);
   const [isCameraOff, setIsCameraOff] = useState(false);
   const [remoteVideoOff, setRemoteVideoOff] = useState(false);
+  const [isGridMode, setIsGridMode] = useState(false);
 
   const closeUi = useCallback(
     (toastMessage?: { title: string; description?: string }) => {
@@ -114,6 +115,7 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
       setIsMuted(false);
       setIsCameraOff(false);
       setRemoteVideoOff(false);
+      setIsGridMode(false);
       destroyCallFrame();
 
       if (toastMessage) {
@@ -769,50 +771,103 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
         )}
 
         {roomUrl && (
-          <div className="relative h-full w-full overflow-hidden bg-black">
-            {/* Remote video — fullscreen */}
-            <video
-              ref={remoteVideoRef}
-              autoPlay
-              playsInline
-              className="absolute inset-0 w-full h-full object-cover"
-            />
-            {/* Remote audio (separate element so it plays even when video is off) */}
-            <audio ref={remoteAudioRef} autoPlay />
-
-            {/* Waiting / no remote video — dark background with icon */}
-            {(!callEstablished || remoteVideoOff) && !connectionLost && (
-              <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-black/80">
-                <div className="flex flex-col items-center gap-3">
-                  <div className="flex h-24 w-24 items-center justify-center rounded-full bg-muted/30 backdrop-blur-sm">
-                    <User className="h-12 w-12 text-muted-foreground" />
+          <div className={`relative h-full w-full overflow-hidden bg-black ${isGridMode ? "flex" : ""}`}>
+            {isGridMode ? (
+              /* ── Grid mode: side-by-side (desktop) ── */
+              <>
+                {/* Remote video tile */}
+                <div className="relative flex-1 h-full bg-black">
+                  <video
+                    ref={remoteVideoRef}
+                    autoPlay
+                    playsInline
+                    className="w-full h-full object-cover"
+                  />
+                  {(!callEstablished || remoteVideoOff) && !connectionLost && (
+                    <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-black/80">
+                      <div className="flex flex-col items-center gap-3">
+                        <div className="flex h-20 w-20 items-center justify-center rounded-full bg-muted/30 backdrop-blur-sm">
+                          <User className="h-10 w-10 text-muted-foreground" />
+                        </div>
+                        <span className="text-sm font-medium text-white drop-shadow-md">
+                          {callEstablished ? `${otherUserName}'s camera is off` : `Waiting for ${otherUserName}…`}
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                  <div className="absolute bottom-3 left-3 z-20 rounded-full bg-black/60 px-3 py-1 text-xs text-white backdrop-blur-sm">
+                    {otherUserName}
                   </div>
-                  <span className="text-base font-medium text-white drop-shadow-md">
-                    {callEstablished
-                      ? `${otherUserName}'s camera is off`
-                      : `Waiting for ${otherUserName}…`}
-                  </span>
                 </div>
-              </div>
+
+                {/* Local video tile */}
+                <div className="relative flex-1 h-full bg-black border-l-2 border-white/10">
+                  <video
+                    ref={localVideoRef}
+                    autoPlay
+                    playsInline
+                    muted
+                    className="w-full h-full object-cover"
+                    style={{ transform: "scaleX(-1)" }}
+                  />
+                  {isCameraOff && (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-muted/90">
+                      <User className="h-10 w-10 text-muted-foreground" />
+                      <span className="text-xs text-muted-foreground mt-1">Camera off</span>
+                    </div>
+                  )}
+                  <div className="absolute bottom-3 left-3 z-20 rounded-full bg-black/60 px-3 py-1 text-xs text-white backdrop-blur-sm">
+                    You
+                  </div>
+                </div>
+              </>
+            ) : (
+              /* ── PiP mode: remote fullscreen, local small ── */
+              <>
+                {/* Remote video — fullscreen */}
+                <video
+                  ref={remoteVideoRef}
+                  autoPlay
+                  playsInline
+                  className="absolute inset-0 w-full h-full object-cover"
+                />
+
+                {/* Waiting / no remote video */}
+                {(!callEstablished || remoteVideoOff) && !connectionLost && (
+                  <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-black/80">
+                    <div className="flex flex-col items-center gap-3">
+                      <div className="flex h-24 w-24 items-center justify-center rounded-full bg-muted/30 backdrop-blur-sm">
+                        <User className="h-12 w-12 text-muted-foreground" />
+                      </div>
+                      <span className="text-base font-medium text-white drop-shadow-md">
+                        {callEstablished ? `${otherUserName}'s camera is off` : `Waiting for ${otherUserName}…`}
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                {/* Local video — small PiP in bottom-right */}
+                <div className="absolute bottom-24 right-4 z-20 w-28 h-40 sm:w-32 sm:h-44 rounded-xl overflow-hidden shadow-xl border-2 border-white/20 bg-black">
+                  <video
+                    ref={localVideoRef}
+                    autoPlay
+                    playsInline
+                    muted
+                    className="w-full h-full object-cover"
+                    style={{ transform: "scaleX(-1)" }}
+                  />
+                  {isCameraOff && (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-muted/90">
+                      <User className="h-6 w-6 text-muted-foreground" />
+                      <span className="text-[10px] text-muted-foreground mt-1">Camera off</span>
+                    </div>
+                  )}
+                </div>
+              </>
             )}
 
-            {/* Local video — small PiP in bottom-right */}
-            <div className="absolute bottom-24 right-4 z-20 w-28 h-40 sm:w-32 sm:h-44 rounded-xl overflow-hidden shadow-xl border-2 border-white/20 bg-black">
-              <video
-                ref={localVideoRef}
-                autoPlay
-                playsInline
-                muted
-                className="w-full h-full object-cover"
-                style={{ transform: "scaleX(-1)" }}
-              />
-              {isCameraOff && (
-                <div className="absolute inset-0 flex flex-col items-center justify-center bg-muted/90">
-                  <User className="h-6 w-6 text-muted-foreground" />
-                  <span className="text-[10px] text-muted-foreground mt-1">Camera off</span>
-                </div>
-              )}
-            </div>
+            {/* Remote audio */}
+            <audio ref={remoteAudioRef} autoPlay />
 
             {/* Connection lost overlay */}
             {connectionLost && (
@@ -823,7 +878,7 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
               </div>
             )}
 
-            {/* Timer overlay — only for the caller (initiator), not the callee */}
+            {/* Timer overlay */}
             {!joinRoomUrl && (
               callEstablished ? (
                 <div
@@ -890,6 +945,17 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
                   }}
                 >
                   {isCameraOff ? <VideoOff className="h-5 w-5" /> : <Video className="h-5 w-5" />}
+                </Button>
+
+                {/* Grid/PiP toggle — desktop only */}
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-12 w-12 rounded-full shadow-lg bg-card/80 text-foreground hidden md:flex"
+                  onClick={() => setIsGridMode((prev) => !prev)}
+                  title={isGridMode ? "Switch to spotlight" : "Switch to grid"}
+                >
+                  {isGridMode ? <Maximize className="h-5 w-5" /> : <LayoutGrid className="h-5 w-5" />}
                 </Button>
               </div>
             </div>
