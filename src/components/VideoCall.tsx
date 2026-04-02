@@ -32,8 +32,8 @@ const DAILY_EMBED_PARAMS: Record<string, string> = {
 };
 
 const DAILY_IFRAME_CROP = {
-  top: 0,
-  bottom: 0,
+  top: 48,
+  bottom: 80,
 };
 
 const buildDailyEmbedUrl = (baseUrl: string, token?: string) => {
