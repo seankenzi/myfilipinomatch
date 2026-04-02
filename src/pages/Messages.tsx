@@ -865,6 +865,11 @@ const Messages = () => {
                             target.style.height = Math.min(target.scrollHeight, 200) + "px";
                           }}
                         />
+                        {newMessage.length > 0 && (
+                          <span className={`absolute -bottom-5 right-2 text-[10px] tabular-nums ${newMessage.length >= 1900 ? "text-destructive" : "text-muted-foreground/60"}`}>
+                            {2000 - newMessage.length}
+                          </span>
+                        )}
                       </div>
                       <button
                         onClick={handleSend}
