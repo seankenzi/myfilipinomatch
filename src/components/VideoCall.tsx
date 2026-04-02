@@ -620,8 +620,9 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
                     isCameraOff ? "bg-muted/90 text-destructive" : "bg-card/80 text-foreground"
                   }`}
                   onClick={() => {
-                    iframeRef.current?.contentWindow?.postMessage({ action: "toggle-video" }, "*");
-                    setIsCameraOff((prev) => !prev);
+                    const newCameraOff = !isCameraOff;
+                    iframeRef.current?.contentWindow?.postMessage({ action: "set-local-video", state: !newCameraOff }, "*");
+                    setIsCameraOff(newCameraOff);
                   }}
                 >
                   {isCameraOff ? <VideoOff className="h-5 w-5" /> : <Video className="h-5 w-5" />}
