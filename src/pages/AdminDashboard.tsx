@@ -1285,71 +1285,90 @@ const EmailsTab = () => {
 // ─── Analytics Tab ───
 const AnalyticsTab = () => {
   const [loading, setLoading] = useState(true);
-  const [countryBreakdown, setCountryBreakdown] = useState<{ country: string; count: number }[]>([]);
+  const [range, setRange] = useState<"7d" | "30d" | "all">("7d");
+  const [deviceData, setDeviceData] = useState<{ label: string; count: number; icon: typeof Monitor; color: string; bg: string }[]>([]);
+  const [browserData, setBrowserData] = useState<{ name: string; count: number }[]>([]);
+  const [osData, setOsData] = useState<{ name: string; count: number }[]>([]);
+  const [topPages, setTopPages] = useState<{ path: string; count: number }[]>([]);
+  const [referrerData, setReferrerData] = useState<{ source: string; count: number }[]>([]);
+  const [totalVisits, setTotalVisits] = useState(0);
+  const [uniqueVisitors, setUniqueVisitors] = useState(0);
+
+  const iconMap: Record<string, typeof Monitor> = { desktop: Monitor, mobile: Smartphone, tablet: Tablet };
+  const colorMap: Record<string, { color: string; bg: string }> = {
+    desktop: { color: "text-blue-500", bg: "bg-blue-500" },
+    mobile: { color: "text-emerald-500", bg: "bg-emerald-500" },
+    tablet: { color: "text-amber-500", bg: "bg-amber-500" },
+  };
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
-      const { data } = await supabase
-        .from("profiles")
-        .select("country")
-        .not("country", "is", null);
+      let query = supabase.from("page_visits").select("*" as any).order("created_at", { ascending: false });
 
-      const countryCounts: Record<string, number> = {};
-      (data || []).forEach((p: any) => {
-        const c = p.country || "Unknown";
-        countryCounts[c] = (countryCounts[c] || 0) + 1;
+      if (range !== "all") {
+        const since = new Date();
+        since.setDate(since.getDate() - (range === "7d" ? 7 : 30));
+        query = query.gte("created_at", since.toISOString());
+      }
+
+      const { data } = await query.limit(1000) as { data: any[] | null };
+      const visits = data || [];
+      setTotalVisits(visits.length);
+
+      // Unique visitors by user_id (or user_agent for anonymous)
+      const uniqueSet = new Set(visits.map((v: any) => v.user_id || v.user_agent));
+      setUniqueVisitors(uniqueSet.size);
+
+      // Device breakdown
+      const deviceCounts: Record<string, number> = {};
+      visits.forEach((v: any) => {
+        const dt = v.device_type || "desktop";
+        deviceCounts[dt] = (deviceCounts[dt] || 0) + 1;
       });
-      setCountryBreakdown(
-        Object.entries(countryCounts)
-          .map(([country, count]) => ({ country, count }))
+      setDeviceData(
+        Object.entries(deviceCounts)
+          .map(([type, count]) => ({
+            label: type.charAt(0).toUpperCase() + type.slice(1),
+            count,
+            icon: iconMap[type] || Monitor,
+            ...(colorMap[type] || colorMap.desktop),
+          }))
           .sort((a, b) => b.count - a.count)
       );
+
+      // Browser breakdown
+      const browserCounts: Record<string, number> = {};
+      visits.forEach((v: any) => { browserCounts[v.browser || "Other"] = (browserCounts[v.browser || "Other"] || 0) + 1; });
+      setBrowserData(Object.entries(browserCounts).map(([name, count]) => ({ name, count })).sort((a, b) => b.count - a.count));
+
+      // OS breakdown
+      const osCounts: Record<string, number> = {};
+      visits.forEach((v: any) => { osCounts[v.os || "Other"] = (osCounts[v.os || "Other"] || 0) + 1; });
+      setOsData(Object.entries(osCounts).map(([name, count]) => ({ name, count })).sort((a, b) => b.count - a.count));
+
+      // Top pages
+      const pageCounts: Record<string, number> = {};
+      visits.forEach((v: any) => { pageCounts[v.page_path || "/"] = (pageCounts[v.page_path || "/"] || 0) + 1; });
+      setTopPages(Object.entries(pageCounts).map(([path, count]) => ({ path, count })).sort((a, b) => b.count - a.count).slice(0, 10));
+
+      // Referrers
+      const refCounts: Record<string, number> = {};
+      visits.forEach((v: any) => {
+        let source = "Direct";
+        if (v.referrer) {
+          try { source = new URL(v.referrer).hostname; } catch { source = v.referrer; }
+        }
+        refCounts[source] = (refCounts[source] || 0) + 1;
+      });
+      setReferrerData(Object.entries(refCounts).map(([source, count]) => ({ source, count })).sort((a, b) => b.count - a.count).slice(0, 10));
+
       setLoading(false);
     };
     fetchData();
-  }, []);
+  }, [range]);
 
-  // Since we don't have real-time device tracking in the DB,
-  // we'll show a static snapshot from project analytics
-  const deviceData = [
-    { label: "Desktop", count: 156, icon: Monitor, color: "text-blue-500", bg: "bg-blue-500" },
-    { label: "Mobile", count: 149, icon: Smartphone, color: "text-emerald-500", bg: "bg-emerald-500" },
-    { label: "Tablet", count: 1, icon: Tablet, color: "text-amber-500", bg: "bg-amber-500" },
-  ];
-  const totalDevices = deviceData.reduce((s, d) => s + d.count, 0);
-
-  const countryData = [
-    { country: "PH", visitors: 140 },
-    { country: "SG", visitors: 56 },
-    { country: "US", visitors: 48 },
-    { country: "Unknown", visitors: 38 },
-    { country: "IT", visitors: 3 },
-    { country: "GE", visitors: 2 },
-    { country: "RO", visitors: 2 },
-    { country: "NL", visitors: 2 },
-    { country: "BE", visitors: 2 },
-    { country: "SE", visitors: 1 },
-  ];
-
-  const trafficSources = [
-    { source: "Direct", visits: 181 },
-    { source: "m.facebook.com", visits: 102 },
-    { source: "facebook.com", visits: 5 },
-    { source: "l.facebook.com", visits: 5 },
-    { source: "oauth.lovable.app", visits: 4 },
-    { source: "upwork.com", visits: 3 },
-    { source: "accounts.google.com", visits: 3 },
-    { source: "paypal.com", visits: 2 },
-    { source: "google.com", visits: 1 },
-  ];
-
-  const summaryStats = [
-    { label: "Total Visitors", value: "307", icon: Users, color: "text-primary" },
-    { label: "Page Views", value: "2,391", icon: Eye, color: "text-blue-500" },
-    { label: "Avg Session", value: "17m 14s", icon: Clock, color: "text-emerald-500" },
-    { label: "Bounce Rate", value: "54%", icon: Activity, color: "text-amber-500" },
-  ];
+  const totalDevices = deviceData.reduce((s, d) => s + d.count, 0) || 1;
 
   if (loading) {
     return <div className="flex justify-center py-20"><div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" /></div>;
@@ -1357,9 +1376,23 @@ const AnalyticsTab = () => {
 
   return (
     <div className="space-y-6">
+      {/* Range selector */}
+      <div className="flex gap-2">
+        {(["7d", "30d", "all"] as const).map((r) => (
+          <Button key={r} size="sm" variant={range === r ? "default" : "outline"} onClick={() => setRange(r)} className="text-xs">
+            {r === "7d" ? "Last 7 days" : r === "30d" ? "Last 30 days" : "All time"}
+          </Button>
+        ))}
+      </div>
+
       {/* Summary Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {summaryStats.map((stat) => (
+        {[
+          { label: "Total Page Views", value: totalVisits.toLocaleString(), icon: Eye, color: "text-blue-500" },
+          { label: "Unique Visitors", value: uniqueVisitors.toLocaleString(), icon: Users, color: "text-primary" },
+          { label: "Top Device", value: deviceData[0]?.label || "—", icon: Monitor, color: "text-emerald-500" },
+          { label: "Top Browser", value: browserData[0]?.name || "—", icon: Globe, color: "text-amber-500" },
+        ].map((stat) => (
           <div key={stat.label} className="rounded-2xl border border-border bg-card p-5 shadow-sm">
             <div className="flex items-center gap-3 mb-3">
               <stat.icon className={`h-5 w-5 ${stat.color}`} />
@@ -1375,62 +1408,103 @@ const AnalyticsTab = () => {
         <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
           <Monitor className="h-5 w-5 text-primary" /> Device Breakdown
         </h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          {deviceData.map((d) => (
-            <div key={d.label} className="rounded-xl border border-border bg-muted/30 p-4 flex items-center gap-4">
-              <div className={`h-12 w-12 rounded-xl ${d.bg}/10 flex items-center justify-center`}>
-                <d.icon className={`h-6 w-6 ${d.color}`} />
-              </div>
-              <div className="flex-1">
-                <p className="text-sm font-medium text-foreground">{d.label}</p>
-                <p className="text-2xl font-bold text-foreground">{d.count}</p>
-              </div>
-              <span className="text-sm font-medium text-muted-foreground">
-                {((d.count / totalDevices) * 100).toFixed(1)}%
-              </span>
+        {deviceData.length === 0 ? (
+          <p className="text-sm text-muted-foreground">No visit data yet.</p>
+        ) : (
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+              {deviceData.map((d) => (
+                <div key={d.label} className="rounded-xl border border-border bg-muted/30 p-4 flex items-center gap-4">
+                  <div className={`h-12 w-12 rounded-xl ${d.bg}/10 flex items-center justify-center`}>
+                    <d.icon className={`h-6 w-6 ${d.color}`} />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-foreground">{d.label}</p>
+                    <p className="text-2xl font-bold text-foreground">{d.count}</p>
+                  </div>
+                  <span className="text-sm font-medium text-muted-foreground">
+                    {((d.count / totalDevices) * 100).toFixed(1)}%
+                  </span>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-        {/* Bar visualization */}
-        <div className="h-4 rounded-full overflow-hidden flex bg-muted">
-          {deviceData.map((d) => (
-            <div
-              key={d.label}
-              className={`${d.bg} transition-all`}
-              style={{ width: `${(d.count / totalDevices) * 100}%` }}
-              title={`${d.label}: ${d.count} (${((d.count / totalDevices) * 100).toFixed(1)}%)`}
-            />
-          ))}
-        </div>
-        <div className="flex gap-4 mt-2">
-          {deviceData.map((d) => (
-            <div key={d.label} className="flex items-center gap-1.5 text-xs text-muted-foreground">
-              <div className={`h-2.5 w-2.5 rounded-full ${d.bg}`} />
-              {d.label}
+            <div className="h-4 rounded-full overflow-hidden flex bg-muted">
+              {deviceData.map((d) => (
+                <div key={d.label} className={`${d.bg} transition-all`} style={{ width: `${(d.count / totalDevices) * 100}%` }} title={`${d.label}: ${d.count}`} />
+              ))}
             </div>
-          ))}
+            <div className="flex gap-4 mt-2">
+              {deviceData.map((d) => (
+                <div key={d.label} className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <div className={`h-2.5 w-2.5 rounded-full ${d.bg}`} />
+                  {d.label}
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Browser Breakdown */}
+        <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
+          <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+            <Globe className="h-5 w-5 text-secondary" /> Browsers
+          </h3>
+          <div className="space-y-2">
+            {browserData.map((b) => {
+              const pct = (b.count / totalDevices) * 100;
+              return (
+                <div key={b.name} className="flex items-center gap-3">
+                  <span className="text-sm font-medium w-20 text-foreground">{b.name}</span>
+                  <div className="flex-1 h-5 bg-muted rounded-full overflow-hidden">
+                    <div className="h-full bg-secondary/60 rounded-full transition-all" style={{ width: `${pct}%` }} />
+                  </div>
+                  <span className="text-xs text-muted-foreground w-10 text-right">{b.count}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* OS Breakdown */}
+        <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
+          <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+            <Activity className="h-5 w-5 text-accent" /> Operating Systems
+          </h3>
+          <div className="space-y-2">
+            {osData.map((o) => {
+              const pct = (o.count / totalDevices) * 100;
+              return (
+                <div key={o.name} className="flex items-center gap-3">
+                  <span className="text-sm font-medium w-20 text-foreground">{o.name}</span>
+                  <div className="flex-1 h-5 bg-muted rounded-full overflow-hidden">
+                    <div className="h-full bg-accent/60 rounded-full transition-all" style={{ width: `${pct}%` }} />
+                  </div>
+                  <span className="text-xs text-muted-foreground w-10 text-right">{o.count}</span>
+                </div>
+              );
+            })}
+          </div>
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Top Countries */}
+        {/* Top Pages */}
         <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
           <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-            <Globe className="h-5 w-5 text-secondary" /> Visitors by Country
+            <Eye className="h-5 w-5 text-primary" /> Top Pages
           </h3>
           <div className="space-y-2">
-            {countryData.map((c) => {
-              const pct = (c.visitors / 307) * 100;
+            {topPages.map((p) => {
+              const pct = (p.count / totalDevices) * 100;
               return (
-                <div key={c.country} className="flex items-center gap-3">
-                  <span className="text-sm font-medium w-16 text-foreground">{c.country}</span>
+                <div key={p.path} className="flex items-center gap-3">
+                  <span className="text-sm font-medium w-36 truncate text-foreground">{p.path}</span>
                   <div className="flex-1 h-5 bg-muted rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-secondary/60 rounded-full transition-all"
-                      style={{ width: `${pct}%` }}
-                    />
+                    <div className="h-full bg-primary/60 rounded-full transition-all" style={{ width: `${pct}%` }} />
                   </div>
-                  <span className="text-xs text-muted-foreground w-10 text-right">{c.visitors}</span>
+                  <span className="text-xs text-muted-foreground w-10 text-right">{p.count}</span>
                 </div>
               );
             })}
@@ -1443,18 +1517,15 @@ const AnalyticsTab = () => {
             <TrendingUp className="h-5 w-5 text-accent" /> Traffic Sources
           </h3>
           <div className="space-y-2">
-            {trafficSources.map((s) => {
-              const pct = (s.visits / 307) * 100;
+            {referrerData.map((s) => {
+              const pct = (s.count / totalDevices) * 100;
               return (
                 <div key={s.source} className="flex items-center gap-3">
                   <span className="text-sm font-medium w-36 truncate text-foreground">{s.source}</span>
                   <div className="flex-1 h-5 bg-muted rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-accent/60 rounded-full transition-all"
-                      style={{ width: `${pct}%` }}
-                    />
+                    <div className="h-full bg-accent/60 rounded-full transition-all" style={{ width: `${pct}%` }} />
                   </div>
-                  <span className="text-xs text-muted-foreground w-10 text-right">{s.visits}</span>
+                  <span className="text-xs text-muted-foreground w-10 text-right">{s.count}</span>
                 </div>
               );
             })}
@@ -1463,7 +1534,7 @@ const AnalyticsTab = () => {
       </div>
 
       <p className="text-xs text-muted-foreground text-center">
-        Analytics data reflects the last 7 days. For detailed insights, visit Project Insights in Settings.
+        Live analytics from tracked page visits. Data updates in real-time as users browse.
       </p>
     </div>
   );

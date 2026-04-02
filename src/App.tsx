@@ -1,4 +1,5 @@
 import { lazy, Suspense } from "react";
+import { usePageVisitTracker } from "@/hooks/usePageVisitTracker";
 import useOnlineStatus from "@/hooks/useOnlineStatus";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
@@ -56,6 +57,11 @@ const LazyFallback = () => (
   </div>
 );
 
+const PageVisitTracker = () => {
+  usePageVisitTracker();
+  return null;
+};
+
 const App = () => {
   useOnlineStatus();
   return (
@@ -66,6 +72,7 @@ const App = () => {
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
+          <PageVisitTracker />
           <ScrollToTop />
           <IncomingCallHandler />
           <div className="flex min-h-screen flex-col">
