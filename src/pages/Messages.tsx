@@ -218,6 +218,7 @@ const Messages = () => {
 
         return {
           matchId: m.id,
+          matchType: (m as any).type || 'mutual',
           profile,
           photoPath: getPhoto(profile),
           lastMsg: lastMsg || undefined,
