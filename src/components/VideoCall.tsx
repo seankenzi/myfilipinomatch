@@ -534,16 +534,9 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
 
         {roomUrl && (
           <div className="relative h-full w-full overflow-hidden bg-black">
-            <iframe
-              ref={iframeRef}
-              src={roomUrl}
-              allow="camera; microphone; fullscreen; display-capture"
-              className="absolute left-0 w-full border-0"
-              style={{
-                top: `-${DAILY_IFRAME_CROP.top}px`,
-                height: `calc(100% + ${DAILY_IFRAME_CROP.top + DAILY_IFRAME_CROP.bottom}px)`,
-              }}
-              title={`Video call with ${otherUserName}`}
+            <div
+              ref={containerRef}
+              className="absolute inset-0"
             />
 
             {/* Connection lost overlay */}
@@ -559,7 +552,7 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
             {!joinRoomUrl && (
               callEstablished ? (
                 <div
-                  className={`absolute top-14 right-4 z-20 flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium shadow-lg backdrop-blur-sm ${
+                  className={`absolute top-4 right-4 z-20 flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium shadow-lg backdrop-blur-sm ${
                     isLowTime
                       ? "bg-destructive/90 text-destructive-foreground animate-pulse"
                       : "bg-card/80 text-foreground"
@@ -569,14 +562,14 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
                   {formatTime(timeRemaining)}
                 </div>
               ) : (
-                <div className="absolute top-14 right-4 z-20 flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium shadow-lg backdrop-blur-sm bg-card/80 text-muted-foreground">
+                <div className="absolute top-4 right-4 z-20 flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium shadow-lg backdrop-blur-sm bg-card/80 text-muted-foreground">
                   <Loader2 className="h-3.5 w-3.5 animate-spin" />
                   Waiting for {otherUserName}…
                 </div>
               )
             )}
 
-            {/* Floating controls - keeps Daily's toolbar hidden without creating white bars */}
+            {/* Floating controls */}
             <div className="absolute inset-x-0 bottom-6 z-30 flex justify-center px-4">
               <div className="flex max-w-full items-center gap-3 rounded-full border border-border/40 bg-foreground/55 px-4 py-3 shadow-lg backdrop-blur-md">
                 <Button
@@ -586,13 +579,11 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
                     isMuted ? "bg-muted/90 text-destructive" : "bg-card/80 text-foreground"
                   }`}
                    onClick={() => {
-                     const cf = getCallFrame();
-                     if (cf) {
+                     const cf = dailyCallRef.current;
+                     if (cf && !cf.isDestroyed()) {
                        const nextAudio = !cf.localAudio();
                        cf.setLocalAudio(nextAudio);
                        setIsMuted(!nextAudio);
-                     } else {
-                       setIsMuted((prev) => !prev);
                      }
                    }}
                 >
@@ -615,13 +606,11 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
                     isCameraOff ? "bg-muted/90 text-destructive" : "bg-card/80 text-foreground"
                   }`}
                    onClick={() => {
-                     const cf = getCallFrame();
-                     if (cf) {
+                     const cf = dailyCallRef.current;
+                     if (cf && !cf.isDestroyed()) {
                        const nextVideo = !cf.localVideo();
                        cf.setLocalVideo(nextVideo);
                        setIsCameraOff(!nextVideo);
-                     } else {
-                       setIsCameraOff((prev) => !prev);
                      }
                    }}
                 >
