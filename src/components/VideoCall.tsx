@@ -92,6 +92,7 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
   const [isMuted, setIsMuted] = useState(false);
   const [isCameraOff, setIsCameraOff] = useState(false);
   const [remoteVideoOff, setRemoteVideoOff] = useState(false);
+  const [isGridMode, setIsGridMode] = useState(false);
 
   const closeUi = useCallback(
     (toastMessage?: { title: string; description?: string }) => {
