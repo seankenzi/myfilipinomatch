@@ -288,14 +288,17 @@ const ModerationTab = () => {
   const { toast } = useToast();
   const [reports, setReports] = useState<any[]>([]);
   const [verifications, setVerifications] = useState<any[]>([]);
+  const [pastVerifications, setPastVerifications] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [previewImage, setPreviewImage] = useState<{ url: string; name: string; pose?: string } | null>(null);
+  const [showHistory, setShowHistory] = useState(false);
 
   const fetchData = async () => {
     setLoading(true);
-    const [reportsRes, verificationsRes] = await Promise.all([
+    const [reportsRes, verificationsRes, pastVerificationsRes] = await Promise.all([
       supabase.from("reports").select("*").order("created_at", { ascending: false }).limit(50),
       supabase.from("verifications").select("*").eq("status", "pending").order("created_at", { ascending: false }).limit(50),
+      supabase.from("verifications").select("*").in("status", ["approved", "rejected"]).order("reviewed_at", { ascending: false }).limit(100),
     ]);
 
     // Enrich with profile names
