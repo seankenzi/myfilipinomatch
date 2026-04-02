@@ -1218,35 +1218,35 @@ const Discover = () => {
                           )}
 
                           {/* Action buttons */}
-                          <div className="flex gap-1.5">
+                          <div className="flex gap-1">
                             {likedIds.has(profile.id) ? (
-                              <div className="flex flex-1 items-center justify-center gap-1 rounded-lg bg-primary/20 min-h-[44px] text-[11px] font-medium text-primary">
+                              <div className="flex flex-1 items-center justify-center gap-1 rounded-lg bg-primary/20 h-9 text-[11px] font-medium text-primary">
                                 <Heart className="h-3.5 w-3.5 fill-primary" /> Liked
                               </div>
                             ) : (
                               <button
                                 onClick={() => handleListLike(profile)}
-                                className="flex flex-1 items-center justify-center gap-1 rounded-lg bg-primary/10 min-h-[44px] text-[11px] font-medium text-primary hover:bg-primary/20 transition-colors active:scale-95"
+                                className="flex flex-1 items-center justify-center gap-1 rounded-lg bg-primary/10 h-9 text-[11px] font-medium text-primary hover:bg-primary/20 transition-colors active:scale-95"
                               >
                                 <Heart className="h-3.5 w-3.5" /> Like
                               </button>
                             )}
                             <button
                               onClick={() => void handleVideoCallClick(profile)}
-                              className="flex items-center justify-center rounded-lg bg-secondary/10 min-w-[44px] min-h-[44px] text-secondary hover:bg-secondary/20 transition-colors active:scale-95"
+                              className="flex items-center justify-center rounded-lg bg-secondary/10 w-9 h-9 shrink-0 text-secondary hover:bg-secondary/20 transition-colors active:scale-95"
                               title="Video Call"
                             >
                               <Video className="h-4 w-4" />
                             </button>
                             <button
                               onClick={() => handlePriorityLike(profile)}
-                              className="flex items-center justify-center rounded-lg bg-accent/10 min-w-[44px] min-h-[44px] text-accent hover:bg-accent/20 transition-colors active:scale-95"
+                              className="flex items-center justify-center rounded-lg bg-accent/10 w-9 h-9 shrink-0 text-accent hover:bg-accent/20 transition-colors active:scale-95"
                             >
                               <Star className="h-4 w-4 fill-accent" />
                             </button>
                             <button
                               onClick={() => handleReport(profile)}
-                              className="flex items-center justify-center rounded-lg bg-muted min-w-[44px] min-h-[44px] text-muted-foreground hover:text-destructive transition-colors active:scale-95"
+                              className="flex items-center justify-center rounded-lg bg-muted w-9 h-9 shrink-0 text-muted-foreground hover:text-destructive transition-colors active:scale-95"
                             >
                               <Flag className="h-4 w-4" />
                             </button>
