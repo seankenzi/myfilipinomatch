@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { Heart, LogIn, LogOut, User, Eye } from "lucide-react";
+import { Heart, LogIn, LogOut, User, Eye, ShieldCheck } from "lucide-react";
+import { useAdmin } from "@/hooks/useAdmin";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -63,6 +64,7 @@ interface NavbarProps {
 
 const Navbar = ({ bannerSubtitle }: NavbarProps) => {
   const { user, loading, isPremium, premiumLoading, signOut } = useAuth();
+  const { isAdmin } = useAdmin();
   const navigate = useNavigate();
   const newLikesCount = useNewLikesCount();
 
@@ -130,6 +132,14 @@ const Navbar = ({ bannerSubtitle }: NavbarProps) => {
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
+              )}
+              {isAdmin && (
+                <Link to="/admin">
+                  <Button variant="ghost" size="sm" className="text-primary">
+                    <ShieldCheck className="mr-1 h-4 w-4" />
+                    Admin
+                  </Button>
+                </Link>
               )}
               <NotificationBell />
               <Link to="/profile">
