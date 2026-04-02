@@ -120,19 +120,9 @@ const Messages = () => {
   const [isMutualMatch, setIsMutualMatch] = useState(true);
 
   useEffect(() => {
-    if (!selectedMatch || !user) return;
-    const checkMutual = async () => {
-      const otherId = selectedMatch.other_user.id;
-      const { data } = await supabase
-        .from("likes")
-        .select("id")
-        .eq("liker_id", otherId)
-        .eq("liked_id", user.id)
-        .limit(1);
-      setIsMutualMatch(!!(data && data.length > 0));
-    };
-    checkMutual();
-  }, [selectedMatch, user]);
+    if (!selectedMatch) return;
+    setIsMutualMatch(selectedMatch.type === 'mutual');
+  }, [selectedMatch]);
 
   const isLocked = !isPremium && (
     isMutualMatch
