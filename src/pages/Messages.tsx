@@ -585,6 +585,11 @@ const Messages = () => {
                           {match.other_user.is_verified && (
                             <Shield className="h-3.5 w-3.5 text-secondary fill-secondary/30 flex-shrink-0" />
                           )}
+                          {match.type === 'direct_message' && (
+                            <span className="rounded-full bg-accent/10 px-1.5 py-0.5 text-[9px] font-medium text-accent flex-shrink-0 flex items-center gap-0.5">
+                              <Sparkles className="h-2.5 w-2.5" /> DM
+                            </span>
+                          )}
                         </div>
                         {match.last_message && (
                           <span className="text-[10px] text-muted-foreground flex-shrink-0 ml-2">
