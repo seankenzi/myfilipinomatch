@@ -477,18 +477,38 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
       setIsCameraOff(!event.participant.video);
     });
 
-    // Join the room
-    const joinOpts: {
-      url: string;
-      token?: string;
-      inputSettings: typeof NO_VIDEO_PROCESSING_INPUT_SETTINGS;
-    } = {
-      url,
-      inputSettings: NO_VIDEO_PROCESSING_INPUT_SETTINGS,
+    // Fetch current user's display name for the video tile
+    const fetchUserName = async (): Promise<string> => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data: profile } = await supabase
+            .from("profiles")
+            .select("full_name")
+            .eq("id", user.id)
+            .single();
+          if (profile?.full_name) return profile.full_name;
+        }
+      } catch { /* fallback */ }
+      return "You";
     };
-    if (token) joinOpts.token = token;
-    callFrame.join(joinOpts).catch((err) => {
-      console.error("Daily join error:", err);
+
+    // Join the room
+    fetchUserName().then((displayName) => {
+      const joinOpts: {
+        url: string;
+        token?: string;
+        userName?: string;
+        inputSettings: typeof NO_VIDEO_PROCESSING_INPUT_SETTINGS;
+      } = {
+        url,
+        userName: displayName,
+        inputSettings: NO_VIDEO_PROCESSING_INPUT_SETTINGS,
+      };
+      if (token) joinOpts.token = token;
+      callFrame.join(joinOpts).catch((err) => {
+        console.error("Daily join error:", err);
+      });
     });
 
     return () => {
