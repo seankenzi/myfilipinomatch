@@ -1730,8 +1730,8 @@ const AnalyticsTab = () => {
                 })}
               </tbody>
             </table>
-            {userVisits.length > 50 && (
-              <p className="text-xs text-muted-foreground mt-3 text-center">Showing top 50 of {userVisits.length} visitors</p>
+            {userVisits.length > 100 && (
+              <p className="text-xs text-muted-foreground mt-3 text-center">Showing top 100 of {userVisits.length} visitors</p>
             )}
           </div>
         )}
