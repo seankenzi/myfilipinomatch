@@ -1698,13 +1698,14 @@ const AnalyticsTab = () => {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border text-left">
-                  <th className="pb-3 pr-4 font-medium text-muted-foreground">User</th>
-                  <th className="pb-3 pr-4 font-medium text-muted-foreground">Device</th>
-                  <th className="pb-3 pr-4 font-medium text-muted-foreground">Browser</th>
-                  <th className="pb-3 pr-4 font-medium text-muted-foreground">OS</th>
-                  <th className="pb-3 pr-4 font-medium text-muted-foreground">Came From</th>
-                  <th className="pb-3 pr-4 font-medium text-muted-foreground">Visits</th>
-                  <th className="pb-3 font-medium text-muted-foreground">Last Seen</th>
+                   <th className="pb-3 pr-4 font-medium text-muted-foreground">User</th>
+                   <th className="pb-3 pr-4 font-medium text-muted-foreground">IP Address</th>
+                   <th className="pb-3 pr-4 font-medium text-muted-foreground">Device</th>
+                   <th className="pb-3 pr-4 font-medium text-muted-foreground">Browser</th>
+                   <th className="pb-3 pr-4 font-medium text-muted-foreground">OS</th>
+                   <th className="pb-3 pr-4 font-medium text-muted-foreground">Came From</th>
+                   <th className="pb-3 pr-4 font-medium text-muted-foreground">Visits</th>
+                   <th className="pb-3 font-medium text-muted-foreground">Last Seen</th>
                 </tr>
               </thead>
               <tbody>
