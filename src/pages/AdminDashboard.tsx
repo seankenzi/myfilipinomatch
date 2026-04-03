@@ -1512,6 +1512,7 @@ const AnalyticsTab = () => {
             existing.os = v.os || existing.os;
             if (source !== "Direct") existing.referrer = source;
             if (v.ip_address) existing.ip_address = v.ip_address;
+            if (v.country) existing.country = v.country;
           }
         }
       });
