@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import SEO from "@/components/SEO";
 import { Link, useNavigate } from "react-router-dom";
 import { Mail, Lock, Eye, EyeOff, ArrowLeft } from "lucide-react";
@@ -18,8 +18,24 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const { toast } = useToast();
-  const { signIn } = useAuth();
+  const { user, loading: authLoading, signIn } = useAuth();
   const navigate = useNavigate();
+
+  // Redirect already-authenticated users away from Login
+  useEffect(() => {
+    if (!authLoading && user) {
+      navigate("/discover", { replace: true });
+    }
+  }, [user, authLoading, navigate]);
+
+  // Don't render the login page (and its <title>) while auth is loading or user is logged in
+  if (authLoading || user) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+      </div>
+    );
+  }
 
   const handleGoogleSignIn = async () => {
     setGoogleLoading(true);
