@@ -350,24 +350,24 @@ const Onboarding = () => {
                   </PopoverContent>
                 </Popover>
               )}
-              <div className="space-y-3">
-                {userType === "foreigner" && (
+              {userType === "foreigner" && (
+                <div className="space-y-3">
                   <Label className="text-sm text-muted-foreground">Your city *</Label>
-                )}
-                <Input
-                  placeholder="Type your city..."
-                  value={city}
-                  onChange={(e) => setCity(e.target.value)}
-                  className="text-base h-12 rounded-xl"
-                />
-              </div>
+                  <Input
+                    placeholder="Type your city..."
+                    value={city}
+                    onChange={(e) => setCity(e.target.value)}
+                    className="text-base h-12 rounded-xl"
+                  />
+                </div>
+              )}
               {userType === "philippines" && (
                 <div className="space-y-3">
-                  <p className="text-xs text-muted-foreground">Or select from common cities:</p>
+                  <Label className="text-sm text-muted-foreground">Your city *</Label>
                   <Popover open={cityOpen} onOpenChange={setCityOpen}>
                     <PopoverTrigger asChild>
                       <Button variant="outline" role="combobox" aria-expanded={cityOpen} className="w-full text-base h-12 rounded-xl justify-between font-normal">
-                        {city && PH_CITIES.includes(city) ? city : "Browse Philippine cities..."}
+                        {city ? city : "Select your city..."}
                         <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                       </Button>
                     </PopoverTrigger>
