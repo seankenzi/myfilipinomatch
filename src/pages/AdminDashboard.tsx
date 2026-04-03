@@ -1701,6 +1701,7 @@ const AnalyticsTab = () => {
                 <tr className="border-b border-border text-left">
                    <th className="pb-3 pr-4 font-medium text-muted-foreground">User</th>
                    <th className="pb-3 pr-4 font-medium text-muted-foreground">IP Address</th>
+                   <th className="pb-3 pr-4 font-medium text-muted-foreground">Country</th>
                    <th className="pb-3 pr-4 font-medium text-muted-foreground">Device</th>
                    <th className="pb-3 pr-4 font-medium text-muted-foreground">Browser</th>
                    <th className="pb-3 pr-4 font-medium text-muted-foreground">OS</th>
