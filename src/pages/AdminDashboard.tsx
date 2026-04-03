@@ -1697,7 +1697,7 @@ const AnalyticsTab = () => {
                 </tr>
               </thead>
               <tbody>
-                {userVisits.slice(0, 50).map((u, i) => {
+                {userVisits.slice(0, 100).map((u, i) => {
                   const deviceIcon = u.device_type === "mobile" ? Smartphone : u.device_type === "tablet" ? Tablet : Monitor;
                   const DeviceIcon = deviceIcon;
                   return (
