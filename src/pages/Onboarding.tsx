@@ -127,7 +127,7 @@ const Onboarding = () => {
       case 4: return !!fullName.trim() && !!age && parseInt(age) >= 18 && !!gender;
       case 5: return true; // bio is optional
       case 6: return interests.length >= 3;
-      case 7: return photos.length >= 1;
+      case 7: return photos.length >= 3;
       case 8: return true; // verification prompt
       default: return false;
     }
