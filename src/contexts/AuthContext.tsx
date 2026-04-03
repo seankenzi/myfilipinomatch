@@ -55,6 +55,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
         (async () => {
           try {
+            // Wait briefly so the backend auth-email-hook has time to set the flag
+            await new Promise((r) => setTimeout(r, 5000));
+
             const { data: profile } = await supabase
               .from('profiles')
               .select('welcome_email_sent')
