@@ -392,6 +392,7 @@ export type Database = {
           created_at: string
           device_type: string | null
           id: string
+          ip_address: string | null
           os: string | null
           page_path: string | null
           referrer: string | null
@@ -404,6 +405,7 @@ export type Database = {
           created_at?: string
           device_type?: string | null
           id?: string
+          ip_address?: string | null
           os?: string | null
           page_path?: string | null
           referrer?: string | null
@@ -416,6 +418,7 @@ export type Database = {
           created_at?: string
           device_type?: string | null
           id?: string
+          ip_address?: string | null
           os?: string | null
           page_path?: string | null
           referrer?: string | null
