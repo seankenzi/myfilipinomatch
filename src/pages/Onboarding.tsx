@@ -123,7 +123,7 @@ const Onboarding = () => {
     switch (step) {
       case 1: return !!userType;
       case 2: return !!relationshipIntent;
-      case 3: return userType === "foreigner" ? !!country : !!city;
+      case 3: return userType === "foreigner" ? (!!country && !!city) : !!city;
       case 4: return !!fullName.trim() && !!age && parseInt(age) >= 18 && !!gender;
       case 5: return true; // bio is optional
       case 6: return interests.length >= 3;
