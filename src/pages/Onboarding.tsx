@@ -123,7 +123,7 @@ const Onboarding = () => {
     switch (step) {
       case 1: return !!userType;
       case 2: return !!relationshipIntent;
-      case 3: return userType === "foreigner" ? !!country : !!city;
+      case 3: return userType === "foreigner" ? (!!country && !!city) : !!city;
       case 4: return !!fullName.trim() && !!age && parseInt(age) >= 18 && !!gender;
       case 5: return true; // bio is optional
       case 6: return interests.length >= 3;
@@ -157,7 +157,7 @@ const Onboarding = () => {
         user_type: userType,
         relationship_intent: relationshipIntent,
         country: userType === "foreigner" ? country : "Philippines",
-        city: userType === "philippines" ? city : null,
+        city: city,
         full_name: fullName.trim(),
         age: parseInt(age),
         gender,
@@ -317,10 +317,10 @@ const Onboarding = () => {
                   {userType === "foreigner" ? "Where are you from?" : "What city are you in?"}
                 </h2>
                 <p className="text-sm text-muted-foreground">
-                  {userType === "foreigner" ? "Select your country" : "Select or type your city"}
+                  {userType === "foreigner" ? "Select your country and city" : "Select or type your city"}
                 </p>
               </div>
-              {userType === "foreigner" ? (
+              {userType === "foreigner" && (
                 <Popover open={countryOpen} onOpenChange={setCountryOpen}>
                   <PopoverTrigger asChild>
                     <Button variant="outline" role="combobox" aria-expanded={countryOpen} className="w-full text-base h-12 rounded-xl justify-between font-normal">
@@ -344,12 +344,25 @@ const Onboarding = () => {
                     </Command>
                   </PopoverContent>
                 </Popover>
-              ) : (
+              )}
+              <div className="space-y-3">
+                {userType === "foreigner" && (
+                  <Label className="text-sm text-muted-foreground">Your city *</Label>
+                )}
+                <Input
+                  placeholder="Type your city..."
+                  value={city}
+                  onChange={(e) => setCity(e.target.value)}
+                  className="text-base h-12 rounded-xl"
+                />
+              </div>
+              {userType === "philippines" && (
                 <div className="space-y-3">
+                  <p className="text-xs text-muted-foreground">Or select from common cities:</p>
                   <Popover open={cityOpen} onOpenChange={setCityOpen}>
                     <PopoverTrigger asChild>
                       <Button variant="outline" role="combobox" aria-expanded={cityOpen} className="w-full text-base h-12 rounded-xl justify-between font-normal">
-                        {city && city !== "Other" ? city : city === "Other" ? "Other" : "Select your city..."}
+                        {city && PH_CITIES.includes(city) ? city : "Browse Philippine cities..."}
                         <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                       </Button>
                     </PopoverTrigger>
@@ -359,7 +372,7 @@ const Onboarding = () => {
                         <CommandList>
                           <CommandEmpty>No city found.</CommandEmpty>
                           <CommandGroup>
-                            {PH_CITIES.map((c) => (
+                            {PH_CITIES.filter(c => c !== "Other").map((c) => (
                               <CommandItem key={c} value={c} onSelect={(val) => { setCity(val); setCityOpen(false); }} className={city === c ? "bg-primary/10" : ""}>
                                 {c}
                               </CommandItem>
@@ -369,14 +382,6 @@ const Onboarding = () => {
                       </Command>
                     </PopoverContent>
                   </Popover>
-                  {city === "Other" && (
-                    <Input
-                      placeholder="Type your city..."
-                      value=""
-                      onChange={(e) => setCity(e.target.value)}
-                      className="text-base"
-                    />
-                  )}
                 </div>
               )}
             </div>
