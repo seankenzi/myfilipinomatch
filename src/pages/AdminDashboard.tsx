@@ -1482,7 +1482,7 @@ const AnalyticsTab = () => {
         (profiles || []).forEach((p: any) => profileMap.set(p.id, { full_name: p.full_name || "Unknown", email: p.email || "" }));
       }
 
-      const userMap = new Map<string, { email: string; full_name: string; device_type: string; browser: string; os: string; referrer: string; last_visit: string; visit_count: number; ip_address: string }>();
+      const userMap = new Map<string, { email: string; full_name: string; device_type: string; browser: string; os: string; referrer: string; last_visit: string; visit_count: number; ip_address: string; country: string }>();
       visits.forEach((v: any) => {
         const key = v.user_id || v.user_agent || "anonymous";
         const existing = userMap.get(key);
