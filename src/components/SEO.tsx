@@ -8,6 +8,8 @@ interface SEOProps {
   image?: string;
   noIndex?: boolean;
   jsonLd?: Record<string, unknown> | Record<string, unknown>[];
+  prerenderStatusCode?: number;
+  prerenderRedirect?: string;
 }
 
 const SITE_NAME = "MyFilipinoMatch";
@@ -25,6 +27,8 @@ const SEO = ({
   image = DEFAULT_IMAGE,
   noIndex = false,
   jsonLd,
+  prerenderStatusCode,
+  prerenderRedirect,
 }: SEOProps) => {
   const fullTitle = title ? `${title} | ${SITE_NAME}` : `${SITE_NAME} — Real Verified Profiles, No Fake Accounts`;
   const canonicalUrl = canonical ? `${BASE_URL}${canonical}` : undefined;
@@ -36,6 +40,14 @@ const SEO = ({
 
       {canonicalUrl && <link rel="canonical" href={canonicalUrl} />}
       {noIndex && <meta name="robots" content="noindex, nofollow" />}
+
+      {/* Prerender.io support */}
+      {prerenderStatusCode && (
+        <meta name="prerender-status-code" content={String(prerenderStatusCode)} />
+      )}
+      {prerenderRedirect && (
+        <meta name="prerender-header" content={`Location: ${prerenderRedirect}`} />
+      )}
 
       {/* Open Graph */}
       <meta property="og:title" content={fullTitle} />
