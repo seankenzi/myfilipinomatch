@@ -260,7 +260,7 @@ const UsersTab = () => {
                       {u.is_premium ? <Star className="h-4 w-4 text-accent mx-auto" /> : <span className="text-muted-foreground/40">—</span>}
                     </td>
                      <td className="p-3 text-muted-foreground text-xs">{format(new Date(u.created_at), "MMM d, yyyy")}</td>
-                     <td className="p-3 text-muted-foreground text-xs">{u.last_seen ? format(new Date(u.last_seen), "MMM d, yyyy HH:mm") : "Never"}</td>
+                     <td className="p-3 text-muted-foreground text-xs">{u.last_seen ? format(new Date(u.last_seen), "MMM d, yyyy hh:mm a") : "Never"}</td>
                     <td className="p-3">
                       <div className="flex gap-1 justify-end" onClick={(e) => e.stopPropagation()}>
                         <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => handleVerify(u.id, !u.is_verified)}>
