@@ -1723,6 +1723,7 @@ const AnalyticsTab = () => {
                         </div>
                       </td>
                        <td className="py-3 pr-4 text-foreground text-xs font-mono">{u.ip_address}</td>
+                       <td className="py-3 pr-4 text-foreground text-sm">{u.country}</td>
                        <td className="py-3 pr-4">
                          <div className="flex items-center gap-1.5">
                            <DeviceIcon className="h-4 w-4 text-muted-foreground" />
