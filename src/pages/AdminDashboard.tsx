@@ -1400,7 +1400,7 @@ const AnalyticsTab = () => {
   const [referrerData, setReferrerData] = useState<{ source: string; count: number }[]>([]);
   const [totalVisits, setTotalVisits] = useState(0);
   const [uniqueVisitors, setUniqueVisitors] = useState(0);
-  const [userVisits, setUserVisits] = useState<{ email: string; full_name: string; device_type: string; browser: string; os: string; referrer: string; last_visit: string; visit_count: number }[]>([]);
+  const [userVisits, setUserVisits] = useState<{ email: string; full_name: string; device_type: string; browser: string; os: string; referrer: string; last_visit: string; visit_count: number; ip_address: string }[]>([]);
 
   const iconMap: Record<string, typeof Monitor> = { desktop: Monitor, mobile: Smartphone, tablet: Tablet };
   const colorMap: Record<string, { color: string; bg: string }> = {
