@@ -1521,6 +1521,8 @@ const AnalyticsTab = () => {
       setLoading(false);
     };
     fetchData();
+    const interval = setInterval(fetchData, 10 * 60 * 1000);
+    return () => clearInterval(interval);
   }, [range]);
 
   const totalDevices = deviceData.reduce((s, d) => s + d.count, 0) || 1;
