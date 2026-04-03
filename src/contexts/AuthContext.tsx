@@ -47,7 +47,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setLoading(false);
 
       // Fallback only: signup emails are primarily triggered from the backend.
-      if (_event === 'SIGNED_IN' && session?.user) {
+      if ((_event === 'SIGNED_IN' || _event === 'INITIAL_SESSION') && session?.user) {
         const u = session.user;
         const normalizedUserEmail = u.email?.trim().toLowerCase();
 
