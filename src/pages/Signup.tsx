@@ -39,14 +39,6 @@ const Signup = () => {
   }, [user, authLoading, navigate]);
 
   // Don't render the signup page (and its <title>) while auth is loading or user is logged in
-  if (authLoading || user) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-      </div>
-    );
-  }
-
   const renderWidget = useCallback(() => {
     if (turnstileRef.current && getWindow().turnstile && !widgetIdRef.current) {
       widgetIdRef.current = getWindow().turnstile.render(turnstileRef.current, {
@@ -60,6 +52,7 @@ const Signup = () => {
   }, []);
 
   useEffect(() => {
+    if (authLoading || user) return;
     // Load Turnstile script if not already loaded
     if (document.querySelector('script[src*="turnstile"]')) {
       renderWidget();
@@ -78,7 +71,16 @@ const Signup = () => {
         widgetIdRef.current = null;
       }
     };
-  }, [renderWidget]);
+  }, [renderWidget, authLoading, user]);
+
+  // Don't render the signup page (and its <title>) while auth is loading or user is logged in
+  if (authLoading || user) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+      </div>
+    );
+  }
 
   const handleGoogleSignIn = async () => {
     setGoogleLoading(true);
