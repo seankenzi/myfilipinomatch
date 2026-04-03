@@ -1482,7 +1482,7 @@ const AnalyticsTab = () => {
         (profiles || []).forEach((p: any) => profileMap.set(p.id, { full_name: p.full_name || "Unknown", email: p.email || "" }));
       }
 
-      const userMap = new Map<string, { email: string; full_name: string; device_type: string; browser: string; os: string; referrer: string; last_visit: string; visit_count: number }>();
+      const userMap = new Map<string, { email: string; full_name: string; device_type: string; browser: string; os: string; referrer: string; last_visit: string; visit_count: number; ip_address: string }>();
       visits.forEach((v: any) => {
         const key = v.user_id || v.user_agent || "anonymous";
         const existing = userMap.get(key);
@@ -1500,6 +1500,7 @@ const AnalyticsTab = () => {
             referrer: source,
             last_visit: v.created_at,
             visit_count: 1,
+            ip_address: v.ip_address || "—",
           });
         } else {
           existing.visit_count++;
@@ -1509,6 +1510,7 @@ const AnalyticsTab = () => {
             existing.browser = v.browser || existing.browser;
             existing.os = v.os || existing.os;
             if (source !== "Direct") existing.referrer = source;
+            if (v.ip_address) existing.ip_address = v.ip_address;
           }
         }
       });
