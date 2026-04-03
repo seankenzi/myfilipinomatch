@@ -30,4 +30,4 @@ void cleanupStaleServiceWorkers().catch(() => undefined);
 createRoot(document.getElementById("root")!).render(<App />);
 
 // Signal to Prerender.io that the page is fully rendered
-window.prerenderReady = true;
+(window as any).prerenderReady = true;
