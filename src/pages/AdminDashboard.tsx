@@ -1501,6 +1501,7 @@ const AnalyticsTab = () => {
             last_visit: v.created_at,
             visit_count: 1,
             ip_address: v.ip_address || "—",
+            country: v.country || "—",
           });
         } else {
           existing.visit_count++;
