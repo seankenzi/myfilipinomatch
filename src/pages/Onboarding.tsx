@@ -157,7 +157,7 @@ const Onboarding = () => {
         user_type: userType,
         relationship_intent: relationshipIntent,
         country: userType === "foreigner" ? country : "Philippines",
-        city: userType === "philippines" ? city : null,
+        city: city,
         full_name: fullName.trim(),
         age: parseInt(age),
         gender,
