@@ -1400,7 +1400,7 @@ const AnalyticsTab = () => {
   const [referrerData, setReferrerData] = useState<{ source: string; count: number }[]>([]);
   const [totalVisits, setTotalVisits] = useState(0);
   const [uniqueVisitors, setUniqueVisitors] = useState(0);
-  const [userVisits, setUserVisits] = useState<{ email: string; full_name: string; device_type: string; browser: string; os: string; referrer: string; last_visit: string; visit_count: number; ip_address: string }[]>([]);
+  const [userVisits, setUserVisits] = useState<{ email: string; full_name: string; device_type: string; browser: string; os: string; referrer: string; last_visit: string; visit_count: number; ip_address: string; country: string }[]>([]);
 
   const iconMap: Record<string, typeof Monitor> = { desktop: Monitor, mobile: Smartphone, tablet: Tablet };
   const colorMap: Record<string, { color: string; bg: string }> = {
@@ -1482,7 +1482,7 @@ const AnalyticsTab = () => {
         (profiles || []).forEach((p: any) => profileMap.set(p.id, { full_name: p.full_name || "Unknown", email: p.email || "" }));
       }
 
-      const userMap = new Map<string, { email: string; full_name: string; device_type: string; browser: string; os: string; referrer: string; last_visit: string; visit_count: number; ip_address: string }>();
+      const userMap = new Map<string, { email: string; full_name: string; device_type: string; browser: string; os: string; referrer: string; last_visit: string; visit_count: number; ip_address: string; country: string }>();
       visits.forEach((v: any) => {
         const key = v.user_id || v.user_agent || "anonymous";
         const existing = userMap.get(key);
@@ -1501,6 +1501,7 @@ const AnalyticsTab = () => {
             last_visit: v.created_at,
             visit_count: 1,
             ip_address: v.ip_address || "—",
+            country: v.country || "—",
           });
         } else {
           existing.visit_count++;
@@ -1511,6 +1512,7 @@ const AnalyticsTab = () => {
             existing.os = v.os || existing.os;
             if (source !== "Direct") existing.referrer = source;
             if (v.ip_address) existing.ip_address = v.ip_address;
+            if (v.country) existing.country = v.country;
           }
         }
       });
@@ -1700,6 +1702,7 @@ const AnalyticsTab = () => {
                 <tr className="border-b border-border text-left">
                    <th className="pb-3 pr-4 font-medium text-muted-foreground">User</th>
                    <th className="pb-3 pr-4 font-medium text-muted-foreground">IP Address</th>
+                   <th className="pb-3 pr-4 font-medium text-muted-foreground">Country</th>
                    <th className="pb-3 pr-4 font-medium text-muted-foreground">Device</th>
                    <th className="pb-3 pr-4 font-medium text-muted-foreground">Browser</th>
                    <th className="pb-3 pr-4 font-medium text-muted-foreground">OS</th>
@@ -1721,6 +1724,7 @@ const AnalyticsTab = () => {
                         </div>
                       </td>
                        <td className="py-3 pr-4 text-foreground text-xs font-mono">{u.ip_address}</td>
+                       <td className="py-3 pr-4 text-foreground text-sm">{u.country}</td>
                        <td className="py-3 pr-4">
                          <div className="flex items-center gap-1.5">
                            <DeviceIcon className="h-4 w-4 text-muted-foreground" />
