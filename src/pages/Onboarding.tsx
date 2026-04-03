@@ -147,6 +147,11 @@ const Onboarding = () => {
     if (!user) return;
     setSaving(true);
     try {
+      if (photos.length < 3) {
+        toast({ title: "Photos required", description: "Please upload at least 3 photos before completing your profile.", variant: "destructive" });
+        setSaving(false);
+        return;
+      }
       const bioContact = detectContactInfo(bio.trim());
       if (bioContact) {
         toast({ title: "Contact info not allowed", description: `Your bio contains ${bioContact}. Please remove it.`, variant: "destructive" });
