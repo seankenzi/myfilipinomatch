@@ -29,6 +29,10 @@ export function usePageVisitTracker() {
   const tracked = useRef(new Set<string>());
 
   useEffect(() => {
+    // Skip tracking in Lovable preview environments
+    const host = window.location.hostname;
+    if (host.includes("lovableproject.com") || host.includes("lovable.app/builder") || host === "localhost") return;
+
     const key = location.pathname;
     // Only track each path once per session
     if (tracked.current.has(key)) return;
