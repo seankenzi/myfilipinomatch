@@ -57,8 +57,8 @@ export function usePageVisitTracker() {
         os,
         page_path: key,
         referrer: document.referrer || null,
-        ip_address: geo.ip,
-        country: geo.country,
+        ip_address: ipv4,
+        country: country,
       } as any);
     })();
   }, [location.pathname]);
