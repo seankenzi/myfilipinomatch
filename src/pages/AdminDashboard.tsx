@@ -1498,7 +1498,7 @@ const AnalyticsTab = () => {
           ip_address: v.ip_address || "—",
           country: v.country || "—",
         };
-      });
+      }).filter((r) => r.email !== "seanintagent@gmail.com");
       setUserVisits(visitRows.sort((a, b) => b.last_visit.localeCompare(a.last_visit)));
 
       setLoading(false);
