@@ -28,6 +28,15 @@ const Login = () => {
     }
   }, [user, authLoading, navigate]);
 
+  // Don't render the login page (and its <title>) while auth is loading or user is logged in
+  if (authLoading || user) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+      </div>
+    );
+  }
+
   const handleGoogleSignIn = async () => {
     setGoogleLoading(true);
     const { error } = await lovable.auth.signInWithOAuth("google", {
