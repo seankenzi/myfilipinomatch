@@ -1720,12 +1720,13 @@ const AnalyticsTab = () => {
                           <span className="text-xs text-muted-foreground truncate max-w-[160px]">{u.email}</span>
                         </div>
                       </td>
-                      <td className="py-3 pr-4">
-                        <div className="flex items-center gap-1.5">
-                          <DeviceIcon className="h-4 w-4 text-muted-foreground" />
-                          <span className="capitalize text-foreground">{u.device_type}</span>
-                        </div>
-                      </td>
+                       <td className="py-3 pr-4 text-foreground text-xs font-mono">{u.ip_address}</td>
+                       <td className="py-3 pr-4">
+                         <div className="flex items-center gap-1.5">
+                           <DeviceIcon className="h-4 w-4 text-muted-foreground" />
+                           <span className="capitalize text-foreground">{u.device_type}</span>
+                         </div>
+                       </td>
                       <td className="py-3 pr-4 text-foreground">{u.browser}</td>
                       <td className="py-3 pr-4 text-foreground">{u.os}</td>
                       <td className="py-3 pr-4">

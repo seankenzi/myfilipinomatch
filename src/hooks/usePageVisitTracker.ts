@@ -38,7 +38,13 @@ export function usePageVisitTracker() {
     const { device_type, browser, os } = parseUserAgent(ua);
 
     (async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const [{ data: { user } }, ipAddress] = await Promise.all([
+        supabase.auth.getUser(),
+        fetch("https://api.ipify.org?format=json")
+          .then(r => r.json())
+          .then(d => d.ip as string)
+          .catch(() => null),
+      ]);
       await supabase.from("page_visits").insert({
         user_id: user?.id || null,
         user_agent: ua,
@@ -47,6 +53,7 @@ export function usePageVisitTracker() {
         os,
         page_path: key,
         referrer: document.referrer || null,
+        ip_address: ipAddress,
       } as any);
     })();
   }, [location.pathname]);
