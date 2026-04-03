@@ -127,7 +127,7 @@ const Onboarding = () => {
       case 4: return !!fullName.trim() && !!age && parseInt(age) >= 18 && !!gender;
       case 5: return true; // bio is optional
       case 6: return interests.length >= 3;
-      case 7: return photos.length >= 1;
+      case 7: return photos.length >= 3;
       case 8: return true; // verification prompt
       default: return false;
     }
@@ -526,12 +526,12 @@ const Onboarding = () => {
             <div className="space-y-6">
               <div className="text-center space-y-2">
                 <Camera className="h-10 w-10 text-primary mx-auto" />
-                <h2 className="text-2xl font-bold font-display">Add Your Photo</h2>
-                <p className="text-muted-foreground">Profiles with photos get <span className="font-semibold text-foreground">10× more matches</span></p>
+                <h2 className="text-2xl font-bold font-display">Add Your Photos</h2>
+                <p className="text-muted-foreground">Profiles with 3+ photos get <span className="font-semibold text-foreground">5× more likes</span></p>
               </div>
               <PhotoUpload photos={photos} onPhotosChange={setPhotos} maxPhotos={6} />
               <div className="rounded-xl border border-border bg-card p-3 text-center">
-                <p className="text-xs text-muted-foreground">📸 At least 1 photo is required. Use a clear, recent photo of yourself.</p>
+                <p className="text-xs text-muted-foreground">📸 At least 3 photos are required ({photos.length}/3 uploaded). Use clear, recent photos of yourself.</p>
               </div>
             </div>
           )}
