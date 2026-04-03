@@ -235,8 +235,9 @@ const UsersTab = () => {
                   <th className="text-left p-3 font-medium text-muted-foreground">Email</th>
                   <th className="text-center p-3 font-medium text-muted-foreground">Verified</th>
                   <th className="text-center p-3 font-medium text-muted-foreground">Premium</th>
-                  <th className="text-left p-3 font-medium text-muted-foreground">Joined</th>
-                  <th className="text-right p-3 font-medium text-muted-foreground">Actions</th>
+                   <th className="text-left p-3 font-medium text-muted-foreground">Joined</th>
+                   <th className="text-left p-3 font-medium text-muted-foreground">Last Active</th>
+                   <th className="text-right p-3 font-medium text-muted-foreground">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
