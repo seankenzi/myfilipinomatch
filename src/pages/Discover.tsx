@@ -1222,7 +1222,7 @@ const Discover = () => {
                             {getProfilePhotos(profile).length > 0 ? (
                               <SkeletonImage src={getProfilePhotos(profile)[0]} alt={`${profile.full_name} profile photo`} className="h-full w-full" />
                             ) : (
-                              <ImageSkeleton className="h-full w-full" />
+                              <NoPhotoPlaceholder className="h-full w-full" />
                             )}
                           <div className="absolute inset-0 bg-gradient-to-t from-foreground/70 via-transparent to-transparent" />
 
