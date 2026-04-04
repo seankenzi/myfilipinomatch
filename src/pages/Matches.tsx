@@ -150,47 +150,26 @@ const Matches = () => {
               <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
             </div>
           ) : (
-            <div className="space-y-8">
-              {/* Mutual Matches */}
-              <div>
-                <h2 className="mb-4 text-lg font-semibold flex items-center gap-2">
-                  <Heart className="h-5 w-5 text-primary" />
-                  Mutual Matches
-                </h2>
-                {matches.filter((m) => m.type === 'mutual').length === 0 ? (
-                  <div className="rounded-2xl border border-border bg-card p-12 text-center shadow-card">
-                    <Heart className="mx-auto mb-4 h-12 w-12 text-muted-foreground/30" />
-                    <p className="text-muted-foreground">No mutual matches yet. Keep discovering!</p>
-                    <Link to="/discover">
-                      <Button variant="hero" size="sm" className="mt-4">
-                        Discover Profiles
-                      </Button>
-                    </Link>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {matches.filter((m) => m.type === 'mutual').map((match) => (
-                      <MatchCard key={match.id} match={match} />
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Direct Message Conversations */}
-              {matches.filter((m) => m.type === 'direct_message').length > 0 && (
-                <div>
-                  <h2 className="mb-4 text-lg font-semibold flex items-center gap-2">
-                    <Sparkles className="h-5 w-5 text-accent" />
-                    Direct Message Conversations
-                  </h2>
-                  <p className="text-xs text-muted-foreground mb-3">
-                    Premium conversations you initiated — not mutual matches
-                  </p>
-                  <div className="space-y-3">
-                    {matches.filter((m) => m.type === 'direct_message').map((match) => (
-                      <MatchCard key={match.id} match={match} isDM />
-                    ))}
-                  </div>
+            <div>
+              <h2 className="mb-4 text-lg font-semibold flex items-center gap-2">
+                <Heart className="h-5 w-5 text-primary" />
+                Mutual Matches
+              </h2>
+              {matches.length === 0 ? (
+                <div className="rounded-2xl border border-border bg-card p-12 text-center shadow-card">
+                  <Heart className="mx-auto mb-4 h-12 w-12 text-muted-foreground/30" />
+                  <p className="text-muted-foreground">No mutual matches yet. Keep discovering!</p>
+                  <Link to="/discover">
+                    <Button variant="hero" size="sm" className="mt-4">
+                      Discover Profiles
+                    </Button>
+                  </Link>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {matches.map((match) => (
+                    <MatchCard key={match.id} match={match} />
+                  ))}
                 </div>
               )}
             </div>
