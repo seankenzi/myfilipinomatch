@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Heart, X, MapPin, Shield, Filter, ChevronDown, Star, Flag,
@@ -74,6 +74,43 @@ const getFlagEmoji = (country: string | null) => {
   return flags[country] || "🌍";
 };
 
+// Shimmer skeleton for loading images
+const ImageSkeleton = ({ className = "" }: { className?: string }) => (
+  <div className={`relative overflow-hidden bg-muted ${className}`}>
+    <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-muted-foreground/10 to-transparent" />
+    <div className="flex h-full w-full items-center justify-center">
+      <div className="h-10 w-10 rounded-full bg-muted-foreground/10" />
+    </div>
+  </div>
+);
+
+// Image with shimmer skeleton placeholder
+const SkeletonImage = ({ src, alt, className = "", loading = "lazy" as "lazy" | "eager" }: { src: string; alt: string; className?: string; loading?: "lazy" | "eager" }) => {
+  const [loaded, setLoaded] = useState(false);
+  const [error, setError] = useState(false);
+  const isSignedUrl = src.startsWith("http");
+
+  if (error) return <ImageSkeleton className={className} />;
+
+  return (
+    <div className={`relative ${className}`}>
+      {(!loaded || !isSignedUrl) && (
+        <ImageSkeleton className="absolute inset-0" />
+      )}
+      {isSignedUrl && (
+        <img
+          src={src}
+          alt={alt}
+          className={`h-full w-full object-cover transition-opacity duration-300 ${loaded ? "opacity-100" : "opacity-0"}`}
+          loading={loading}
+          onLoad={() => setLoaded(true)}
+          onError={() => setError(true)}
+        />
+      )}
+    </div>
+  );
+};
+
 // Photo gallery component for swipe cards
 const PhotoGallery = ({ photos, name }: { photos: string[]; name: string }) => {
   const [photoIndex, setPhotoIndex] = useState(0);
@@ -88,10 +125,10 @@ const PhotoGallery = ({ photos, name }: { photos: string[]; name: string }) => {
 
   return (
     <div className="relative h-full w-full group">
-      <img
+      <SkeletonImage
         src={photos[photoIndex]}
         alt={`${name} photo ${photoIndex + 1}`}
-        className="h-full w-full object-cover transition-opacity duration-300"
+        className="h-full w-full"
         loading="eager"
       />
       {/* Photo indicator dots */}
@@ -1127,9 +1164,9 @@ const Discover = () => {
                       <div key={profile.id} className="flex-shrink-0 w-24 text-center">
                         <div className="relative mx-auto h-20 w-20 rounded-full overflow-hidden border-2 border-accent/30 shadow-card">
                           {getProfilePhotos(profile).length > 0 ? (
-                            <img src={getProfilePhotos(profile)[0]} alt={`${profile.full_name} profile photo`} className="h-full w-full object-cover" loading="lazy" />
+                            <SkeletonImage src={getProfilePhotos(profile)[0]} alt={`${profile.full_name} profile photo`} className="h-full w-full rounded-full" />
                           ) : (
-                            <div className="flex h-full w-full items-center justify-center bg-muted text-xl">👤</div>
+                            <ImageSkeleton className="h-full w-full rounded-full" />
                           )}
                           {profile.is_verified && (
                             <div className="absolute -bottom-0.5 -right-0.5 rounded-full bg-card p-0.5">
@@ -1172,11 +1209,9 @@ const Discover = () => {
                         {/* Photo */}
                         <div className="relative aspect-[3/4] cursor-pointer" onClick={() => navigate(`/profile/${profile.id}`)}>
                             {getProfilePhotos(profile).length > 0 ? (
-                              <img src={getProfilePhotos(profile)[0]} alt={`${profile.full_name} profile photo`} className="h-full w-full object-cover transition-opacity duration-300" loading="lazy" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                              <SkeletonImage src={getProfilePhotos(profile)[0]} alt={`${profile.full_name} profile photo`} className="h-full w-full" />
                             ) : (
-                              <div className="flex h-full w-full items-center justify-center bg-muted">
-                                <div className="h-8 w-8 animate-pulse rounded-full bg-muted-foreground/20" />
-                              </div>
+                              <ImageSkeleton className="h-full w-full" />
                             )}
                           <div className="absolute inset-0 bg-gradient-to-t from-foreground/70 via-transparent to-transparent" />
 
