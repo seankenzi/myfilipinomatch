@@ -299,28 +299,58 @@ const Discover = () => {
         if (filterHeightRange[1] < 210) allProfiles = allProfiles.filter((p) => (p as any).height_cm && (p as any).height_cm <= filterHeightRange[1]);
       }
       
-      // Resolve signed URLs for all profile photos
-      const allPhotoPaths: string[] = [];
+      // Sign only the FIRST photo per profile for fast initial render
+      const firstPhotoPaths: string[] = [];
       allProfiles.forEach((p) => {
-        const photos = p.photos || [];
-        if (p.avatar_url && !photos.includes(p.avatar_url)) photos.push(p.avatar_url);
-        photos.forEach((photo) => {
-          if (photo) allPhotoPaths.push(photo);
-        });
+        const firstPhoto = p.photos?.[0] || p.avatar_url;
+        if (firstPhoto) firstPhotoPaths.push(firstPhoto);
       });
       
-      if (allPhotoPaths.length > 0) {
-        const signedUrls = await getSignedPhotoUrls(allPhotoPaths);
+      if (firstPhotoPaths.length > 0) {
+        const signedFirstUrls = await getSignedPhotoUrls(firstPhotoPaths);
         const urlMap = new Map<string, string>();
-        allPhotoPaths.forEach((path, i) => urlMap.set(path, signedUrls[i]));
+        firstPhotoPaths.forEach((path, i) => urlMap.set(path, signedFirstUrls[i]));
         
         allProfiles.forEach((p) => {
-          if (p.photos) {
-            p.photos = p.photos.map((photo) => urlMap.get(photo) || photo);
+          if (p.photos?.[0] && urlMap.has(p.photos[0])) {
+            p.photos[0] = urlMap.get(p.photos[0])!;
           }
-          if (p.avatar_url) {
-            p.avatar_url = urlMap.get(p.avatar_url) || p.avatar_url;
+          if (p.avatar_url && urlMap.has(p.avatar_url)) {
+            p.avatar_url = urlMap.get(p.avatar_url)!;
           }
+        });
+      }
+      
+      // Show profiles immediately with first photos signed
+      setProfiles([...allProfiles]);
+      setCurrentIndex(0);
+      setLoading(false);
+      
+      // Then lazily sign remaining photos in background
+      const remainingPaths: string[] = [];
+      allProfiles.forEach((p) => {
+        if (p.photos && p.photos.length > 1) {
+          p.photos.slice(1).forEach((photo) => {
+            if (photo) remainingPaths.push(photo);
+          });
+        }
+      });
+      
+      if (remainingPaths.length > 0) {
+        getSignedPhotoUrls(remainingPaths).then((signedRemaining) => {
+          const remainMap = new Map<string, string>();
+          remainingPaths.forEach((path, i) => remainMap.set(path, signedRemaining[i]));
+          
+          allProfiles.forEach((p) => {
+            if (p.photos && p.photos.length > 1) {
+              for (let i = 1; i < p.photos.length; i++) {
+                if (remainMap.has(p.photos[i])) {
+                  p.photos[i] = remainMap.get(p.photos[i])!;
+                }
+              }
+            }
+          });
+          setProfiles([...allProfiles]);
         });
       }
       
