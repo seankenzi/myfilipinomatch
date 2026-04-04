@@ -84,13 +84,24 @@ const ImageSkeleton = ({ className = "" }: { className?: string }) => (
   </div>
 );
 
+// Static placeholder for profiles with no photo (no shimmer)
+const NoPhotoPlaceholder = ({ className = "" }: { className?: string }) => (
+  <div className={`relative overflow-hidden bg-muted ${className}`}>
+    <div className="flex h-full w-full items-center justify-center">
+      <div className="flex flex-col items-center gap-1 text-muted-foreground/40">
+        <div className="h-10 w-10 rounded-full bg-muted-foreground/10" />
+      </div>
+    </div>
+  </div>
+);
+
 // Image with shimmer skeleton placeholder
 const SkeletonImage = ({ src, alt, className = "", loading = "lazy" as "lazy" | "eager" }: { src: string; alt: string; className?: string; loading?: "lazy" | "eager" }) => {
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState(false);
   const isSignedUrl = src.startsWith("http");
 
-  if (error) return <ImageSkeleton className={className} />;
+  if (error) return <NoPhotoPlaceholder className={className} />;
 
   return (
     <div className={`relative ${className}`}>
@@ -1166,7 +1177,7 @@ const Discover = () => {
                           {getProfilePhotos(profile).length > 0 ? (
                             <SkeletonImage src={getProfilePhotos(profile)[0]} alt={`${profile.full_name} profile photo`} className="h-full w-full rounded-full" />
                           ) : (
-                            <ImageSkeleton className="h-full w-full rounded-full" />
+                            <NoPhotoPlaceholder className="h-full w-full rounded-full" />
                           )}
                           {profile.is_verified && (
                             <div className="absolute -bottom-0.5 -right-0.5 rounded-full bg-card p-0.5">
@@ -1211,7 +1222,7 @@ const Discover = () => {
                             {getProfilePhotos(profile).length > 0 ? (
                               <SkeletonImage src={getProfilePhotos(profile)[0]} alt={`${profile.full_name} profile photo`} className="h-full w-full" />
                             ) : (
-                              <ImageSkeleton className="h-full w-full" />
+                              <NoPhotoPlaceholder className="h-full w-full" />
                             )}
                           <div className="absolute inset-0 bg-gradient-to-t from-foreground/70 via-transparent to-transparent" />
 
