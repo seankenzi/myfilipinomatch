@@ -125,7 +125,7 @@ const Onboarding = () => {
       case 2: return !!relationshipIntent;
       case 3: return userType === "foreigner" ? (!!country && !!city) : !!city;
       case 4: return !!fullName.trim() && !!age && parseInt(age) >= 18 && !!gender;
-      case 5: return bio.trim().length >= 20; // bio is mandatory (min 20 chars)
+      case 5: return bio.trim().length >= 100; // bio is mandatory (min 100 chars)
       case 6: return interests.length >= 3;
       case 7: return photos.length >= 3;
       case 8: return true; // verification prompt
