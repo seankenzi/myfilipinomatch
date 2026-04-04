@@ -76,6 +76,15 @@ const SAMPLE_DATA: Record<string, object> = {
 
 type ServiceSupabaseClient = ReturnType<typeof createClient>
 
+// Generate a cryptographically random 32-byte hex token
+function generateUnsubscribeToken(): string {
+  const bytes = new Uint8Array(32)
+  crypto.getRandomValues(bytes)
+  return Array.from(bytes)
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('')
+}
+
 function normalizeEmail(email: string): string {
   return email.trim().toLowerCase()
 }
