@@ -106,11 +106,18 @@ const ProfileDetail = () => {
     };
     const checkMatch = async () => {
       if (!user) return;
+      // Check mutual matches
       const { data } = await supabase
         .from("matches")
         .select("id")
         .or(`and(user1_id.eq.${user.id},user2_id.eq.${id}),and(user1_id.eq.${id},user2_id.eq.${user.id})`);
-      if (data && data.length > 0) setMatchId(data[0].id);
+      if (data && data.length > 0) { setMatchId(data[0].id); return; }
+      // Check DM conversations
+      const { data: dmData } = await supabase
+        .from("dm_conversations" as any)
+        .select("id")
+        .or(`and(initiator_id.eq.${user.id},recipient_id.eq.${id}),and(initiator_id.eq.${id},recipient_id.eq.${user.id})`) as any;
+      if (dmData && dmData.length > 0) setMatchId(`dm:${dmData[0].id}`);
     };
     const checkPremium = async () => {
       if (!user) return;
