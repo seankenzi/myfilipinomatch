@@ -374,26 +374,30 @@ const Messages = () => {
   const fetchMessages = useCallback(async () => {
     if (!selectedMatch || !user) return;
 
+    const isDm = selectedMatch.source === 'dm';
+    const table = isDm ? "dm_messages" : "messages";
+    const filterCol = isDm ? "conversation_id" : "match_id";
+
     const { data, error } = await supabase
-      .from("messages")
+      .from(table as any)
       .select("*")
-      .eq("match_id", selectedMatch.id)
-      .order("created_at", { ascending: true });
+      .eq(filterCol, selectedMatch.id)
+      .order("created_at", { ascending: true }) as any;
 
     if (!error && data) {
       setMessages(data as Message[]);
       // Mark unread messages as read in the DB
       const unreadIds = data.filter((m: any) => m.sender_id !== user.id && !m.read).map((m: any) => m.id);
       if (unreadIds.length > 0) {
-        await supabase
-          .from("messages")
-          .update({ read: true })
-          .in("id", unreadIds);
+        await (supabase
+          .from(table as any)
+          .update({ read: true } as any)
+          .in("id", unreadIds) as any);
 
         // Update the sidebar unread count immediately
         setMatches((prev) =>
           prev.map((m) =>
-            m.id === selectedMatch.id ? { ...m, unread_count: 0 } : m
+            m.id === selectedMatch.id && m.source === selectedMatch.source ? { ...m, unread_count: 0 } : m
           )
         );
       }
