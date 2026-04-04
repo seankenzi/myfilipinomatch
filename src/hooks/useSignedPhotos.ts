@@ -42,7 +42,7 @@ export function useSignedPhotos(photos: string[]): string[] {
 
     // If all cached, return immediately
     if (misses.length === 0) {
-      setSignedUrls(hits);
+      setSignedUrls(hits.filter(Boolean));
       // Preload images
       hits.forEach((url) => { const img = new Image(); img.src = url; });
       return;
@@ -61,7 +61,9 @@ export function useSignedPhotos(photos: string[]): string[] {
         hits[missIndices[i]] = urls[i];
         signedUrlCache.set(misses[i], { url: urls[i], expires: now + CACHE_TTL });
       }
-      setSignedUrls([...hits]);
+      // Filter out empty strings (missing/errored files)
+      const filtered = hits.filter(Boolean);
+      setSignedUrls(filtered);
       // Preload all images
       hits.forEach((url) => { if (url) { const img = new Image(); img.src = url; } });
     });
