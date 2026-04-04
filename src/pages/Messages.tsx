@@ -471,7 +471,8 @@ const Messages = () => {
     const now = Date.now();
     if (now - lastTypingBroadcastRef.current < 2000) return;
     lastTypingBroadcastRef.current = now;
-    supabase.channel(`messages-${selectedMatch.id}`).send({
+    const channelName = `${selectedMatch.source === 'dm' ? 'dm' : 'messages'}-${selectedMatch.id}`;
+    supabase.channel(channelName).send({
       type: "broadcast",
       event: "typing",
       payload: { user_id: user.id },
@@ -497,11 +498,12 @@ const Messages = () => {
     setSending(true);
     setNewMessage("");
 
-    const { error } = await supabase.from("messages").insert({
-      match_id: selectedMatch.id,
-      sender_id: user.id,
-      content,
-    });
+    const isDm = selectedMatch.source === 'dm';
+    const insertData = isDm
+      ? { conversation_id: selectedMatch.id, sender_id: user.id, content }
+      : { match_id: selectedMatch.id, sender_id: user.id, content };
+
+    const { error } = await (supabase.from(isDm ? "dm_messages" as any : "messages").insert(insertData as any) as any);
 
     if (error) {
       toast({ title: "Failed to send", description: error.message, variant: "destructive" });
