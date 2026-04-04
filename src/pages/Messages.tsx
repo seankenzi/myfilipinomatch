@@ -91,6 +91,7 @@ const Messages = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const requestedMatchId = searchParams.get("match");
+  const requestedDmId = searchParams.get("dm");
   const requestedProfileId = searchParams.get("profile");
   const shouldAutoOpenVideo = searchParams.get("openVideo") === "1";
   const messagesEndRef = useRef<HTMLDivElement>(null);
