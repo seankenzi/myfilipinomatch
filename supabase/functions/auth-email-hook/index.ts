@@ -170,13 +170,17 @@ async function triggerSignupAppEmails(
 
   const normalizedUserEmail = normalizeEmail(userEmail)
 
-  const welcomeQueued = await enqueueTransactionalTemplate(supabase, {
-    templateName: 'welcome-email',
-    recipientEmail: userEmail,
-    idempotencyKey: `welcome-signup-${normalizedUserEmail}`,
-    templateData: { name: userName },
-  })
+  // Directly render and enqueue welcome email
+  const welcomeQueued = await directEnqueueTransactionalEmail(
+    supabase,
+    'welcome-email',
+    welcomeEmailTemplate,
+    userEmail,
+    `welcome-signup-${normalizedUserEmail}`,
+    { name: userName }
+  )
 
+  // Directly render and enqueue admin notification emails
   const { data: adminEmails, error: adminEmailsError } = await supabase.rpc('get_admin_emails')
   if (adminEmailsError) {
     console.error('Failed to load admin emails for signup notification', {
@@ -188,15 +192,14 @@ async function triggerSignupAppEmails(
 
   const adminResults = await Promise.allSettled(
     (adminEmails ?? []).map((row: { email: string }) =>
-      enqueueTransactionalTemplate(supabase, {
-        templateName: 'admin-new-signup',
-        recipientEmail: row.email,
-        idempotencyKey: `admin-new-signup-${normalizedUserEmail}-${normalizeEmail(row.email)}`,
-        templateData: {
-          userName,
-          userEmail,
-        },
-      })
+      directEnqueueTransactionalEmail(
+        supabase,
+        'admin-new-signup',
+        adminNewSignupTemplate,
+        row.email,
+        `admin-new-signup-${normalizedUserEmail}-${normalizeEmail(row.email)}`,
+        { userName, userEmail }
+      )
     )
   )
 
