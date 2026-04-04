@@ -9,6 +9,8 @@ import { MagicLinkEmail } from '../_shared/email-templates/magic-link.tsx'
 import { RecoveryEmail } from '../_shared/email-templates/recovery.tsx'
 import { EmailChangeEmail } from '../_shared/email-templates/email-change.tsx'
 import { ReauthenticationEmail } from '../_shared/email-templates/reauthentication.tsx'
+import { template as welcomeEmailTemplate } from '../_shared/transactional-email-templates/welcome-email.tsx'
+import { template as adminNewSignupTemplate } from '../_shared/transactional-email-templates/admin-new-signup.tsx'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -78,33 +80,78 @@ function normalizeEmail(email: string): string {
   return email.trim().toLowerCase()
 }
 
-async function enqueueTransactionalTemplate(
+async function directEnqueueTransactionalEmail(
   supabase: ServiceSupabaseClient,
-  body: Record<string, unknown>
+  templateName: string,
+  template: { component: React.ComponentType<any>; subject: string | ((data: Record<string, any>) => string) },
+  recipientEmail: string,
+  idempotencyKey: string,
+  templateData: Record<string, any> = {}
 ): Promise<boolean> {
-  const { data, error } = await supabase.functions.invoke('send-transactional-email', {
-    body,
-  })
+  const messageId = crypto.randomUUID()
 
-  if (error) {
-    console.error('Failed to invoke signup app email', {
+  try {
+    // Render template
+    const html = await renderAsync(React.createElement(template.component, templateData))
+    const text = await renderAsync(React.createElement(template.component, templateData), { plainText: true })
+
+    // Resolve subject
+    const resolvedSubject = typeof template.subject === 'function'
+      ? template.subject(templateData)
+      : template.subject
+
+    // Log pending
+    await supabase.from('email_send_log').insert({
+      message_id: messageId,
+      template_name: templateName,
+      recipient_email: recipientEmail,
+      status: 'pending',
+    })
+
+    // Enqueue directly to transactional_emails queue
+    const { error: enqueueError } = await supabase.rpc('enqueue_email', {
+      queue_name: 'transactional_emails',
+      payload: {
+        message_id: messageId,
+        to: recipientEmail,
+        from: `${SITE_NAME} <noreply@${FROM_DOMAIN}>`,
+        sender_domain: SENDER_DOMAIN,
+        subject: resolvedSubject,
+        html,
+        text,
+        purpose: 'transactional',
+        label: templateName,
+        idempotency_key: idempotencyKey,
+        queued_at: new Date().toISOString(),
+      },
+    })
+
+    if (enqueueError) {
+      console.error('Failed to enqueue transactional email directly', {
+        error: enqueueError,
+        templateName,
+        recipientEmail,
+      })
+      await supabase.from('email_send_log').insert({
+        message_id: messageId,
+        template_name: templateName,
+        recipient_email: recipientEmail,
+        status: 'failed',
+        error_message: 'Failed to enqueue email',
+      })
+      return false
+    }
+
+    console.log('Transactional email enqueued directly', { templateName, recipientEmail })
+    return true
+  } catch (error) {
+    console.error('Error rendering/enqueuing transactional email', {
       error,
-      templateName: body.templateName,
-      recipientEmail: body.recipientEmail,
+      templateName,
+      recipientEmail,
     })
     return false
   }
-
-  if (!data || typeof data !== 'object' || !('queued' in data) || data.queued !== true) {
-    console.error('Signup app email was not queued', {
-      templateName: body.templateName,
-      recipientEmail: body.recipientEmail,
-      data,
-    })
-    return false
-  }
-
-  return true
 }
 
 async function triggerSignupAppEmails(
@@ -123,13 +170,17 @@ async function triggerSignupAppEmails(
 
   const normalizedUserEmail = normalizeEmail(userEmail)
 
-  const welcomeQueued = await enqueueTransactionalTemplate(supabase, {
-    templateName: 'welcome-email',
-    recipientEmail: userEmail,
-    idempotencyKey: `welcome-signup-${normalizedUserEmail}`,
-    templateData: { name: userName },
-  })
+  // Directly render and enqueue welcome email
+  const welcomeQueued = await directEnqueueTransactionalEmail(
+    supabase,
+    'welcome-email',
+    welcomeEmailTemplate,
+    userEmail,
+    `welcome-signup-${normalizedUserEmail}`,
+    { name: userName }
+  )
 
+  // Directly render and enqueue admin notification emails
   const { data: adminEmails, error: adminEmailsError } = await supabase.rpc('get_admin_emails')
   if (adminEmailsError) {
     console.error('Failed to load admin emails for signup notification', {
@@ -141,15 +192,14 @@ async function triggerSignupAppEmails(
 
   const adminResults = await Promise.allSettled(
     (adminEmails ?? []).map((row: { email: string }) =>
-      enqueueTransactionalTemplate(supabase, {
-        templateName: 'admin-new-signup',
-        recipientEmail: row.email,
-        idempotencyKey: `admin-new-signup-${normalizedUserEmail}-${normalizeEmail(row.email)}`,
-        templateData: {
-          userName,
-          userEmail,
-        },
-      })
+      directEnqueueTransactionalEmail(
+        supabase,
+        'admin-new-signup',
+        adminNewSignupTemplate,
+        row.email,
+        `admin-new-signup-${normalizedUserEmail}-${normalizeEmail(row.email)}`,
+        { userName, userEmail }
+      )
     )
   )
 
