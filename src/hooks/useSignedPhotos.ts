@@ -61,7 +61,9 @@ export function useSignedPhotos(photos: string[]): string[] {
         hits[missIndices[i]] = urls[i];
         signedUrlCache.set(misses[i], { url: urls[i], expires: now + CACHE_TTL });
       }
-      setSignedUrls([...hits]);
+      // Filter out empty strings (missing/errored files)
+      const filtered = hits.filter(Boolean);
+      setSignedUrls(filtered);
       // Preload all images
       hits.forEach((url) => { if (url) { const img = new Image(); img.src = url; } });
     });
