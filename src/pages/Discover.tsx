@@ -588,10 +588,23 @@ const Discover = () => {
       setVideoCallUserName(profile.full_name);
       setVideoCallOpen(true);
     } else {
-      toast({
-        title: "💬 Direct Message first",
-        description: `Use Direct Message ✨ to connect with ${profile.full_name.split(" ")[0]}, then you can video call.`,
-      });
+      // Also check DM conversations
+      const { data: dmData } = await supabase
+        .from("dm_conversations" as any)
+        .select("id")
+        .or(`and(initiator_id.eq.${user.id},recipient_id.eq.${profile.id}),and(initiator_id.eq.${profile.id},recipient_id.eq.${user.id})`)
+        .maybeSingle() as any;
+
+      if (dmData) {
+        setVideoCallMatchId(dmData.id);
+        setVideoCallUserName(profile.full_name);
+        setVideoCallOpen(true);
+      } else {
+        toast({
+          title: "💬 Direct Message first",
+          description: `Use Direct Message ✨ to connect with ${profile.full_name.split(" ")[0]}, then you can video call.`,
+        });
+      }
     }
   };
 
