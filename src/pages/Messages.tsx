@@ -802,7 +802,9 @@ const Messages = () => {
                       <div className="h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
                         <Sparkles className="h-6 w-6 text-primary" />
                       </div>
-                      <p className="text-sm font-medium text-foreground mb-1">You matched! 🎉</p>
+                      <p className="text-sm font-medium text-foreground mb-1">
+                        {selectedMatch?.source === 'dm' ? "Say hello! 👋" : "You matched! 🎉"}
+                      </p>
                       <p className="text-xs text-muted-foreground">Send the first message to start the conversation</p>
                     </div>
                   )}
