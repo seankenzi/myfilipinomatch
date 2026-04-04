@@ -1209,11 +1209,9 @@ const Discover = () => {
                         {/* Photo */}
                         <div className="relative aspect-[3/4] cursor-pointer" onClick={() => navigate(`/profile/${profile.id}`)}>
                             {getProfilePhotos(profile).length > 0 ? (
-                              <img src={getProfilePhotos(profile)[0]} alt={`${profile.full_name} profile photo`} className="h-full w-full object-cover transition-opacity duration-300" loading="lazy" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                              <SkeletonImage src={getProfilePhotos(profile)[0]} alt={`${profile.full_name} profile photo`} className="h-full w-full" />
                             ) : (
-                              <div className="flex h-full w-full items-center justify-center bg-muted">
-                                <div className="h-8 w-8 animate-pulse rounded-full bg-muted-foreground/20" />
-                              </div>
+                              <ImageSkeleton className="h-full w-full" />
                             )}
                           <div className="absolute inset-0 bg-gradient-to-t from-foreground/70 via-transparent to-transparent" />
 
