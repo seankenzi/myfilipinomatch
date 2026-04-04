@@ -8,6 +8,7 @@ import { motion } from "framer-motion";
 import BottomNav from "@/components/BottomNav";
 import Navbar from "@/components/Navbar";
 import { useAuth } from "@/contexts/AuthContext";
+import SEO from "@/components/SEO";
 import { supabase } from "@/integrations/supabase/client";
 import { useAdmin } from "@/hooks/useAdmin";
 import { useToast } from "@/hooks/use-toast";
