@@ -85,13 +85,17 @@ const ImageSkeleton = ({ className = "" }: { className?: string }) => (
 );
 
 // Static placeholder for profiles with no photo (no shimmer)
-const NoPhotoPlaceholder = ({ className = "" }: { className?: string }) => (
-  <div className={`relative overflow-hidden bg-muted ${className}`}>
+const NoPhotoPlaceholder = ({ className = "", variant = "card" }: { className?: string; variant?: "card" | "avatar" }) => (
+  <div className={`relative overflow-hidden ${variant === "avatar" ? "bg-primary/10" : "bg-muted"} ${className}`}>
     <div className="flex h-full w-full items-center justify-center">
-      <div className="flex flex-col items-center gap-2 text-muted-foreground/40">
-        <User className="h-10 w-10" />
-        <span className="text-xs font-medium">No Photo</span>
-      </div>
+      {variant === "avatar" ? (
+        <User className="h-6 w-6 text-primary/30" />
+      ) : (
+        <div className="flex flex-col items-center gap-2 text-muted-foreground/40">
+          <User className="h-10 w-10" />
+          <span className="text-xs font-medium">No Photo</span>
+        </div>
+      )}
     </div>
   </div>
 );
@@ -1178,7 +1182,7 @@ const Discover = () => {
                           {getProfilePhotos(profile).length > 0 ? (
                             <SkeletonImage src={getProfilePhotos(profile)[0]} alt={`${profile.full_name} profile photo`} className="h-full w-full rounded-full" />
                           ) : (
-                            <NoPhotoPlaceholder className="h-full w-full rounded-full" />
+                            <NoPhotoPlaceholder className="h-full w-full rounded-full" variant="avatar" />
                           )}
                           {profile.is_verified && (
                             <div className="absolute -bottom-0.5 -right-0.5 rounded-full bg-card p-0.5">
