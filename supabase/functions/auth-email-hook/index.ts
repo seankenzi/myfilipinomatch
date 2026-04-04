@@ -76,8 +76,67 @@ const SAMPLE_DATA: Record<string, object> = {
 
 type ServiceSupabaseClient = ReturnType<typeof createClient>
 
+// Generate a cryptographically random 32-byte hex token
+function generateUnsubscribeToken(): string {
+  const bytes = new Uint8Array(32)
+  crypto.getRandomValues(bytes)
+  return Array.from(bytes)
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('')
+}
+
 function normalizeEmail(email: string): string {
   return email.trim().toLowerCase()
+}
+
+async function getOrCreateUnsubscribeToken(
+  supabase: ServiceSupabaseClient,
+  email: string
+): Promise<string | null> {
+  const normalizedEmail = email.trim().toLowerCase()
+
+  // Check for existing token
+  const { data: existingToken, error: lookupError } = await supabase
+    .from('email_unsubscribe_tokens')
+    .select('token, used_at')
+    .eq('email', normalizedEmail)
+    .maybeSingle()
+
+  if (lookupError) {
+    console.error('Token lookup failed', { error: lookupError, email: normalizedEmail })
+    return null
+  }
+
+  if (existingToken && !existingToken.used_at) {
+    return existingToken.token
+  }
+
+  if (!existingToken) {
+    const newToken = generateUnsubscribeToken()
+    const { error: tokenError } = await supabase
+      .from('email_unsubscribe_tokens')
+      .upsert(
+        { token: newToken, email: normalizedEmail },
+        { onConflict: 'email', ignoreDuplicates: true }
+      )
+
+    if (tokenError) {
+      console.error('Failed to create unsubscribe token', { error: tokenError })
+      return null
+    }
+
+    // Re-read in case of race condition
+    const { data: storedToken } = await supabase
+      .from('email_unsubscribe_tokens')
+      .select('token')
+      .eq('email', normalizedEmail)
+      .maybeSingle()
+
+    return storedToken?.token ?? null
+  }
+
+  // Token exists but is used — recipient unsubscribed
+  return null
 }
 
 async function directEnqueueTransactionalEmail(
@@ -91,6 +150,38 @@ async function directEnqueueTransactionalEmail(
   const messageId = crypto.randomUUID()
 
   try {
+    // Check suppression list
+    const { data: suppressed } = await supabase
+      .from('suppressed_emails')
+      .select('id')
+      .eq('email', recipientEmail.toLowerCase())
+      .maybeSingle()
+
+    if (suppressed) {
+      console.log('Email suppressed', { recipientEmail, templateName })
+      await supabase.from('email_send_log').insert({
+        message_id: messageId,
+        template_name: templateName,
+        recipient_email: recipientEmail,
+        status: 'suppressed',
+      })
+      return true // Not an error, just suppressed
+    }
+
+    // Get or create unsubscribe token
+    const unsubscribeToken = await getOrCreateUnsubscribeToken(supabase, recipientEmail)
+    if (!unsubscribeToken) {
+      console.error('Failed to obtain unsubscribe token', { recipientEmail, templateName })
+      await supabase.from('email_send_log').insert({
+        message_id: messageId,
+        template_name: templateName,
+        recipient_email: recipientEmail,
+        status: 'failed',
+        error_message: 'Failed to obtain unsubscribe token',
+      })
+      return false
+    }
+
     // Render template
     const html = await renderAsync(React.createElement(template.component, templateData))
     const text = await renderAsync(React.createElement(template.component, templateData), { plainText: true })
@@ -122,6 +213,7 @@ async function directEnqueueTransactionalEmail(
         purpose: 'transactional',
         label: templateName,
         idempotency_key: idempotencyKey,
+        unsubscribe_token: unsubscribeToken,
         queued_at: new Date().toISOString(),
       },
     })
