@@ -225,7 +225,6 @@ const ProfileDetail = () => {
                   <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
                 </div>
               )}
-              />
               {photos.length > 1 && (
                 <>
                   <div className="absolute top-3 left-0 right-0 flex justify-center gap-1.5">
