@@ -155,6 +155,65 @@ export type Database = {
         }
         Relationships: []
       }
+      dm_conversations: {
+        Row: {
+          created_at: string
+          id: string
+          initiator_id: string
+          recipient_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          initiator_id: string
+          recipient_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          initiator_id?: string
+          recipient_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      dm_messages: {
+        Row: {
+          content: string
+          conversation_id: string
+          created_at: string
+          id: string
+          read: boolean | null
+          sender_id: string
+        }
+        Insert: {
+          content: string
+          conversation_id: string
+          created_at?: string
+          id?: string
+          read?: boolean | null
+          sender_id: string
+        }
+        Update: {
+          content?: string
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          read?: boolean | null
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dm_messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "dm_conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       email_send_log: {
         Row: {
           created_at: string

@@ -56,6 +56,7 @@ interface Match {
   };
   unread_count: number;
   type: string;
+  source: 'match' | 'dm'; // 'match' = mutual match, 'dm' = direct message conversation
 }
 
 interface Message {
@@ -78,18 +79,13 @@ const getPhoto = (user: { avatar_url: string | null; photos: string[] | null }) 
   return user.avatar_url;
 };
 
-const resolvePhoto = async (photoPath: string | null): Promise<string | null> => {
-  if (!photoPath) return null;
-  const results = await getSignedPhotoUrls([photoPath]);
-  return results[0] || photoPath;
-};
-
 const Messages = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const requestedMatchId = searchParams.get("match");
+  const requestedDmId = searchParams.get("dm");
   const requestedProfileId = searchParams.get("profile");
   const shouldAutoOpenVideo = searchParams.get("openVideo") === "1";
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -125,7 +121,7 @@ const Messages = () => {
 
   useEffect(() => {
     if (!selectedMatch) return;
-    setIsMutualMatch(selectedMatch.type === 'mutual');
+    setIsMutualMatch(selectedMatch.source === 'match');
   }, [selectedMatch]);
 
   const isLocked = !isPremium && (
@@ -166,12 +162,15 @@ const Messages = () => {
     if (!user) return;
     setLoading(true);
 
-    // Fetch blocked users and matches in parallel
-    const [{ data: blockedData }, { data: matchesData, error }] = await Promise.all([
+    // Fetch blocked users, matches, and DM conversations in parallel
+    const [{ data: blockedData }, { data: matchesData, error }, { data: dmData }] = await Promise.all([
       supabase.from("blocked_users").select("blocked_id").eq("blocker_id", user.id),
       supabase.from("matches").select("*")
         .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`)
         .order("created_at", { ascending: false }),
+      supabase.from("dm_conversations" as any).select("*")
+        .or(`initiator_id.eq.${user.id},recipient_id.eq.${user.id}`)
+        .order("updated_at", { ascending: false }) as any,
     ]);
 
     if (error) {
@@ -180,27 +179,16 @@ const Messages = () => {
       return;
     }
 
-    if (!matchesData || matchesData.length === 0) {
-      setMatches([]);
-      setLoading(false);
-      return;
-    }
-
     const blockedIds = new Set((blockedData || []).map((b: any) => b.blocked_id));
-    const filteredMatches = matchesData.filter((m) => {
+
+    // Process mutual matches
+    const filteredMatches = (matchesData || []).filter((m: any) => {
       const otherId = m.user1_id === user.id ? m.user2_id : m.user1_id;
       return !blockedIds.has(otherId);
     });
 
-    if (filteredMatches.length === 0) {
-      setMatches([]);
-      setLoading(false);
-      return;
-    }
-
-    // Fetch all profiles, messages, and unread counts in one parallel batch
-    const rawEntries = await Promise.all(
-      filteredMatches.map(async (m) => {
+    const matchEntries = await Promise.all(
+      filteredMatches.map(async (m: any) => {
         const otherId = m.user1_id === user.id ? m.user2_id : m.user1_id;
 
         const [{ data: profileData }, { data: lastMsg }, { count }] = await Promise.all([
@@ -224,6 +212,7 @@ const Messages = () => {
         return {
           matchId: m.id,
           matchType: (m as any).type || 'mutual',
+          source: 'match' as const,
           profile,
           photoPath: getPhoto(profile),
           lastMsg: lastMsg || undefined,
@@ -232,14 +221,60 @@ const Messages = () => {
       })
     );
 
-    const validEntries = rawEntries.filter((e): e is NonNullable<typeof e> => e !== null);
+    // Process DM conversations
+    const filteredDMs = (dmData || []).filter((dm: any) => {
+      const otherId = dm.initiator_id === user.id ? dm.recipient_id : dm.initiator_id;
+      return !blockedIds.has(otherId);
+    });
+
+    const dmEntries = await Promise.all(
+      filteredDMs.map(async (dm: any) => {
+        const otherId = dm.initiator_id === user.id ? dm.recipient_id : dm.initiator_id;
+
+        const [{ data: profileData }, { data: lastMsg }, { count }] = await Promise.all([
+          supabase.rpc("get_profile_by_id", { profile_id: otherId }),
+          supabase.from("dm_messages" as any)
+            .select("content, created_at, sender_id, read")
+            .eq("conversation_id", dm.id)
+            .order("created_at", { ascending: false })
+            .limit(1)
+            .maybeSingle() as any,
+          supabase.from("dm_messages" as any)
+            .select("id", { count: "exact", head: true })
+            .eq("conversation_id", dm.id)
+            .eq("read", false)
+            .neq("sender_id", user.id) as any,
+        ]);
+
+        const profile = profileData && profileData.length > 0 ? profileData[0] : null;
+        if (!profile) return null;
+
+        return {
+          matchId: dm.id,
+          matchType: 'direct_message',
+          source: 'dm' as const,
+          profile,
+          photoPath: getPhoto(profile),
+          lastMsg: lastMsg || undefined,
+          unreadCount: count || 0,
+        };
+      })
+    );
+
+    const allEntries = [...matchEntries, ...dmEntries].filter((e): e is NonNullable<typeof e> => e !== null);
+
+    if (allEntries.length === 0) {
+      setMatches([]);
+      setLoading(false);
+      return;
+    }
 
     // Batch sign all photos in a single request
-    const photoPaths = validEntries.map((e) => e.photoPath).filter((p): p is string => !!p);
+    const photoPaths = allEntries.map((e) => e.photoPath).filter((p): p is string => !!p);
     const signedPhotos = photoPaths.length > 0 ? await getSignedPhotoUrls(photoPaths) : [];
     const photoMap = new Map(photoPaths.map((p, i) => [p, signedPhotos[i]]));
 
-    const matchList: Match[] = validEntries.map((e) => {
+    const matchList: Match[] = allEntries.map((e) => {
       const signedPhoto = e.photoPath ? (photoMap.get(e.photoPath) || null) : null;
       return {
         id: e.matchId,
@@ -258,6 +293,7 @@ const Messages = () => {
         last_message: e.lastMsg,
         unread_count: e.unreadCount,
         type: e.matchType,
+        source: e.source,
       };
     });
 
@@ -285,7 +321,15 @@ const Messages = () => {
     if (matches.length === 0) return;
 
     if (requestedMatchId) {
-      const requestedMatch = matches.find((match) => match.id === requestedMatchId);
+      const requestedMatch = matches.find((match) => match.id === requestedMatchId && match.source === 'match');
+      if (requestedMatch) {
+        setSelectedMatch((current) => current?.id === requestedMatch.id ? current : requestedMatch);
+        return;
+      }
+    }
+
+    if (requestedDmId) {
+      const requestedMatch = matches.find((match) => match.id === requestedDmId && match.source === 'dm');
       if (requestedMatch) {
         setSelectedMatch((current) => current?.id === requestedMatch.id ? current : requestedMatch);
         return;
@@ -302,9 +346,9 @@ const Messages = () => {
 
     setSelectedMatch((current) => {
       if (!current) return current;
-      return matches.find((match) => match.id === current.id) ?? current;
+      return matches.find((match) => match.id === current.id && match.source === current.source) ?? current;
     });
-  }, [matches, requestedMatchId, requestedProfileId]);
+  }, [matches, requestedMatchId, requestedDmId, requestedProfileId]);
 
   useEffect(() => {
     if (!pendingVideoOpen || !selectedMatch) return;
@@ -324,26 +368,30 @@ const Messages = () => {
   const fetchMessages = useCallback(async () => {
     if (!selectedMatch || !user) return;
 
+    const isDm = selectedMatch.source === 'dm';
+    const table = isDm ? "dm_messages" : "messages";
+    const filterCol = isDm ? "conversation_id" : "match_id";
+
     const { data, error } = await supabase
-      .from("messages")
+      .from(table as any)
       .select("*")
-      .eq("match_id", selectedMatch.id)
-      .order("created_at", { ascending: true });
+      .eq(filterCol, selectedMatch.id)
+      .order("created_at", { ascending: true }) as any;
 
     if (!error && data) {
       setMessages(data as Message[]);
       // Mark unread messages as read in the DB
       const unreadIds = data.filter((m: any) => m.sender_id !== user.id && !m.read).map((m: any) => m.id);
       if (unreadIds.length > 0) {
-        await supabase
-          .from("messages")
-          .update({ read: true })
-          .in("id", unreadIds);
+        await (supabase
+          .from(table as any)
+          .update({ read: true } as any)
+          .in("id", unreadIds) as any);
 
         // Update the sidebar unread count immediately
         setMatches((prev) =>
           prev.map((m) =>
-            m.id === selectedMatch.id ? { ...m, unread_count: 0 } : m
+            m.id === selectedMatch.id && m.source === selectedMatch.source ? { ...m, unread_count: 0 } : m
           )
         );
       }
@@ -361,13 +409,18 @@ const Messages = () => {
   // Realtime: new messages, read updates, and typing indicators
   useEffect(() => {
     if (!selectedMatch || !user) return;
+    const isDm = selectedMatch.source === 'dm';
+    const table = isDm ? "dm_messages" : "messages";
+    const filterCol = isDm ? "conversation_id" : "match_id";
+    const channelName = `${isDm ? 'dm' : 'messages'}-${selectedMatch.id}`;
+
     const channel = supabase
-      .channel(`messages-${selectedMatch.id}`)
+      .channel(channelName)
       .on("postgres_changes", {
         event: "INSERT",
         schema: "public",
-        table: "messages",
-        filter: `match_id=eq.${selectedMatch.id}`,
+        table,
+        filter: `${filterCol}=eq.${selectedMatch.id}`,
       }, (payload) => {
         const newMsg = payload.new as Message;
         setMessages((prev) => {
@@ -375,15 +428,15 @@ const Messages = () => {
           return [...prev, newMsg];
         });
         if (newMsg.sender_id !== user?.id) {
-          supabase.from("messages").update({ read: true }).eq("id", newMsg.id);
-          setIsOtherTyping(false); // They sent a message, so they stopped typing
+          (supabase.from(table as any).update({ read: true } as any).eq("id", newMsg.id) as any);
+          setIsOtherTyping(false);
         }
       })
       .on("postgres_changes", {
         event: "UPDATE",
         schema: "public",
-        table: "messages",
-        filter: `match_id=eq.${selectedMatch.id}`,
+        table,
+        filter: `${filterCol}=eq.${selectedMatch.id}`,
       }, (payload) => {
         const updated = payload.new as Message;
         setMessages((prev) =>
@@ -412,7 +465,8 @@ const Messages = () => {
     const now = Date.now();
     if (now - lastTypingBroadcastRef.current < 2000) return;
     lastTypingBroadcastRef.current = now;
-    supabase.channel(`messages-${selectedMatch.id}`).send({
+    const channelName = `${selectedMatch.source === 'dm' ? 'dm' : 'messages'}-${selectedMatch.id}`;
+    supabase.channel(channelName).send({
       type: "broadcast",
       event: "typing",
       payload: { user_id: user.id },
@@ -438,11 +492,12 @@ const Messages = () => {
     setSending(true);
     setNewMessage("");
 
-    const { error } = await supabase.from("messages").insert({
-      match_id: selectedMatch.id,
-      sender_id: user.id,
-      content,
-    });
+    const isDm = selectedMatch.source === 'dm';
+    const insertData = isDm
+      ? { conversation_id: selectedMatch.id, sender_id: user.id, content }
+      : { match_id: selectedMatch.id, sender_id: user.id, content };
+
+    const { error } = await (supabase.from(isDm ? "dm_messages" as any : "messages").insert(insertData as any) as any);
 
     if (error) {
       toast({ title: "Failed to send", description: error.message, variant: "destructive" });
@@ -599,7 +654,7 @@ const Messages = () => {
                           {match.other_user.is_verified && (
                             <Shield className="h-3.5 w-3.5 text-secondary fill-secondary/30 flex-shrink-0" />
                           )}
-                          {match.type === 'direct_message' && (
+                          {match.source === 'dm' && (
                             <span className="rounded-full bg-accent/10 px-1.5 py-0.5 text-[9px] font-medium text-accent flex-shrink-0 flex items-center gap-0.5">
                               <Sparkles className="h-2.5 w-2.5" /> DM
                             </span>
@@ -669,7 +724,7 @@ const Messages = () => {
                       {selectedMatch.other_user.is_verified && (
                         <Shield className="h-3.5 w-3.5 text-secondary fill-secondary/30 flex-shrink-0" />
                       )}
-                      {selectedMatch.type === 'direct_message' && (
+                      {selectedMatch.source === 'dm' && (
                         <span className="rounded-full bg-accent/10 px-1.5 py-0.5 text-[9px] font-medium text-accent flex-shrink-0 flex items-center gap-0.5">
                           <Sparkles className="h-2.5 w-2.5" /> DM
                         </span>
@@ -741,7 +796,9 @@ const Messages = () => {
                       <div className="h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
                         <Sparkles className="h-6 w-6 text-primary" />
                       </div>
-                      <p className="text-sm font-medium text-foreground mb-1">You matched! 🎉</p>
+                      <p className="text-sm font-medium text-foreground mb-1">
+                        {selectedMatch?.source === 'dm' ? "Say hello! 👋" : "You matched! 🎉"}
+                      </p>
                       <p className="text-xs text-muted-foreground">Send the first message to start the conversation</p>
                     </div>
                   )}
