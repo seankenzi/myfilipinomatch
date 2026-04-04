@@ -463,8 +463,8 @@ const Onboarding = () => {
                   rows={5}
                   className="text-base resize-none"
                 />
-                <p className={`text-xs text-right ${bio.trim().length < 20 ? 'text-destructive' : 'text-muted-foreground'}`}>
-                  {bio.trim().length < 20 ? `${20 - bio.trim().length} more characters needed` : `${bio.length}/300`}
+                <p className={`text-xs text-right ${bio.trim().length < 100 ? 'text-destructive' : 'text-muted-foreground'}`}>
+                  {bio.trim().length < 100 ? `${100 - bio.trim().length} more characters needed` : `${bio.length}/300`}
                 </p>
               </div>
 
