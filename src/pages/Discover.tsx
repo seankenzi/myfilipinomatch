@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import {
   Heart, X, MapPin, Shield, Filter, ChevronDown, Star, Flag,
   LayoutGrid, Layers, Globe, Send, Sparkles, Clock, UserPlus,
-  ChevronLeft, ChevronRight, SlidersHorizontal, Undo2, Zap, Lock, Crown, Video, Gem
+  ChevronLeft, ChevronRight, SlidersHorizontal, Undo2, Zap, Lock, Crown, Video, Gem, User
 } from "lucide-react";
 import OnlineStatus from "@/components/OnlineStatus";
 import { Button } from "@/components/ui/button";
