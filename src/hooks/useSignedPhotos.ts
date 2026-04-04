@@ -42,7 +42,7 @@ export function useSignedPhotos(photos: string[]): string[] {
 
     // If all cached, return immediately
     if (misses.length === 0) {
-      setSignedUrls(hits);
+      setSignedUrls(hits.filter(Boolean));
       // Preload images
       hits.forEach((url) => { const img = new Image(); img.src = url; });
       return;
