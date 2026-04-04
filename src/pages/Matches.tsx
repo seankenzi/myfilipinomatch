@@ -120,7 +120,6 @@ const Matches = () => {
             image,
             lastActive: getLastActiveLabel(profile.last_seen),
             newMatch: Date.now() - new Date(match.created_at).getTime() < 24 * 60 * 60 * 1000,
-            type: (match as any).type || 'mutual',
           } satisfies DisplayMatch;
         })
       );
