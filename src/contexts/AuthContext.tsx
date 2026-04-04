@@ -46,84 +46,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setUser(session?.user ?? null);
       setLoading(false);
 
-      // Fallback only: signup emails are primarily triggered from the backend.
-      if ((_event === 'SIGNED_IN' || _event === 'INITIAL_SESSION') && session?.user) {
-        const u = session.user;
-        const normalizedUserEmail = u.email?.trim().toLowerCase();
-
-        if (!normalizedUserEmail) return;
-
-        (async () => {
-          try {
-            // Wait briefly so the backend auth-email-hook has time to set the flag
-            await new Promise((r) => setTimeout(r, 5000));
-
-            const { data: profile } = await supabase
-              .from('profiles')
-              .select('welcome_email_sent')
-              .eq('id', u.id)
-              .single();
-
-            if (profile?.welcome_email_sent) return;
-
-            const { data: welcomeResult, error: welcomeError } = await supabase.functions.invoke('send-transactional-email', {
-              body: {
-                templateName: 'welcome-email',
-                recipientEmail: u.email,
-                idempotencyKey: `welcome-signup-${normalizedUserEmail}`,
-                templateData: { name: u.user_metadata?.full_name || undefined },
-              },
-            });
-
-            if (welcomeError || welcomeResult?.queued !== true) {
-              console.error('[Welcome email] fallback enqueue failed:', welcomeError ?? welcomeResult);
-              return;
-            }
-
-            const { data: adminEmails, error: adminEmailsError } = await supabase.rpc('get_admin_emails');
-
-            if (adminEmailsError) {
-              console.error('[Admin signup email] failed to load admin emails:', adminEmailsError);
-              return;
-            }
-
-            const adminResults = await Promise.allSettled(
-              (adminEmails ?? []).map(async (row: { email: string }) => {
-                const normalizedAdminEmail = row.email.trim().toLowerCase();
-
-                const { data, error } = await supabase.functions.invoke('send-transactional-email', {
-                  body: {
-                    templateName: 'admin-new-signup',
-                    recipientEmail: row.email,
-                    idempotencyKey: `admin-new-signup-${normalizedUserEmail}-${normalizedAdminEmail}`,
-                    templateData: {
-                      userName: u.user_metadata?.full_name || undefined,
-                      userEmail: u.email,
-                    },
-                  },
-                });
-
-                if (error || data?.queued !== true) {
-                  throw error ?? new Error('Admin signup email was not queued');
-                }
-              })
-            );
-
-            const failedAdminEmails = adminResults.filter((result) => result.status === 'rejected');
-            if (failedAdminEmails.length > 0) {
-              console.error('[Admin signup email] fallback enqueue failed:', failedAdminEmails);
-              return;
-            }
-
-            await supabase
-              .from('profiles')
-              .update({ welcome_email_sent: true })
-              .eq('id', u.id);
-          } catch (err) {
-            console.error('[Welcome/Admin email fallback]', err);
-          }
-        })();
-      }
+      // Signup emails (welcome + admin-new-signup) are triggered exclusively
+      // by the backend auth-email-hook. No client-side fallback needed.
     });
 
     return () => {
