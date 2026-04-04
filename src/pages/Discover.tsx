@@ -299,58 +299,46 @@ const Discover = () => {
         if (filterHeightRange[1] < 210) allProfiles = allProfiles.filter((p) => (p as any).height_cm && (p as any).height_cm <= filterHeightRange[1]);
       }
       
-      // Sign only the FIRST photo per profile for fast initial render
-      const firstPhotoPaths: string[] = [];
-      allProfiles.forEach((p) => {
-        const firstPhoto = p.photos?.[0] || p.avatar_url;
-        if (firstPhoto) firstPhotoPaths.push(firstPhoto);
-      });
-      
-      if (firstPhotoPaths.length > 0) {
-        const signedFirstUrls = await getSignedPhotoUrls(firstPhotoPaths);
-        const urlMap = new Map<string, string>();
-        firstPhotoPaths.forEach((path, i) => urlMap.set(path, signedFirstUrls[i]));
-        
-        allProfiles.forEach((p) => {
-          if (p.photos?.[0] && urlMap.has(p.photos[0])) {
-            p.photos[0] = urlMap.get(p.photos[0])!;
-          }
-          if (p.avatar_url && urlMap.has(p.avatar_url)) {
-            p.avatar_url = urlMap.get(p.avatar_url)!;
-          }
-        });
-      }
-      
-      // Show profiles immediately with first photos signed
+      // Show profiles immediately (before signing) so the grid renders fast
       setProfiles([...allProfiles]);
       setCurrentIndex(0);
       setLoading(false);
-      
-      // Then lazily sign remaining photos in background
-      const remainingPaths: string[] = [];
+
+      // Collect ALL photo paths to sign
+      const allPaths: string[] = [];
+      const pathSet = new Set<string>();
       allProfiles.forEach((p) => {
-        if (p.photos && p.photos.length > 1) {
-          p.photos.slice(1).forEach((photo) => {
-            if (photo) remainingPaths.push(photo);
-          });
-        }
+        const photos = p.photos?.length ? p.photos : p.avatar_url ? [p.avatar_url] : [];
+        photos.forEach((photo) => {
+          if (photo && !pathSet.has(photo)) {
+            pathSet.add(photo);
+            allPaths.push(photo);
+          }
+        });
       });
-      
-      if (remainingPaths.length > 0) {
-        getSignedPhotoUrls(remainingPaths).then((signedRemaining) => {
-          const remainMap = new Map<string, string>();
-          remainingPaths.forEach((path, i) => remainMap.set(path, signedRemaining[i]));
-          
-          allProfiles.forEach((p) => {
-            if (p.photos && p.photos.length > 1) {
-              for (let i = 1; i < p.photos.length; i++) {
-                if (remainMap.has(p.photos[i])) {
-                  p.photos[i] = remainMap.get(p.photos[i])!;
-                }
-              }
-            }
+
+      if (allPaths.length === 0) return;
+
+      // Sign in batches of 15 and update UI progressively
+      const BATCH = 15;
+      for (let i = 0; i < allPaths.length; i += BATCH) {
+        const batch = allPaths.slice(i, i + BATCH);
+        getSignedPhotoUrls(batch).then((signed) => {
+          const map = new Map<string, string>();
+          batch.forEach((p, idx) => {
+            if (signed[idx]) map.set(p, signed[idx]);
           });
-          setProfiles([...allProfiles]);
+          setProfiles((prev) => prev.map((profile) => {
+            let changed = false;
+            const newPhotos = profile.photos?.map((ph) => {
+              if (map.has(ph)) { changed = true; return map.get(ph)!; }
+              return ph;
+            }) || null;
+            const newAvatar = profile.avatar_url && map.has(profile.avatar_url)
+              ? (changed = true, map.get(profile.avatar_url)!)
+              : profile.avatar_url;
+            return changed ? { ...profile, photos: newPhotos, avatar_url: newAvatar } : profile;
+          }));
         });
       }
     }
