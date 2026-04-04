@@ -327,7 +327,15 @@ const Messages = () => {
     if (matches.length === 0) return;
 
     if (requestedMatchId) {
-      const requestedMatch = matches.find((match) => match.id === requestedMatchId);
+      const requestedMatch = matches.find((match) => match.id === requestedMatchId && match.source === 'match');
+      if (requestedMatch) {
+        setSelectedMatch((current) => current?.id === requestedMatch.id ? current : requestedMatch);
+        return;
+      }
+    }
+
+    if (requestedDmId) {
+      const requestedMatch = matches.find((match) => match.id === requestedDmId && match.source === 'dm');
       if (requestedMatch) {
         setSelectedMatch((current) => current?.id === requestedMatch.id ? current : requestedMatch);
         return;
@@ -344,9 +352,9 @@ const Messages = () => {
 
     setSelectedMatch((current) => {
       if (!current) return current;
-      return matches.find((match) => match.id === current.id) ?? current;
+      return matches.find((match) => match.id === current.id && match.source === current.source) ?? current;
     });
-  }, [matches, requestedMatchId, requestedProfileId]);
+  }, [matches, requestedMatchId, requestedDmId, requestedProfileId]);
 
   useEffect(() => {
     if (!pendingVideoOpen || !selectedMatch) return;
