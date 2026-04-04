@@ -8,6 +8,7 @@ import { motion } from "framer-motion";
 import BottomNav from "@/components/BottomNav";
 import Navbar from "@/components/Navbar";
 import { useAuth } from "@/contexts/AuthContext";
+import SEO from "@/components/SEO";
 import { supabase } from "@/integrations/supabase/client";
 import { useAdmin } from "@/hooks/useAdmin";
 import { useToast } from "@/hooks/use-toast";
@@ -202,6 +203,10 @@ const ProfileDetail = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEO
+        title={profile ? `${profile.full_name}${profile.age ? `, ${profile.age}` : ""} | MyFilipinoMatch` : "Profile | MyFilipinoMatch"}
+        description={profile?.bio ? profile.bio.slice(0, 155) : "View this profile on MyFilipinoMatch"}
+      />
       <Navbar />
       <main className="mx-auto max-w-2xl px-4 pb-24 pt-4">
         {/* Back button */}
