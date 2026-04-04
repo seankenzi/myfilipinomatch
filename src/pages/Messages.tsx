@@ -56,6 +56,7 @@ interface Match {
   };
   unread_count: number;
   type: string;
+  source: 'match' | 'dm'; // 'match' = mutual match, 'dm' = direct message conversation
 }
 
 interface Message {
