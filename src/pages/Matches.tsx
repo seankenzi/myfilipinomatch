@@ -87,6 +87,7 @@ const Matches = () => {
         .from("matches")
         .select("id, user1_id, user2_id, created_at, type")
         .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`)
+        .eq("type", "mutual")
         .order("created_at", { ascending: false });
 
       if (error || !matchesData) {
