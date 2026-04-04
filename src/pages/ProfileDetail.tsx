@@ -372,27 +372,32 @@ const ProfileDetail = () => {
               <Button
                 onClick={async () => {
                   if (matchId) {
-                    navigate(`/messages?match=${matchId}`);
+                    // Navigate to existing match or DM conversation
+                    if (matchId.startsWith('dm:')) {
+                      navigate(`/messages?dm=${matchId.slice(3)}`);
+                    } else {
+                      navigate(`/messages?match=${matchId}`);
+                    }
                   } else if (isPremium) {
-                    // Premium user: create a direct_message conversation (not a mutual match)
+                    // Premium user: create a DM conversation (separate from matches)
                     const { data: insertData, error } = await supabase
-                      .from("matches")
-                      .insert({ user1_id: user.id, user2_id: profile.id, type: 'direct_message' })
+                      .from("dm_conversations" as any)
+                      .insert({ initiator_id: user.id, recipient_id: profile.id } as any)
                       .select("id")
-                      .single();
+                      .single() as any;
                     if (!error && insertData) {
-                      setMatchId(insertData.id);
-                      navigate(`/messages?match=${insertData.id}`);
+                      setMatchId(`dm:${insertData.id}`);
+                      navigate(`/messages?dm=${insertData.id}`);
                     } else if (error?.code === "23505") {
-                      // Match already exists, fetch it
+                      // DM conversation already exists, fetch it
                       const { data: existing } = await supabase
-                        .from("matches")
+                        .from("dm_conversations" as any)
                         .select("id")
-                        .or(`and(user1_id.eq.${user.id},user2_id.eq.${profile.id}),and(user1_id.eq.${profile.id},user2_id.eq.${user.id})`)
-                        .single();
+                        .or(`and(initiator_id.eq.${user.id},recipient_id.eq.${profile.id}),and(initiator_id.eq.${profile.id},recipient_id.eq.${user.id})`)
+                        .single() as any;
                       if (existing) {
-                        setMatchId(existing.id);
-                        navigate(`/messages?match=${existing.id}`);
+                        setMatchId(`dm:${existing.id}`);
+                        navigate(`/messages?dm=${existing.id}`);
                       }
                     } else {
                       toast({ title: "Error", description: "Could not start conversation. Please try again." });
