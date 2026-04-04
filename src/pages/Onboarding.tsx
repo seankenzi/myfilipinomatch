@@ -450,7 +450,7 @@ const Onboarding = () => {
               <div className="text-center space-y-2">
                 <Sparkles className="h-10 w-10 text-primary mx-auto" />
                 <h2 className="text-2xl font-bold font-display">Write a short bio</h2>
-                <p className="text-sm text-muted-foreground">Help others get to know you — you can skip this for now</p>
+                <p className="text-sm text-muted-foreground">Help others get to know you (minimum 20 characters)</p>
               </div>
 
               <div className="space-y-1.5">
