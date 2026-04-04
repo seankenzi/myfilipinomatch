@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import {
   Heart, X, MapPin, Shield, Filter, ChevronDown, Star, Flag,
   LayoutGrid, Layers, Globe, Send, Sparkles, Clock, UserPlus,
-  ChevronLeft, ChevronRight, SlidersHorizontal, Undo2, Zap, Lock, Crown, Video, Gem
+  ChevronLeft, ChevronRight, SlidersHorizontal, Undo2, Zap, Lock, Crown, Video, Gem, User
 } from "lucide-react";
 import OnlineStatus from "@/components/OnlineStatus";
 import { Button } from "@/components/ui/button";
@@ -88,8 +88,9 @@ const ImageSkeleton = ({ className = "" }: { className?: string }) => (
 const NoPhotoPlaceholder = ({ className = "" }: { className?: string }) => (
   <div className={`relative overflow-hidden bg-muted ${className}`}>
     <div className="flex h-full w-full items-center justify-center">
-      <div className="flex flex-col items-center gap-1 text-muted-foreground/40">
-        <div className="h-10 w-10 rounded-full bg-muted-foreground/10" />
+      <div className="flex flex-col items-center gap-2 text-muted-foreground/40">
+        <User className="h-10 w-10" />
+        <span className="text-xs font-medium">No Photo</span>
       </div>
     </div>
   </div>
