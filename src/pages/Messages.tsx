@@ -415,13 +415,18 @@ const Messages = () => {
   // Realtime: new messages, read updates, and typing indicators
   useEffect(() => {
     if (!selectedMatch || !user) return;
+    const isDm = selectedMatch.source === 'dm';
+    const table = isDm ? "dm_messages" : "messages";
+    const filterCol = isDm ? "conversation_id" : "match_id";
+    const channelName = `${isDm ? 'dm' : 'messages'}-${selectedMatch.id}`;
+
     const channel = supabase
-      .channel(`messages-${selectedMatch.id}`)
+      .channel(channelName)
       .on("postgres_changes", {
         event: "INSERT",
         schema: "public",
-        table: "messages",
-        filter: `match_id=eq.${selectedMatch.id}`,
+        table,
+        filter: `${filterCol}=eq.${selectedMatch.id}`,
       }, (payload) => {
         const newMsg = payload.new as Message;
         setMessages((prev) => {
@@ -429,15 +434,15 @@ const Messages = () => {
           return [...prev, newMsg];
         });
         if (newMsg.sender_id !== user?.id) {
-          supabase.from("messages").update({ read: true }).eq("id", newMsg.id);
-          setIsOtherTyping(false); // They sent a message, so they stopped typing
+          (supabase.from(table as any).update({ read: true } as any).eq("id", newMsg.id) as any);
+          setIsOtherTyping(false);
         }
       })
       .on("postgres_changes", {
         event: "UPDATE",
         schema: "public",
-        table: "messages",
-        filter: `match_id=eq.${selectedMatch.id}`,
+        table,
+        filter: `${filterCol}=eq.${selectedMatch.id}`,
       }, (payload) => {
         const updated = payload.new as Message;
         setMessages((prev) =>
