@@ -68,6 +68,9 @@ const ProfileDetail = () => {
   const [loading, setLoading] = useState(true);
   const [liked, setLiked] = useState(false);
   const [activePhoto, setActivePhoto] = useState(0);
+
+  // Reset photo index when viewing a different profile
+  useEffect(() => { setActivePhoto(0); }, [id]);
   const [matchId, setMatchId] = useState<string | null>(null);
   const [isPremium, setIsPremium] = useState(false);
 
