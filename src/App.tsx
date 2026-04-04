@@ -19,35 +19,50 @@ import CookieConsent from "@/components/CookieConsent";
 // Eagerly load the landing/index page for fast initial paint
 import Index from "./pages/Index.tsx";
 
+// Auto-reload on stale chunk errors (after deploy, old hashed files are gone)
+function lazyRetry(factory: () => Promise<any>) {
+  return lazy(() =>
+    factory().catch((err) => {
+      // Only reload once to avoid infinite loops
+      const key = "chunk-reload";
+      if (!sessionStorage.getItem(key)) {
+        sessionStorage.setItem(key, "1");
+        window.location.reload();
+      }
+      throw err;
+    })
+  );
+}
+
 // Lazy-load all other pages to reduce initial bundle size
-const Login = lazy(() => import("./pages/Login.tsx"));
-const Signup = lazy(() => import("./pages/Signup.tsx"));
-const ForgotPassword = lazy(() => import("./pages/ForgotPassword.tsx"));
-const ResetPassword = lazy(() => import("./pages/ResetPassword.tsx"));
-const Onboarding = lazy(() => import("./pages/Onboarding.tsx"));
-const Discover = lazy(() => import("./pages/Discover.tsx"));
-const ProfileDetail = lazy(() => import("./pages/ProfileDetail.tsx"));
-const Matches = lazy(() => import("./pages/Matches.tsx"));
-const Messages = lazy(() => import("./pages/Messages.tsx"));
-const Profile = lazy(() => import("./pages/Profile.tsx"));
-const Settings = lazy(() => import("./pages/Settings.tsx"));
-const Verification = lazy(() => import("./pages/Verification.tsx"));
-const AdminVerifications = lazy(() => import("./pages/AdminVerifications.tsx"));
-const AdminDashboard = lazy(() => import("./pages/AdminDashboard.tsx"));
-const Premium = lazy(() => import("./pages/Premium.tsx"));
-const Notifications = lazy(() => import("./pages/Notifications.tsx"));
-const WhoLikedMe = lazy(() => import("./pages/WhoLikedMe.tsx"));
-const About = lazy(() => import("./pages/About.tsx"));
-const Safety = lazy(() => import("./pages/Safety.tsx"));
-const Privacy = lazy(() => import("./pages/Privacy.tsx"));
-const Terms = lazy(() => import("./pages/Terms.tsx"));
-const Support = lazy(() => import("./pages/Support.tsx"));
-const Unsubscribe = lazy(() => import("./pages/Unsubscribe.tsx"));
-const EmailUnsubscribe = lazy(() => import("./pages/EmailUnsubscribe.tsx"));
-const NotFound = lazy(() => import("./pages/NotFound.tsx"));
-const Blog = lazy(() => import("./pages/Blog.tsx"));
-const BlogPost = lazy(() => import("./pages/BlogPost.tsx"));
-const CookiePolicy = lazy(() => import("./pages/CookiePolicy.tsx"));
+const Login = lazyRetry(() => import("./pages/Login.tsx"));
+const Signup = lazyRetry(() => import("./pages/Signup.tsx"));
+const ForgotPassword = lazyRetry(() => import("./pages/ForgotPassword.tsx"));
+const ResetPassword = lazyRetry(() => import("./pages/ResetPassword.tsx"));
+const Onboarding = lazyRetry(() => import("./pages/Onboarding.tsx"));
+const Discover = lazyRetry(() => import("./pages/Discover.tsx"));
+const ProfileDetail = lazyRetry(() => import("./pages/ProfileDetail.tsx"));
+const Matches = lazyRetry(() => import("./pages/Matches.tsx"));
+const Messages = lazyRetry(() => import("./pages/Messages.tsx"));
+const Profile = lazyRetry(() => import("./pages/Profile.tsx"));
+const Settings = lazyRetry(() => import("./pages/Settings.tsx"));
+const Verification = lazyRetry(() => import("./pages/Verification.tsx"));
+const AdminVerifications = lazyRetry(() => import("./pages/AdminVerifications.tsx"));
+const AdminDashboard = lazyRetry(() => import("./pages/AdminDashboard.tsx"));
+const Premium = lazyRetry(() => import("./pages/Premium.tsx"));
+const Notifications = lazyRetry(() => import("./pages/Notifications.tsx"));
+const WhoLikedMe = lazyRetry(() => import("./pages/WhoLikedMe.tsx"));
+const About = lazyRetry(() => import("./pages/About.tsx"));
+const Safety = lazyRetry(() => import("./pages/Safety.tsx"));
+const Privacy = lazyRetry(() => import("./pages/Privacy.tsx"));
+const Terms = lazyRetry(() => import("./pages/Terms.tsx"));
+const Support = lazyRetry(() => import("./pages/Support.tsx"));
+const Unsubscribe = lazyRetry(() => import("./pages/Unsubscribe.tsx"));
+const EmailUnsubscribe = lazyRetry(() => import("./pages/EmailUnsubscribe.tsx"));
+const NotFound = lazyRetry(() => import("./pages/NotFound.tsx"));
+const Blog = lazyRetry(() => import("./pages/Blog.tsx"));
+const BlogPost = lazyRetry(() => import("./pages/BlogPost.tsx"));
+const CookiePolicy = lazyRetry(() => import("./pages/CookiePolicy.tsx"));
 
 const queryClient = new QueryClient();
 
