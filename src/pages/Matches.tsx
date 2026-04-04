@@ -28,13 +28,11 @@ const getLastActiveLabel = (lastSeen: string | null) => {
   return formatDistanceToNow(date, { addSuffix: true });
 };
 
-const MatchCard = ({ match, isDM }: { match: DisplayMatch; isDM?: boolean }) => (
+const MatchCard = ({ match }: { match: DisplayMatch }) => (
   <Link
     key={match.id}
     to={`/messages?match=${match.id}`}
-    className={`flex items-center gap-4 rounded-2xl border p-4 shadow-card transition-all hover:shadow-card-hover ${
-      isDM ? "border-accent/30 bg-accent/5" : "border-border bg-card"
-    }`}
+    className="flex items-center gap-4 rounded-2xl border border-border bg-card p-4 shadow-card transition-all hover:shadow-card-hover"
   >
     <div className="relative">
       {match.image ? (
@@ -51,12 +49,7 @@ const MatchCard = ({ match, isDM }: { match: DisplayMatch; isDM?: boolean }) => 
         <h3 className="font-semibold">
           {match.name}{match.age ? `, ${match.age}` : ""}
         </h3>
-        {isDM && (
-          <span className="rounded-full bg-accent/10 px-2 py-0.5 text-[10px] font-medium text-accent flex items-center gap-1">
-            <Sparkles className="h-3 w-3" /> DM
-          </span>
-        )}
-        {match.newMatch && !isDM && (
+        {match.newMatch && (
           <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary">New</span>
         )}
       </div>
