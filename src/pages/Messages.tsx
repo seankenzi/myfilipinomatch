@@ -127,7 +127,7 @@ const Messages = () => {
 
   useEffect(() => {
     if (!selectedMatch) return;
-    setIsMutualMatch(selectedMatch.type === 'mutual');
+    setIsMutualMatch(selectedMatch.source === 'match');
   }, [selectedMatch]);
 
   const isLocked = !isPremium && (
