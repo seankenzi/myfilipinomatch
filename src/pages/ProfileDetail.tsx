@@ -68,6 +68,9 @@ const ProfileDetail = () => {
   const [loading, setLoading] = useState(true);
   const [liked, setLiked] = useState(false);
   const [activePhoto, setActivePhoto] = useState(0);
+
+  // Reset photo index when viewing a different profile
+  useEffect(() => { setActivePhoto(0); }, [id]);
   const [matchId, setMatchId] = useState<string | null>(null);
   const [isPremium, setIsPremium] = useState(false);
 
@@ -211,14 +214,20 @@ const ProfileDetail = () => {
 
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
           {/* Photo gallery */}
-          {photos.length > 0 ? (
+          {photos.length > 0 && photos[0] ? (
             <div className="relative w-full max-w-xs mx-auto overflow-hidden rounded-2xl aspect-[3/4] bg-muted">
-              <img
-                src={photos[activePhoto]}
-                alt={`${profile.full_name} photo ${activePhoto + 1}`}
-                className="h-full w-full object-cover"
-                loading={activePhoto === 0 ? "eager" : "lazy"}
-              />
+              {photos[activePhoto] ? (
+                <img
+                  key={activePhoto}
+                  src={photos[activePhoto]}
+                  alt={`${profile.full_name} photo ${activePhoto + 1}`}
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <div className="h-full w-full flex items-center justify-center">
+                  <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                </div>
+              )}
               {photos.length > 1 && (
                 <>
                   <div className="absolute top-3 left-0 right-0 flex justify-center gap-1.5">
