@@ -1182,7 +1182,7 @@ const Discover = () => {
                           {getProfilePhotos(profile).length > 0 ? (
                             <SkeletonImage src={getProfilePhotos(profile)[0]} alt={`${profile.full_name} profile photo`} className="h-full w-full rounded-full" />
                           ) : (
-                            <NoPhotoPlaceholder className="h-full w-full rounded-full" />
+                            <NoPhotoPlaceholder className="h-full w-full rounded-full" variant="avatar" />
                           )}
                           {profile.is_verified && (
                             <div className="absolute -bottom-0.5 -right-0.5 rounded-full bg-card p-0.5">
