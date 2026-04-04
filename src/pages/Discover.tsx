@@ -353,11 +353,7 @@ const Discover = () => {
           setProfiles([...allProfiles]);
         });
       }
-      
-      setProfiles(allProfiles);
-      setCurrentIndex(0);
     }
-    setLoading(false);
   }, [user, filterCountry, filterIntent, filterCity, filterGender, filterAgeRange, isPremium, filterEducation, filterLanguage, filterChildren, filterHeightRange]);
 
   useEffect(() => {
