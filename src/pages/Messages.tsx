@@ -79,12 +79,6 @@ const getPhoto = (user: { avatar_url: string | null; photos: string[] | null }) 
   return user.avatar_url;
 };
 
-const resolvePhoto = async (photoPath: string | null): Promise<string | null> => {
-  if (!photoPath) return null;
-  const results = await getSignedPhotoUrls([photoPath]);
-  return results[0] || photoPath;
-};
-
 const Messages = () => {
   const { user } = useAuth();
   const { toast } = useToast();
