@@ -42,6 +42,7 @@ Deno.serve(async (req) => {
   }
 
   const anomalies: Anomaly[] = []
+  const orphanedIds: string[] = []
 
   for (const s of sessions || []) {
     const elapsed = s.ended_at
@@ -52,14 +53,29 @@ Deno.serve(async (req) => {
     const isOrphaned = !s.ended_at && (Date.now() - new Date(s.started_at).getTime()) > 600_000
 
     if (isInflated || isOrphaned) {
+      if (isOrphaned) orphanedIds.push(s.id)
       anomalies.push({
         sessionId: s.id,
         userId: s.user_id,
-        flag: isInflated ? 'Inflated duration' : 'Orphaned session',
+        flag: isInflated ? 'Inflated duration' : 'Orphaned session (auto-closed)',
         durationSeconds: s.duration_seconds ?? undefined,
         elapsedSeconds: elapsed ?? undefined,
         startedAt: s.started_at,
       })
+    }
+  }
+
+  // Auto-close orphaned sessions
+  if (orphanedIds.length > 0) {
+    const { error: closeError } = await supabase
+      .from('video_call_sessions')
+      .update({ ended_at: new Date().toISOString(), duration_seconds: 0 })
+      .in('id', orphanedIds)
+
+    if (closeError) {
+      console.error('Failed to auto-close orphaned sessions', closeError)
+    } else {
+      console.log(`Auto-closed ${orphanedIds.length} orphaned session(s)`)
     }
   }
 
