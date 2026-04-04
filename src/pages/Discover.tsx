@@ -101,7 +101,7 @@ const SkeletonImage = ({ src, alt, className = "", loading = "lazy" as "lazy" | 
   const [error, setError] = useState(false);
   const isSignedUrl = src.startsWith("http");
 
-  if (error) return <ImageSkeleton className={className} />;
+  if (error) return <NoPhotoPlaceholder className={className} />;
 
   return (
     <div className={`relative ${className}`}>
