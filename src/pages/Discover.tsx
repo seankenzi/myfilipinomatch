@@ -33,6 +33,7 @@ interface Profile {
   gender: string | null;
   country: string | null;
   city: string | null;
+  province: string | null;
   bio: string | null;
   interests: string[] | null;
   relationship_intent: string | null;
