@@ -26,6 +26,7 @@ import Navbar from "@/components/Navbar";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useAdmin } from "@/hooks/useAdmin";
 import { format, isToday, isYesterday } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -109,6 +110,15 @@ const Messages = () => {
   const [isOtherTyping, setIsOtherTyping] = useState(false);
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastTypingBroadcastRef = useRef<number>(0);
+  const { isAdmin } = useAdmin();
+  const [emailDebug, setEmailDebug] = useState<{
+    timestamp: string;
+    recipientId: string;
+    recipientName: string;
+    httpStatus: number | null;
+    error: string | null;
+    success: boolean;
+  } | null>(null);
 
   const mySentCount = messages.filter((m) => m.sender_id === user?.id).length;
   const todayStart = new Date();
@@ -512,6 +522,14 @@ const Messages = () => {
 
         if (!accessToken) {
           console.error("Missing auth session while triggering new message email.");
+          setEmailDebug({
+            timestamp: new Date().toISOString(),
+            recipientId: selectedMatch.other_user.id,
+            recipientName: selectedMatch.other_user.full_name,
+            httpStatus: null,
+            error: "Missing auth session",
+            success: false,
+          });
         } else {
           const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-transactional-email`, {
             method: "POST",
@@ -536,10 +554,35 @@ const Messages = () => {
               errorBody = await response.text();
             }
             console.error("Email notification error:", response.status, errorBody);
+            setEmailDebug({
+              timestamp: new Date().toISOString(),
+              recipientId: selectedMatch.other_user.id,
+              recipientName: selectedMatch.other_user.full_name,
+              httpStatus: response.status,
+              error: typeof errorBody === 'string' ? errorBody : JSON.stringify(errorBody),
+              success: false,
+            });
+          } else {
+            setEmailDebug({
+              timestamp: new Date().toISOString(),
+              recipientId: selectedMatch.other_user.id,
+              recipientName: selectedMatch.other_user.full_name,
+              httpStatus: response.status,
+              error: null,
+              success: true,
+            });
           }
         }
       } catch (invokeError) {
         console.error("Failed to trigger new message email:", invokeError);
+        setEmailDebug({
+          timestamp: new Date().toISOString(),
+          recipientId: selectedMatch.other_user.id,
+          recipientName: selectedMatch.other_user.full_name,
+          httpStatus: null,
+          error: invokeError instanceof Error ? invokeError.message : String(invokeError),
+          success: false,
+        });
       }
     }
     setSending(false);
@@ -1103,6 +1146,26 @@ const Messages = () => {
       />
 
       <BottomNav />
+
+      {/* Admin Email Debug Panel */}
+      {isAdmin && emailDebug && (
+        <div className="fixed bottom-20 right-4 z-50 max-w-sm rounded-lg border border-border bg-card p-3 shadow-lg text-xs font-mono md:bottom-4">
+          <div className="flex items-center justify-between mb-1.5">
+            <span className="font-semibold text-foreground text-[11px] uppercase tracking-wide">Email Debug</span>
+            <button
+              onClick={() => setEmailDebug(null)}
+              className="text-muted-foreground hover:text-foreground transition-colors"
+              aria-label="Dismiss"
+            >✕</button>
+          </div>
+          <div className="space-y-0.5 text-muted-foreground">
+            <p>To: <span className="text-foreground">{emailDebug.recipientName}</span> <span className="opacity-60">({emailDebug.recipientId.slice(0, 8)}…)</span></p>
+            <p>Status: <span className={emailDebug.success ? "text-green-500" : "text-destructive"}>{emailDebug.success ? `✓ ${emailDebug.httpStatus}` : `✗ ${emailDebug.httpStatus ?? 'N/A'}`}</span></p>
+            {emailDebug.error && <p className="text-destructive break-all">Error: {emailDebug.error}</p>}
+            <p className="opacity-60">{new Date(emailDebug.timestamp).toLocaleTimeString()}</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
