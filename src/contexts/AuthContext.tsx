@@ -1,8 +1,9 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { createContext, useContext, useEffect, useRef, useState, ReactNode } from "react";
 import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 
 const HEARTBEAT_INTERVAL = 60_000; // 1 minute
+const OAUTH_SIGNUP_EMAIL_SYNC_WINDOW_MS = 24 * 60 * 60 * 1000;
 
 interface AuthContextType {
   session: Session | null;
@@ -23,6 +24,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
   const [isPremium, setIsPremium] = useState(false);
   const [premiumLoading, setPremiumLoading] = useState(true);
+  const attemptedSignupEmailSyncUserId = useRef<string | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -85,6 +87,86 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       cancelled = true;
     };
   }, [user]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const maybeTriggerOAuthSignupEmails = async () => {
+      if (!user || !session) {
+        attemptedSignupEmailSyncUserId.current = null;
+        return;
+      }
+
+      const authProvider = session.user.app_metadata?.provider;
+      if (!authProvider || authProvider === "email") {
+        return;
+      }
+
+      if (attemptedSignupEmailSyncUserId.current === user.id) {
+        return;
+      }
+
+      attemptedSignupEmailSyncUserId.current = user.id;
+
+      const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("created_at, welcome_email_sent")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      if (cancelled || profileError || !profile || profile.welcome_email_sent) {
+        return;
+      }
+
+      const createdAtMs = new Date(profile.created_at).getTime();
+      if (!Number.isFinite(createdAtMs) || Date.now() - createdAtMs > OAUTH_SIGNUP_EMAIL_SYNC_WINDOW_MS) {
+        return;
+      }
+
+      const invokeSignupSync = async (accessToken: string) =>
+        supabase.functions.invoke("auth-email-hook", {
+          body: { trigger: "oauth-signup-sync" },
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        });
+
+      let accessToken = session.access_token;
+
+      if (!accessToken) {
+        const { data: refreshed, error: refreshError } = await supabase.auth.refreshSession();
+        if (cancelled || refreshError) {
+          return;
+        }
+        accessToken = refreshed.session?.access_token ?? "";
+      }
+
+      if (!accessToken) {
+        return;
+      }
+
+      let { error: syncError } = await invokeSignupSync(accessToken);
+
+      if (syncError && /401|jwt|unauthorized|auth/i.test(syncError.message || "")) {
+        const { data: refreshed, error: refreshError } = await supabase.auth.refreshSession();
+        if (cancelled || refreshError || !refreshed.session?.access_token) {
+          return;
+        }
+
+        ({ error: syncError } = await invokeSignupSync(refreshed.session.access_token));
+      }
+
+      if (syncError) {
+        console.error("OAuth signup email sync failed", syncError);
+      }
+    };
+
+    void maybeTriggerOAuthSignupEmails();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [session, user]);
 
   // Online heartbeat - update last_seen every minute
   useEffect(() => {

@@ -40,6 +40,7 @@ const SITE_NAME = "MyFilipinoMatch"
 const SENDER_DOMAIN = "notify.myfilipinomatch.com"
 const ROOT_DOMAIN = "myfilipinomatch.com"
 const FROM_DOMAIN = "myfilipinomatch.com"
+const OAUTH_SIGNUP_SYNC_WINDOW_MS = 24 * 60 * 60 * 1000
 
 const SAMPLE_PROJECT_URL = "https://myfilipinomatch.lovable.app"
 const SAMPLE_EMAIL = "user@example.test"
@@ -327,6 +328,132 @@ async function triggerSignupAppEmails(
   }
 }
 
+async function handleOAuthSignupSync(req: Request): Promise<Response> {
+  const authHeader = req.headers.get('Authorization')
+
+  if (!authHeader?.startsWith('Bearer ')) {
+    return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+      status: 401,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    })
+  }
+
+  let body: { trigger?: string }
+  try {
+    body = await req.json()
+  } catch {
+    return new Response(JSON.stringify({ error: 'Invalid JSON in request body' }), {
+      status: 400,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    })
+  }
+
+  if (body.trigger !== 'oauth-signup-sync') {
+    return new Response(JSON.stringify({ error: 'Unsupported request' }), {
+      status: 400,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    })
+  }
+
+  const supabaseUrl = Deno.env.get('SUPABASE_URL')
+  const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+
+  if (!supabaseUrl || !supabaseServiceKey) {
+    console.error('Missing required environment variables for OAuth signup sync')
+    return new Response(JSON.stringify({ error: 'Server configuration error' }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    })
+  }
+
+  const supabase = createClient(supabaseUrl, supabaseServiceKey)
+  const token = authHeader.slice('Bearer '.length).trim()
+
+  const { data: authData, error: authError } = await supabase.auth.getUser(token)
+  if (authError || !authData.user) {
+    console.error('OAuth signup sync auth failed', { error: authError })
+    return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+      status: 401,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    })
+  }
+
+  const user = authData.user
+  const provider = typeof user.app_metadata?.provider === 'string' ? user.app_metadata.provider : null
+
+  if (!provider || provider === 'email') {
+    return new Response(JSON.stringify({ success: true, skipped: 'non_oauth_signup' }), {
+      status: 200,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    })
+  }
+
+  const { data: profile, error: profileError } = await supabase
+    .from('profiles')
+    .select('email, full_name, welcome_email_sent, created_at')
+    .eq('id', user.id)
+    .maybeSingle()
+
+  if (profileError) {
+    console.error('Failed to load profile for OAuth signup sync', {
+      error: profileError,
+      userId: user.id,
+    })
+    return new Response(JSON.stringify({ error: 'Failed to load signup profile' }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    })
+  }
+
+  if (!profile) {
+    return new Response(JSON.stringify({ success: true, skipped: 'profile_missing' }), {
+      status: 200,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    })
+  }
+
+  if (profile.welcome_email_sent) {
+    return new Response(JSON.stringify({ success: true, skipped: 'already_queued' }), {
+      status: 200,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    })
+  }
+
+  const createdAtMs = new Date(profile.created_at).getTime()
+  if (!Number.isFinite(createdAtMs) || Date.now() - createdAtMs > OAUTH_SIGNUP_SYNC_WINDOW_MS) {
+    return new Response(JSON.stringify({ success: true, skipped: 'outside_sync_window' }), {
+      status: 200,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    })
+  }
+
+  const userEmail = profile.email ? normalizeEmail(profile.email) : user.email ? normalizeEmail(user.email) : null
+  if (!userEmail) {
+    return new Response(JSON.stringify({ success: true, skipped: 'missing_email' }), {
+      status: 200,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    })
+  }
+
+  await triggerSignupAppEmails(supabase, {
+    data: {
+      email: userEmail,
+      full_name: profile.full_name,
+      user_metadata: user.user_metadata ?? {},
+      user: {
+        id: user.id,
+        user_metadata: user.user_metadata ?? {},
+      },
+      user_id: user.id,
+    },
+  })
+
+  return new Response(JSON.stringify({ success: true, queued: true }), {
+    status: 200,
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+  })
+}
+
 async function handlePreview(req: Request): Promise<Response> {
   const previewCorsHeaders = {
     'Access-Control-Allow-Origin': '*',
@@ -553,6 +680,10 @@ Deno.serve(async (req) => {
   }
 
   try {
+    if (req.headers.get('Authorization')?.startsWith('Bearer ')) {
+      return await handleOAuthSignupSync(req)
+    }
+
     return await handleWebhook(req)
   } catch (error) {
     console.error('Webhook handler error:', error)
