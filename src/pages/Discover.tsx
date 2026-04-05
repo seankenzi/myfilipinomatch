@@ -1430,6 +1430,16 @@ const Discover = () => {
                       </LazyCard>
                     ))}
                   </div>
+                  {/* Infinite scroll sentinel */}
+                  <div ref={sentinelRef} className="h-1" />
+                  {loadingMore && (
+                    <div className="flex justify-center py-6">
+                      <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                    </div>
+                  )}
+                  {!hasMore && profiles.length > 0 && (
+                    <p className="text-center text-sm text-muted-foreground py-4">You've seen all profiles</p>
+                  )}
                 )}
               </div>
             </div>
