@@ -505,18 +505,38 @@ const Messages = () => {
       toast({ title: "Failed to send", description: error.message, variant: "destructive" });
       setNewMessage(content);
     } else {
-      // Send email notification to the recipient (fire-and-forget)
+      // Send email notification to the recipient
       try {
-        const { error: emailError } = await supabase.functions.invoke("send-transactional-email", {
-          body: {
-            templateName: "new-message",
-            recipientUserId: selectedMatch.other_user.id,
-            idempotencyKey: `new-message-${messageId}`,
-            templateData: { senderName: myProfile?.full_name || undefined },
-          },
-        });
-        if (emailError) {
-          console.error("Email notification error:", emailError);
+        const { data: sessionData } = await supabase.auth.getSession();
+        const accessToken = sessionData.session?.access_token;
+
+        if (!accessToken) {
+          console.error("Missing auth session while triggering new message email.");
+        } else {
+          const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-transactional-email`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${accessToken}`,
+              apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+            },
+            body: JSON.stringify({
+              templateName: "new-message",
+              recipientUserId: selectedMatch.other_user.id,
+              idempotencyKey: `new-message-${messageId}`,
+              templateData: { senderName: myProfile?.full_name || undefined },
+            }),
+          });
+
+          if (!response.ok) {
+            let errorBody: unknown = null;
+            try {
+              errorBody = await response.json();
+            } catch {
+              errorBody = await response.text();
+            }
+            console.error("Email notification error:", response.status, errorBody);
+          }
         }
       } catch (invokeError) {
         console.error("Failed to trigger new message email:", invokeError);
