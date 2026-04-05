@@ -66,8 +66,11 @@ const Onboarding = () => {
   // Step 3: Location
   const [country, setCountry] = useState("");
   const [countryOpen, setCountryOpen] = useState(false);
+  const [province, setProvince] = useState("");
+  const [provinceOpen, setProvinceOpen] = useState(false);
   const [city, setCity] = useState("");
   const [cityOpen, setCityOpen] = useState(false);
+  const provinceCities = province ? getCitiesByProvince(province) : [];
   // Step 4: Basic Profile
   const [fullName, setFullName] = useState("");
   const [age, setAge] = useState("");
@@ -108,7 +111,7 @@ const Onboarding = () => {
     switch (step) {
       case 1: return !!userType;
       case 2: return !!relationshipIntent;
-      case 3: return userType === "foreigner" ? (!!country && !!city) : !!city;
+      case 3: return userType === "foreigner" ? (!!country && !!city) : (!!province && !!city);
       case 4: return !!fullName.trim() && !!age && parseInt(age) >= 18 && !!gender;
       case 5: return bio.trim().length >= 150; // bio is mandatory (min 150 chars)
       case 6: return interests.length >= 3;
@@ -147,6 +150,7 @@ const Onboarding = () => {
         user_type: userType,
         relationship_intent: relationshipIntent,
         country: userType === "foreigner" ? country : "Philippines",
+        province: userType === "philippines" ? province : null,
         city: city,
         full_name: fullName.trim(),
         age: parseInt(age),
@@ -304,10 +308,10 @@ const Onboarding = () => {
               <div className="text-center space-y-2">
                 <MapPin className="h-10 w-10 text-primary mx-auto" />
                 <h2 className="text-2xl font-bold font-display">
-                  {userType === "foreigner" ? "Where are you from?" : "What city are you in?"}
+                  {userType === "foreigner" ? "Where are you from?" : "Where in the Philippines?"}
                 </h2>
                 <p className="text-sm text-muted-foreground">
-                  {userType === "foreigner" ? "Select your country and city" : "Select or type your city"}
+                  {userType === "foreigner" ? "Select your country and city" : "Select your province and city"}
                 </p>
               </div>
               {userType === "foreigner" && (
@@ -348,11 +352,39 @@ const Onboarding = () => {
               )}
               {userType === "philippines" && (
                 <div className="space-y-3">
-                  <Label className="text-sm text-muted-foreground">Your city *</Label>
+                  <Label className="text-sm text-muted-foreground">Province *</Label>
+                  <Popover open={provinceOpen} onOpenChange={setProvinceOpen}>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline" role="combobox" aria-expanded={provinceOpen} className="w-full text-base h-12 rounded-xl justify-between font-normal">
+                        {province || "Select your province..."}
+                        <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                      <Command>
+                        <CommandInput placeholder="Search province..." />
+                        <CommandList>
+                          <CommandEmpty>No province found.</CommandEmpty>
+                          <CommandGroup>
+                            {getProvinceNames().map((p) => (
+                              <CommandItem key={p} value={p} onSelect={(val) => { setProvince(val); setCity(""); setProvinceOpen(false); }} className={province === p ? "bg-primary/10" : ""}>
+                                {p}
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
+                </div>
+              )}
+              {userType === "philippines" && province && (
+                <div className="space-y-3">
+                  <Label className="text-sm text-muted-foreground">City / Municipality *</Label>
                   <Popover open={cityOpen} onOpenChange={setCityOpen}>
                     <PopoverTrigger asChild>
                       <Button variant="outline" role="combobox" aria-expanded={cityOpen} className="w-full text-base h-12 rounded-xl justify-between font-normal">
-                        {city ? city : "Select your city..."}
+                        {city || "Select your city..."}
                         <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                       </Button>
                     </PopoverTrigger>
@@ -362,7 +394,7 @@ const Onboarding = () => {
                         <CommandList>
                           <CommandEmpty>No city found.</CommandEmpty>
                           <CommandGroup>
-                            {PH_CITIES.filter(c => c !== "Other").map((c) => (
+                            {provinceCities.map((c) => (
                               <CommandItem key={c} value={c} onSelect={(val) => { setCity(val); setCityOpen(false); }} className={city === c ? "bg-primary/10" : ""}>
                                 {c}
                               </CommandItem>
