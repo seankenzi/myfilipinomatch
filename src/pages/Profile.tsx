@@ -31,6 +31,7 @@ const Profile = () => {
     age: null as number | null,
     gender: "",
     country: "",
+    province: "",
     city: "",
     bio: "",
     interests: [] as string[],
