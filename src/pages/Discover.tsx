@@ -1381,6 +1381,7 @@ const Discover = () => {
                           )}
                         </div>
                       </motion.div>
+                      </LazyCard>
                     ))}
                   </div>
                 )}
