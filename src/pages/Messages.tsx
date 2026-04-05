@@ -497,11 +497,26 @@ const Messages = () => {
       ? { conversation_id: selectedMatch.id, sender_id: user.id, content }
       : { match_id: selectedMatch.id, sender_id: user.id, content };
 
-    const { error } = await (supabase.from(isDm ? "dm_messages" as any : "messages").insert(insertData as any) as any);
+    const { data: insertedMsg, error } = await (supabase.from(isDm ? "dm_messages" as any : "messages").insert(insertData as any).select("id").single() as any);
 
     if (error) {
       toast({ title: "Failed to send", description: error.message, variant: "destructive" });
       setNewMessage(content);
+    } else if (insertedMsg) {
+      // Send email notification to the recipient (fire-and-forget)
+      const recipientId = selectedMatch.other_user.id;
+      supabase.from("profiles").select("email").eq("id", recipientId).single().then(({ data: recipientProfile }) => {
+        if (recipientProfile?.email) {
+          supabase.functions.invoke("send-transactional-email", {
+            body: {
+              templateName: "new-message",
+              recipientEmail: recipientProfile.email,
+              idempotencyKey: `new-message-${insertedMsg.id}`,
+              templateData: { senderName: myProfile ? undefined : undefined },
+            },
+          });
+        }
+      });
     }
     setSending(false);
   };
