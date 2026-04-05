@@ -512,7 +512,7 @@ const Messages = () => {
               templateName: "new-message",
               recipientEmail: recipientProfile.email,
               idempotencyKey: `new-message-${insertedMsg.id}`,
-              templateData: { senderName: myProfile ? undefined : undefined },
+              templateData: { senderName: myProfile?.full_name || undefined },
             },
           });
         }
