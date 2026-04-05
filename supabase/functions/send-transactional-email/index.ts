@@ -190,7 +190,45 @@ Deno.serve(async (req) => {
     )
   }
 
-  // 3. Get or create unsubscribe token (one token per email address)
+  // 3. Throttle: for "new-message" emails, allow at most one per recipient per 60 minutes
+  const THROTTLED_TEMPLATES: Record<string, number> = {
+    'new-message': 60, // minutes
+  }
+
+  const throttleMinutes = THROTTLED_TEMPLATES[templateName]
+  if (throttleMinutes) {
+    const cutoff = new Date(Date.now() - throttleMinutes * 60_000).toISOString()
+    const { data: recentSend, error: throttleError } = await supabase
+      .from('email_send_log')
+      .select('id')
+      .eq('template_name', templateName)
+      .eq('recipient_email', effectiveRecipient.toLowerCase())
+      .in('status', ['pending', 'sent'])
+      .gte('created_at', cutoff)
+      .limit(1)
+      .maybeSingle()
+
+    if (throttleError) {
+      console.warn('Throttle check failed — proceeding with send', {
+        error: throttleError,
+      })
+    } else if (recentSend) {
+      console.log('Email throttled', {
+        templateName,
+        effectiveRecipient,
+        throttleMinutes,
+      })
+      return new Response(
+        JSON.stringify({ success: false, reason: 'throttled', throttleMinutes }),
+        {
+          status: 200,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      )
+    }
+  }
+
+  // 4. Get or create unsubscribe token (one token per email address)
   const normalizedEmail = effectiveRecipient.toLowerCase()
   let unsubscribeToken: string
 
