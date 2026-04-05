@@ -378,20 +378,23 @@ const Discover = () => {
       for (let i = 0; i < allPaths.length; i += BATCH) {
         const batch = allPaths.slice(i, i + BATCH);
         getSignedPhotoUrls(batch).then((signed) => {
+          // Build map: raw path → signed URL (or empty string for missing files)
           const map = new Map<string, string>();
           batch.forEach((p, idx) => {
-            if (signed[idx]) map.set(p, signed[idx]);
+            map.set(p, signed[idx] || "");
           });
           setProfiles((prev) => prev.map((profile) => {
             let changed = false;
             const newPhotos = profile.photos?.map((ph) => {
               if (map.has(ph)) { changed = true; return map.get(ph)!; }
               return ph;
-            }) || null;
+            }).filter(Boolean) || null;
             const newAvatar = profile.avatar_url && map.has(profile.avatar_url)
               ? (changed = true, map.get(profile.avatar_url)!)
               : profile.avatar_url;
-            return changed ? { ...profile, photos: newPhotos, avatar_url: newAvatar } : profile;
+            // Clear avatar if it resolved to empty
+            const finalAvatar = newAvatar || null;
+            return changed ? { ...profile, photos: newPhotos && newPhotos.length > 0 ? newPhotos : null, avatar_url: finalAvatar } : profile;
           }));
         });
       }
