@@ -493,16 +493,18 @@ const Messages = () => {
     setNewMessage("");
 
     const isDm = selectedMatch.source === 'dm';
-    const insertData = isDm
-      ? { conversation_id: selectedMatch.id, sender_id: user.id, content }
-      : { match_id: selectedMatch.id, sender_id: user.id, content };
 
-    const { data: insertedMsg, error } = await (supabase.from(isDm ? "dm_messages" as any : "messages").insert(insertData as any).select("id").single() as any);
+    const messageId = crypto.randomUUID();
+    const insertPayload = isDm
+      ? { id: messageId, conversation_id: selectedMatch.id, sender_id: user.id, content }
+      : { id: messageId, match_id: selectedMatch.id, sender_id: user.id, content };
+
+    const { error } = await (supabase.from(isDm ? "dm_messages" as any : "messages").insert(insertPayload as any) as any);
 
     if (error) {
       toast({ title: "Failed to send", description: error.message, variant: "destructive" });
       setNewMessage(content);
-    } else if (insertedMsg) {
+    } else {
       // Send email notification to the recipient (fire-and-forget)
       const recipientId = selectedMatch.other_user.id;
       supabase.from("profiles").select("email").eq("id", recipientId).single().then(({ data: recipientProfile }) => {
@@ -511,7 +513,7 @@ const Messages = () => {
             body: {
               templateName: "new-message",
               recipientEmail: recipientProfile.email,
-              idempotencyKey: `new-message-${insertedMsg.id}`,
+              idempotencyKey: `new-message-${messageId}`,
               templateData: { senderName: myProfile?.full_name || undefined },
             },
           });
