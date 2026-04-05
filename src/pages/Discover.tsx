@@ -1269,7 +1269,6 @@ const Discover = () => {
                     {profiles.map((profile) => (
                       <LazyCard key={`lazy-${profile.id}`}>
                       <motion.div
-                        key={profile.id}
                         layout
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
