@@ -519,21 +519,14 @@ const Discover = () => {
 
     // Send "someone liked you" email to the liked person
     if (!error || error.code === "23505") {
-      const { data: likedProfile } = await supabase
-        .from("profiles")
-        .select("email")
-        .eq("id", profile.id)
-        .maybeSingle();
-      if (likedProfile?.email) {
-        supabase.functions.invoke("send-transactional-email", {
-          body: {
-            templateName: "profile-liked",
-            recipientEmail: likedProfile.email,
-            idempotencyKey: `profile-liked-${user.id}-${profile.id}`,
-            templateData: { likerName: user.user_metadata?.full_name?.split(" ")[0] || "" },
-          },
-        }).catch(() => {});
-      }
+      supabase.functions.invoke("send-transactional-email", {
+        body: {
+          templateName: "profile-liked",
+          recipientUserId: profile.id,
+          idempotencyKey: `profile-liked-${user.id}-${profile.id}`,
+          templateData: { likerName: user.user_metadata?.full_name?.split(" ")[0] || "" },
+        },
+      }).catch(() => {});
     }
 
     setDailyLikesUsed((prev) => prev + 1);

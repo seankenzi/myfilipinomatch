@@ -145,21 +145,14 @@ const WhoLikedMe = () => {
 
     // Send "someone liked you" email to the liked person
     if (!error || error.code === "23505") {
-      const { data: likedProfile } = await supabase
-        .from("profiles")
-        .select("email")
-        .eq("id", likerId)
-        .maybeSingle();
-      if (likedProfile?.email) {
-        supabase.functions.invoke("send-transactional-email", {
-          body: {
-            templateName: "profile-liked",
-            recipientEmail: likedProfile.email,
-            idempotencyKey: `profile-liked-${user.id}-${likerId}`,
-            templateData: { likerName: user.user_metadata?.full_name?.split(" ")[0] || "" },
-          },
-        }).catch(() => {});
-      }
+      supabase.functions.invoke("send-transactional-email", {
+        body: {
+          templateName: "profile-liked",
+          recipientUserId: likerId,
+          idempotencyKey: `profile-liked-${user.id}-${likerId}`,
+          templateData: { likerName: user.user_metadata?.full_name?.split(" ")[0] || "" },
+        },
+      }).catch(() => {});
     }
 
     // Check for mutual match
