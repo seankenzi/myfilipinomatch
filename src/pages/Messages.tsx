@@ -505,16 +505,22 @@ const Messages = () => {
       toast({ title: "Failed to send", description: error.message, variant: "destructive" });
       setNewMessage(content);
     } else {
-      void supabase.functions.invoke("send-transactional-email", {
-        body: {
-          templateName: "new-message",
-          recipientUserId: selectedMatch.other_user.id,
-          idempotencyKey: `new-message-${messageId}`,
-          templateData: { senderName: myProfile?.full_name || undefined },
-        },
-      }).catch((invokeError) => {
-        console.error("Failed to trigger new message email", invokeError);
-      });
+      // Send email notification to the recipient (fire-and-forget)
+      try {
+        const { error: emailError } = await supabase.functions.invoke("send-transactional-email", {
+          body: {
+            templateName: "new-message",
+            recipientUserId: selectedMatch.other_user.id,
+            idempotencyKey: `new-message-${messageId}`,
+            templateData: { senderName: myProfile?.full_name || undefined },
+          },
+        });
+        if (emailError) {
+          console.error("Email notification error:", emailError);
+        }
+      } catch (invokeError) {
+        console.error("Failed to trigger new message email:", invokeError);
+      }
     }
     setSending(false);
   };
