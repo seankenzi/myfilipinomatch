@@ -128,6 +128,43 @@ const SkeletonImage = ({ src, alt, className = "", loading = "lazy" as "lazy" | 
   );
 };
 
+// Lazy-render wrapper – defers rendering until the card is near the viewport
+const LazyCard = memo(({ children, className }: { children: React.ReactNode; className?: string }) => {
+  const ref = useRef<HTMLDivElement>(null);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setVisible(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: "300px" }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <div ref={ref} className={className}>
+      {visible ? children : (
+        <div className="rounded-2xl border border-border bg-card overflow-hidden">
+          <div className="aspect-[3/4] bg-muted animate-pulse" />
+          <div className="p-2.5 space-y-2">
+            <div className="h-4 w-2/3 bg-muted rounded animate-pulse" />
+            <div className="h-9 bg-muted rounded-lg animate-pulse" />
+          </div>
+        </div>
+      )}
+    </div>
+  );
+});
+LazyCard.displayName = "LazyCard";
+
 // Photo gallery component for swipe cards
 const PhotoGallery = ({ photos, name }: { photos: string[]; name: string }) => {
   const [photoIndex, setPhotoIndex] = useState(0);
