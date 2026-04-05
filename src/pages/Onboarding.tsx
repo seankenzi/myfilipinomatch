@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { getProvinceNames, getCitiesByProvince } from "@/data/philippineProvinces";
+import { hasStateDropdown, getStatesByCountry, getSubdivisionLabel } from "@/data/countryStates";
 import { detectContactInfo } from "@/lib/contactFilter";
 import { useNavigate } from "react-router-dom";
 import { Heart, Globe, MapPin, User, Camera, Shield, ArrowRight, ArrowLeft, Sparkles, CheckCircle, Users, Search } from "lucide-react";
@@ -150,7 +151,7 @@ const Onboarding = () => {
         user_type: userType,
         relationship_intent: relationshipIntent,
         country: userType === "foreigner" ? country : "Philippines",
-        province: userType === "philippines" ? province : null,
+        province: province || null,
         city: city,
         full_name: fullName.trim(),
         age: parseInt(age),
