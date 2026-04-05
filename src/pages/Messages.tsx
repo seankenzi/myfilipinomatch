@@ -533,35 +533,9 @@ const Messages = () => {
           templateData: { senderName: myProfile?.full_name || undefined },
         };
 
-        const invokeEmail = async (accessToken?: string) =>
-          supabase.functions.invoke("send-transactional-email", {
-            body: emailPayload,
-            headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
-          });
-
-        const { data: sessionData } = await supabase.auth.getSession();
-        let accessToken = sessionData.session?.access_token;
-
-        if (!accessToken) {
-          const { data: refreshed, error: refreshError } = await supabase.auth.refreshSession();
-          if (refreshError) {
-            throw refreshError;
-          }
-          accessToken = refreshed.session?.access_token;
-        }
-
-        let { data: responseBody, error: invokeError } = await invokeEmail(accessToken);
-
-        const httpStatus = getInvokeStatus(invokeError);
-        const isAuthError = httpStatus === 401 || (invokeError && /401|jwt|unauthorized|auth/i.test(invokeError.message || ""));
-        if (isAuthError) {
-          const { data: refreshed, error: refreshError } = await supabase.auth.refreshSession();
-          if (refreshError) {
-            throw refreshError;
-          }
-
-          ({ data: responseBody, error: invokeError } = await invokeEmail(refreshed.session?.access_token));
-        }
+        const { data: responseBody, error: invokeError } = await supabase.functions.invoke("send-transactional-email", {
+          body: emailPayload,
+        });
 
         if (invokeError) {
           const httpStatus = getInvokeStatus(invokeError);
