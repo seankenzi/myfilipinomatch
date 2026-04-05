@@ -373,30 +373,29 @@ const Discover = () => {
 
       if (allPaths.length === 0) return;
 
-      // Sign in batches of 15 and update UI progressively
-      const BATCH = 15;
+      // Sign in larger batches for fewer API round-trips
+      const BATCH = 50;
+      const applySignedBatch = (batch: string[], signed: string[]) => {
+        const map = new Map<string, string>();
+        batch.forEach((p, idx) => map.set(p, signed[idx] || ""));
+        setProfiles((prev) => prev.map((profile) => {
+          let changed = false;
+          const newPhotos = profile.photos?.map((ph) => {
+            if (map.has(ph)) { changed = true; return map.get(ph)!; }
+            return ph;
+          }).filter(Boolean) || null;
+          const newAvatar = profile.avatar_url && map.has(profile.avatar_url)
+            ? (changed = true, map.get(profile.avatar_url)!)
+            : profile.avatar_url;
+          const finalAvatar = newAvatar || null;
+          return changed ? { ...profile, photos: newPhotos && newPhotos.length > 0 ? newPhotos : null, avatar_url: finalAvatar } : profile;
+        }));
+      };
+
+      // Fire all batches in parallel
       for (let i = 0; i < allPaths.length; i += BATCH) {
         const batch = allPaths.slice(i, i + BATCH);
-        getSignedPhotoUrls(batch).then((signed) => {
-          // Build map: raw path → signed URL (or empty string for missing files)
-          const map = new Map<string, string>();
-          batch.forEach((p, idx) => {
-            map.set(p, signed[idx] || "");
-          });
-          setProfiles((prev) => prev.map((profile) => {
-            let changed = false;
-            const newPhotos = profile.photos?.map((ph) => {
-              if (map.has(ph)) { changed = true; return map.get(ph)!; }
-              return ph;
-            }).filter(Boolean) || null;
-            const newAvatar = profile.avatar_url && map.has(profile.avatar_url)
-              ? (changed = true, map.get(profile.avatar_url)!)
-              : profile.avatar_url;
-            // Clear avatar if it resolved to empty
-            const finalAvatar = newAvatar || null;
-            return changed ? { ...profile, photos: newPhotos && newPhotos.length > 0 ? newPhotos : null, avatar_url: finalAvatar } : profile;
-          }));
-        });
+        getSignedPhotoUrls(batch).then((signed) => applySignedBatch(batch, signed));
       }
     }
   }, [user, filterCountry, filterIntent, filterCity, filterGender, filterAgeRange, isPremium, filterEducation, filterLanguage, filterChildren, filterHeightRange]);
