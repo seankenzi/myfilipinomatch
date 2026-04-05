@@ -11,8 +11,18 @@ interface PhotoUploadProps {
   maxPhotos?: number;
 }
 
+/** Compute a simple hash string from a File's contents for duplicate detection. */
+async function fileHash(file: File): Promise<string> {
+  const buffer = await file.arrayBuffer();
+  const hashBuffer = await crypto.subtle.digest("SHA-256", buffer);
+  return Array.from(new Uint8Array(hashBuffer))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+
 const PhotoUpload = ({ photos, onPhotosChange, maxPhotos = 6 }: PhotoUploadProps) => {
   const [uploading, setUploading] = useState(false);
+  const [knownHashes, setKnownHashes] = useState<Set<string>>(new Set());
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { user } = useAuth();
   const { toast } = useToast();
@@ -29,7 +39,6 @@ const PhotoUpload = ({ photos, onPhotosChange, maxPhotos = 6 }: PhotoUploadProps
 
     if (error) throw error;
 
-    // Store the path, not the public URL
     return fileName;
   };
 
@@ -44,14 +53,44 @@ const PhotoUpload = ({ photos, onPhotosChange, maxPhotos = 6 }: PhotoUploadProps
       toast({ title: `Max ${maxPhotos} photos`, description: `Only uploading ${remaining} more.`, variant: "destructive" });
     }
 
+    // Duplicate detection: hash each file and reject duplicates
+    const hashes = await Promise.all(toUpload.map(fileHash));
+    const currentHashes = new Set(knownHashes);
+    const uniqueFiles: File[] = [];
+    const newHashes: string[] = [];
+    let duplicatesSkipped = 0;
+
+    for (let i = 0; i < toUpload.length; i++) {
+      if (currentHashes.has(hashes[i])) {
+        duplicatesSkipped++;
+      } else {
+        currentHashes.add(hashes[i]);
+        uniqueFiles.push(toUpload[i]);
+        newHashes.push(hashes[i]);
+      }
+    }
+
+    if (duplicatesSkipped > 0) {
+      toast({
+        title: "Duplicate photo detected",
+        description: `${duplicatesSkipped} duplicate photo${duplicatesSkipped > 1 ? "s were" : " was"} skipped. Please upload different photos.`,
+        variant: "destructive",
+      });
+    }
+
+    if (uniqueFiles.length === 0) {
+      if (fileInputRef.current) fileInputRef.current.value = "";
+      return;
+    }
+
     setUploading(true);
     try {
-      const urls = await Promise.all(toUpload.map(uploadPhoto));
+      const urls = await Promise.all(uniqueFiles.map(uploadPhoto));
       const validUrls = urls.filter(Boolean) as string[];
       const updated = [...photos, ...validUrls];
       onPhotosChange(updated);
+      setKnownHashes(currentHashes);
 
-      // Save to profile
       if (user) {
         await supabase.from("profiles").update({ photos: updated, avatar_url: updated[0] || null }).eq("id", user.id);
       }
