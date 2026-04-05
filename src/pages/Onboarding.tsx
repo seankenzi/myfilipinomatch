@@ -73,7 +73,8 @@ const Onboarding = () => {
   const [cityOpen, setCityOpen] = useState(false);
   const provinceCities = province ? getCitiesByProvince(province) : [];
   // Step 4: Basic Profile
-  const [fullName, setFullName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [age, setAge] = useState("");
   const [gender, setGender] = useState("");
   // Step 5: Bio
@@ -100,7 +101,11 @@ const Onboarding = () => {
       }
 
       const meta = user.user_metadata;
-      if (meta?.full_name) setFullName(meta.full_name);
+      if (meta?.full_name) {
+        const parts = meta.full_name.trim().split(/\s+/);
+        setFirstName(parts[0] || "");
+        setLastName(parts.slice(1).join(" ") || "");
+      }
     };
 
     void syncOnboardingStatus();
@@ -113,7 +118,7 @@ const Onboarding = () => {
       case 1: return !!userType;
       case 2: return !!relationshipIntent;
       case 3: return userType === "foreigner" ? (!!country && !!city) : (!!province && !!city);
-      case 4: return !!fullName.trim() && !!age && parseInt(age) >= 18 && !!gender;
+      case 4: return !!firstName.trim() && !!lastName.trim() && !!age && parseInt(age) >= 18 && !!gender;
       case 5: return bio.trim().length >= 150; // bio is mandatory (min 150 chars)
       case 6: return interests.length >= 3;
       case 7: return photos.length >= 3;
@@ -153,7 +158,7 @@ const Onboarding = () => {
         country: userType === "foreigner" ? country : "Philippines",
         province: province || null,
         city: city,
-        full_name: fullName.trim(),
+        full_name: `${firstName.trim()} ${lastName.trim()}`,
         age: parseInt(age),
         gender,
         bio: bio.trim(),
@@ -458,8 +463,12 @@ const Onboarding = () => {
 
               <div className="space-y-4">
                 <div className="space-y-1.5">
-                  <Label htmlFor="fullName">Full Name *</Label>
-                  <Input id="fullName" value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Your name" className="text-base h-12" />
+                  <Label htmlFor="firstName">First Name *</Label>
+                  <Input id="firstName" value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder="Your first name" className="text-base h-12" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="lastName">Last Name *</Label>
+                  <Input id="lastName" value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="Your last name" className="text-base h-12" />
                 </div>
                 <div className="space-y-1.5">
                   <Label htmlFor="age">Age *</Label>
