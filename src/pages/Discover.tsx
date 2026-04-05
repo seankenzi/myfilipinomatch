@@ -373,11 +373,9 @@ const Discover = () => {
 
       if (allPaths.length === 0) return;
 
-      // Sign in batches of 15 and update UI progressively
-      const BATCH = 15;
-      for (let i = 0; i < allPaths.length; i += BATCH) {
-        const batch = allPaths.slice(i, i + BATCH);
-        getSignedPhotoUrls(batch).then((signed) => {
+      // Sign in larger batches (Supabase supports up to 100) for fewer round-trips
+      const BATCH = 50;
+      const applySignedBatch = (batch: string[], signed: string[]) => {
           // Build map: raw path → signed URL (or empty string for missing files)
           const map = new Map<string, string>();
           batch.forEach((p, idx) => {
