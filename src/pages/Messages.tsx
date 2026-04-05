@@ -33,6 +33,15 @@ import { motion, AnimatePresence } from "framer-motion";
 const FREE_MESSAGE_LIMIT = 3;
 const FREE_DAILY_MESSAGE_LIMIT = 10;
 
+const getInvokeStatus = (error: unknown) => {
+  const responseContext = (error as { context?: Response | { status?: number } } | null)?.context;
+  return responseContext instanceof Response
+    ? responseContext.status
+    : typeof responseContext?.status === "number"
+      ? responseContext.status
+      : null;
+};
+
 interface MatchProfile {
   id: string;
   full_name: string;
@@ -524,29 +533,38 @@ const Messages = () => {
           templateData: { senderName: myProfile?.full_name || undefined },
         };
 
-        let { data: responseBody, error: invokeError } = await supabase.functions.invoke("send-transactional-email", {
-          body: emailPayload,
-        });
+        const invokeEmail = async (accessToken?: string) =>
+          supabase.functions.invoke("send-transactional-email", {
+            body: emailPayload,
+            headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
+          });
 
-        const isAuthError = invokeError && /401|jwt|unauthorized|auth/i.test(invokeError.message || "");
+        const { data: sessionData } = await supabase.auth.getSession();
+        let accessToken = sessionData.session?.access_token;
+
+        if (!accessToken) {
+          const { data: refreshed, error: refreshError } = await supabase.auth.refreshSession();
+          if (refreshError) {
+            throw refreshError;
+          }
+          accessToken = refreshed.session?.access_token;
+        }
+
+        let { data: responseBody, error: invokeError } = await invokeEmail(accessToken);
+
+        const httpStatus = getInvokeStatus(invokeError);
+        const isAuthError = httpStatus === 401 || (invokeError && /401|jwt|unauthorized|auth/i.test(invokeError.message || ""));
         if (isAuthError) {
-          const { error: refreshError } = await supabase.auth.refreshSession();
+          const { data: refreshed, error: refreshError } = await supabase.auth.refreshSession();
           if (refreshError) {
             throw refreshError;
           }
 
-          ({ data: responseBody, error: invokeError } = await supabase.functions.invoke("send-transactional-email", {
-            body: emailPayload,
-          }));
+          ({ data: responseBody, error: invokeError } = await invokeEmail(refreshed.session?.access_token));
         }
 
         if (invokeError) {
-          const responseContext = (invokeError as { context?: Response | { status?: number } }).context;
-          const httpStatus = responseContext instanceof Response
-            ? responseContext.status
-            : typeof responseContext?.status === "number"
-              ? responseContext.status
-              : null;
+          const httpStatus = getInvokeStatus(invokeError);
 
           console.error("Email notification error:", httpStatus, invokeError);
           setEmailDebug({
