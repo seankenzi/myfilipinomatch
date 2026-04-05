@@ -202,7 +202,7 @@ const getProfilePhotos = (profile: Profile): string[] => {
   const photos: string[] = [];
   if (profile.photos && profile.photos.length > 0) photos.push(...profile.photos);
   else if (profile.avatar_url) photos.push(profile.avatar_url);
-  return photos;
+  return [...new Set(photos)];
 };
 
 const DAILY_LIKE_LIMIT = 10;
