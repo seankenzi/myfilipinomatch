@@ -28,4 +28,5 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'app-crash-alert': appCrashAlert,
   'video-anomaly-alert': videoAnomalyAlert,
   'admin-contact-submission': adminContactSubmission,
+  'new-message': newMessage,
 }
