@@ -251,6 +251,10 @@ const Discover = () => {
 
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const [pageOffset, setPageOffset] = useState(0);
+  const sentinelRef = useRef<HTMLDivElement>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [direction, setDirection] = useState<"left" | "right" | null>(null);
   const [dragX, setDragX] = useState(0);
@@ -348,9 +352,66 @@ const Discover = () => {
     fetchUserStatus();
   }, [user]);
 
+  const PAGE_SIZE = 20;
+
+  const signAndApplyPhotos = useCallback((newProfiles: Profile[]) => {
+    const allPaths: string[] = [];
+    const pathSet = new Set<string>();
+    newProfiles.forEach((p) => {
+      const photos = p.photos?.length ? p.photos : p.avatar_url ? [p.avatar_url] : [];
+      photos.forEach((photo) => {
+        if (photo && !pathSet.has(photo)) {
+          pathSet.add(photo);
+          allPaths.push(photo);
+        }
+      });
+    });
+    if (allPaths.length === 0) return;
+    const BATCH = 50;
+    const applySignedBatch = (batch: string[], signed: string[]) => {
+      const map = new Map<string, string>();
+      batch.forEach((p, idx) => map.set(p, signed[idx] || ""));
+      setProfiles((prev) => prev.map((profile) => {
+        let changed = false;
+        const newPhotos = profile.photos?.map((ph) => {
+          if (map.has(ph)) { changed = true; return map.get(ph)!; }
+          return ph;
+        }).filter(Boolean) || null;
+        const newAvatar = profile.avatar_url && map.has(profile.avatar_url)
+          ? (changed = true, map.get(profile.avatar_url)!)
+          : profile.avatar_url;
+        const finalAvatar = newAvatar || null;
+        return changed ? { ...profile, photos: newPhotos && newPhotos.length > 0 ? newPhotos : null, avatar_url: finalAvatar } : profile;
+      }));
+    };
+    for (let i = 0; i < allPaths.length; i += BATCH) {
+      const batch = allPaths.slice(i, i + BATCH);
+      getSignedPhotoUrls(batch).then((signed) => applySignedBatch(batch, signed));
+    }
+  }, []);
+
+  const applyClientFilters = useCallback((data: Profile[]): Profile[] => {
+    let filtered = data;
+    if (filterIntent !== "all") filtered = filtered.filter((p) => p.relationship_intent === filterIntent);
+    if (filterCity.trim()) {
+      const cityLower = filterCity.trim().toLowerCase();
+      filtered = filtered.filter((p) => p.city?.toLowerCase().includes(cityLower));
+    }
+    if (isPremium) {
+      if (filterEducation !== "all") filtered = filtered.filter((p) => (p as any).education === filterEducation);
+      if (filterLanguage !== "all") filtered = filtered.filter((p) => (p as any).language === filterLanguage);
+      if (filterChildren !== "all") filtered = filtered.filter((p) => (p as any).want_children === filterChildren);
+      if (filterHeightRange[0] > 140) filtered = filtered.filter((p) => (p as any).height_cm && (p as any).height_cm >= filterHeightRange[0]);
+      if (filterHeightRange[1] < 210) filtered = filtered.filter((p) => (p as any).height_cm && (p as any).height_cm <= filterHeightRange[1]);
+    }
+    return filtered;
+  }, [filterIntent, filterCity, isPremium, filterEducation, filterLanguage, filterChildren, filterHeightRange]);
+
   const fetchProfiles = useCallback(async () => {
     if (!user) return;
     setLoading(true);
+    setHasMore(true);
+    setPageOffset(0);
 
     const { data: likesData } = await supabase
       .from("likes")
@@ -360,8 +421,7 @@ const Discover = () => {
     const alreadyLiked = new Set((likesData || []).map((l) => l.liked_id));
     setLikedIds(alreadyLiked);
 
-    // Use secure browse_profiles RPC (excludes email, sorts by boosts server-side)
-    const rpcParams: Record<string, any> = {};
+    const rpcParams: Record<string, any> = { result_limit: PAGE_SIZE, result_offset: 0 };
     if (filterCountry !== "all") rpcParams.filter_country = filterCountry;
     if (filterGender !== "all") rpcParams.filter_gender = filterGender;
     if (filterAgeRange[0] > 18) rpcParams.filter_min_age = filterAgeRange[0];
@@ -371,75 +431,62 @@ const Discover = () => {
 
     if (error) {
       toast({ title: "Error loading profiles", description: error.message, variant: "destructive" });
+      setLoading(false);
     } else {
-      let allProfiles = (data || []) as Profile[];
-
-      // Apply client-side filters not supported by RPC
-      if (filterIntent !== "all") {
-        allProfiles = allProfiles.filter((p) => p.relationship_intent === filterIntent);
-      }
-      if (filterCity.trim()) {
-        const cityLower = filterCity.trim().toLowerCase();
-        allProfiles = allProfiles.filter((p) => p.city?.toLowerCase().includes(cityLower));
-      }
-      if (isPremium) {
-        if (filterEducation !== "all") allProfiles = allProfiles.filter((p) => (p as any).education === filterEducation);
-        if (filterLanguage !== "all") allProfiles = allProfiles.filter((p) => (p as any).language === filterLanguage);
-        if (filterChildren !== "all") allProfiles = allProfiles.filter((p) => (p as any).want_children === filterChildren);
-        if (filterHeightRange[0] > 140) allProfiles = allProfiles.filter((p) => (p as any).height_cm && (p as any).height_cm >= filterHeightRange[0]);
-        if (filterHeightRange[1] < 210) allProfiles = allProfiles.filter((p) => (p as any).height_cm && (p as any).height_cm <= filterHeightRange[1]);
-      }
-      
-      // Show profiles immediately (before signing) so the grid renders fast
-      setProfiles([...allProfiles]);
+      const raw = (data || []) as Profile[];
+      const filtered = applyClientFilters(raw);
+      setProfiles(filtered);
       setCurrentIndex(0);
       setLoading(false);
-
-      // Collect ALL photo paths to sign
-      const allPaths: string[] = [];
-      const pathSet = new Set<string>();
-      allProfiles.forEach((p) => {
-        const photos = p.photos?.length ? p.photos : p.avatar_url ? [p.avatar_url] : [];
-        photos.forEach((photo) => {
-          if (photo && !pathSet.has(photo)) {
-            pathSet.add(photo);
-            allPaths.push(photo);
-          }
-        });
-      });
-
-      if (allPaths.length === 0) return;
-
-      // Sign in larger batches for fewer API round-trips
-      const BATCH = 50;
-      const applySignedBatch = (batch: string[], signed: string[]) => {
-        const map = new Map<string, string>();
-        batch.forEach((p, idx) => map.set(p, signed[idx] || ""));
-        setProfiles((prev) => prev.map((profile) => {
-          let changed = false;
-          const newPhotos = profile.photos?.map((ph) => {
-            if (map.has(ph)) { changed = true; return map.get(ph)!; }
-            return ph;
-          }).filter(Boolean) || null;
-          const newAvatar = profile.avatar_url && map.has(profile.avatar_url)
-            ? (changed = true, map.get(profile.avatar_url)!)
-            : profile.avatar_url;
-          const finalAvatar = newAvatar || null;
-          return changed ? { ...profile, photos: newPhotos && newPhotos.length > 0 ? newPhotos : null, avatar_url: finalAvatar } : profile;
-        }));
-      };
-
-      // Fire all batches in parallel
-      for (let i = 0; i < allPaths.length; i += BATCH) {
-        const batch = allPaths.slice(i, i + BATCH);
-        getSignedPhotoUrls(batch).then((signed) => applySignedBatch(batch, signed));
-      }
+      setPageOffset(raw.length);
+      if (raw.length < PAGE_SIZE) setHasMore(false);
+      signAndApplyPhotos(filtered);
     }
-  }, [user, filterCountry, filterIntent, filterCity, filterGender, filterAgeRange, isPremium, filterEducation, filterLanguage, filterChildren, filterHeightRange]);
+  }, [user, filterCountry, filterGender, filterAgeRange, applyClientFilters, signAndApplyPhotos]);
+
+  const fetchMoreProfiles = useCallback(async () => {
+    if (!user || loadingMore || !hasMore) return;
+    setLoadingMore(true);
+
+    const rpcParams: Record<string, any> = { result_limit: PAGE_SIZE, result_offset: pageOffset };
+    if (filterCountry !== "all") rpcParams.filter_country = filterCountry;
+    if (filterGender !== "all") rpcParams.filter_gender = filterGender;
+    if (filterAgeRange[0] > 18) rpcParams.filter_min_age = filterAgeRange[0];
+    if (filterAgeRange[1] < 65) rpcParams.filter_max_age = filterAgeRange[1];
+
+    const { data, error } = await supabase.rpc("browse_profiles", rpcParams);
+
+    if (error) {
+      toast({ title: "Error loading more profiles", description: error.message, variant: "destructive" });
+    } else {
+      const raw = (data || []) as Profile[];
+      const filtered = applyClientFilters(raw);
+      setProfiles((prev) => [...prev, ...filtered]);
+      setPageOffset((prev) => prev + raw.length);
+      if (raw.length < PAGE_SIZE) setHasMore(false);
+      signAndApplyPhotos(filtered);
+    }
+    setLoadingMore(false);
+  }, [user, loadingMore, hasMore, pageOffset, filterCountry, filterGender, filterAgeRange, applyClientFilters, signAndApplyPhotos]);
 
   useEffect(() => {
     fetchProfiles();
   }, [fetchProfiles]);
+
+  // Infinite scroll sentinel observer
+  useEffect(() => {
+    if (viewMode !== "list") return;
+    const el = sentinelRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) fetchMoreProfiles();
+      },
+      { rootMargin: "400px" }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [viewMode, fetchMoreProfiles]);
 
   // For swipe view, show all profiles (including previously liked/passed)
   const swipeProfiles = profiles;
@@ -1265,6 +1312,7 @@ const Discover = () => {
                     <p className="text-sm text-muted-foreground">No profiles found. Try adjusting your filters.</p>
                   </div>
                 ) : (
+                  <>
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
                     {profiles.map((profile) => (
                       <LazyCard key={`lazy-${profile.id}`}>
@@ -1383,6 +1431,17 @@ const Discover = () => {
                       </LazyCard>
                     ))}
                   </div>
+                  {/* Infinite scroll sentinel */}
+                  <div ref={sentinelRef} className="h-1" />
+                  {loadingMore && (
+                    <div className="flex justify-center py-6">
+                      <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                    </div>
+                  )}
+                  {!hasMore && profiles.length > 0 && (
+                    <p className="text-center text-sm text-muted-foreground py-4">You've seen all profiles</p>
+                  )}
+                  </>
                 )}
               </div>
             </div>
