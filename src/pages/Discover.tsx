@@ -473,6 +473,21 @@ const Discover = () => {
     fetchProfiles();
   }, [fetchProfiles]);
 
+  // Infinite scroll sentinel observer
+  useEffect(() => {
+    if (viewMode !== "list") return;
+    const el = sentinelRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) fetchMoreProfiles();
+      },
+      { rootMargin: "400px" }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [viewMode, fetchMoreProfiles]);
+
   // For swipe view, show all profiles (including previously liked/passed)
   const swipeProfiles = profiles;
   const currentProfile = swipeProfiles[currentIndex];
