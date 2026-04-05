@@ -224,14 +224,64 @@ const Profile = () => {
                   </div>
                   <div>
                     <Label className="text-xs">Country</Label>
-                    <Input value={profile.country} onChange={(e) => setProfile({ ...profile, country: e.target.value })} />
+                    <Input value={profile.country} onChange={(e) => setProfile({ ...profile, country: e.target.value, province: "", city: "" })} />
                   </div>
                 </div>
 
-                <div>
-                  <Label className="text-xs">City</Label>
-                  <Input value={profile.city} onChange={(e) => setProfile({ ...profile, city: e.target.value })} />
-                </div>
+                {/* Province/State field */}
+                {profile.country && (() => {
+                  const isPhilippines = profile.country === "Philippines";
+                  const provinceList = isPhilippines
+                    ? getProvinceNames()
+                    : hasStateDropdown(profile.country)
+                      ? getStatesByCountry(profile.country)
+                      : [];
+                  const label = isPhilippines ? "Province" : getSubdivisionLabel(profile.country);
+
+                  return provinceList.length > 0 ? (
+                    <div>
+                      <Label className="text-xs">{label}</Label>
+                      <Select value={profile.province} onValueChange={(v) => setProfile({ ...profile, province: v, city: "" })}>
+                        <SelectTrigger><SelectValue placeholder={`Select ${label}`} /></SelectTrigger>
+                        <SelectContent className="max-h-60">
+                          {provinceList.map((p) => (
+                            <SelectItem key={p} value={p}>{p}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  ) : (
+                    <div>
+                      <Label className="text-xs">{label}</Label>
+                      <Input value={profile.province} onChange={(e) => setProfile({ ...profile, province: e.target.value })} placeholder={`Enter ${label.toLowerCase()}`} />
+                    </div>
+                  );
+                })()}
+
+                {/* City field — dynamic for Philippines */}
+                {(() => {
+                  const isPhilippines = profile.country === "Philippines";
+                  const cityList = isPhilippines && profile.province ? getCitiesByProvince(profile.province) : [];
+
+                  return isPhilippines && cityList.length > 0 ? (
+                    <div>
+                      <Label className="text-xs">City/Municipality</Label>
+                      <Select value={profile.city} onValueChange={(v) => setProfile({ ...profile, city: v })}>
+                        <SelectTrigger><SelectValue placeholder="Select city" /></SelectTrigger>
+                        <SelectContent className="max-h-60">
+                          {cityList.map((c) => (
+                            <SelectItem key={c} value={c}>{c}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  ) : (
+                    <div>
+                      <Label className="text-xs">City</Label>
+                      <Input value={profile.city} onChange={(e) => setProfile({ ...profile, city: e.target.value })} />
+                    </div>
+                  );
+                })()}
 
                 <div>
                   <Label className="text-xs">Bio</Label>
