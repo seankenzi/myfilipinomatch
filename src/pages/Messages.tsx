@@ -517,64 +517,56 @@ const Messages = () => {
     } else {
       // Send email notification to the recipient
       try {
-        const { data: sessionData } = await supabase.auth.getSession();
-        const accessToken = sessionData.session?.access_token;
+        const emailPayload = {
+          templateName: "new-message",
+          recipientUserId: selectedMatch.other_user.id,
+          idempotencyKey: `new-message-${messageId}`,
+          templateData: { senderName: myProfile?.full_name || undefined },
+        };
 
-        if (!accessToken) {
-          console.error("Missing auth session while triggering new message email.");
+        let { data: responseBody, error: invokeError } = await supabase.functions.invoke("send-transactional-email", {
+          body: emailPayload,
+        });
+
+        const isAuthError = invokeError && /401|jwt|unauthorized|auth/i.test(invokeError.message || "");
+        if (isAuthError) {
+          const { error: refreshError } = await supabase.auth.refreshSession();
+          if (refreshError) {
+            throw refreshError;
+          }
+
+          ({ data: responseBody, error: invokeError } = await supabase.functions.invoke("send-transactional-email", {
+            body: emailPayload,
+          }));
+        }
+
+        if (invokeError) {
+          const responseContext = (invokeError as { context?: Response | { status?: number } }).context;
+          const httpStatus = responseContext instanceof Response
+            ? responseContext.status
+            : typeof responseContext?.status === "number"
+              ? responseContext.status
+              : null;
+
+          console.error("Email notification error:", httpStatus, invokeError);
           setEmailDebug({
             timestamp: new Date().toISOString(),
             recipientId: selectedMatch.other_user.id,
             recipientName: selectedMatch.other_user.full_name,
-            httpStatus: null,
-            error: "Missing auth session",
+            httpStatus,
+            error: invokeError.message || "Failed to trigger email",
             success: false,
           });
         } else {
-          const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-transactional-email`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${accessToken}`,
-              apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-            },
-            body: JSON.stringify({
-              templateName: "new-message",
-              recipientUserId: selectedMatch.other_user.id,
-              idempotencyKey: `new-message-${messageId}`,
-              templateData: { senderName: myProfile?.full_name || undefined },
-            }),
+          const wasThrottled = responseBody?.reason === 'throttled';
+          setEmailDebug({
+            timestamp: new Date().toISOString(),
+            recipientId: selectedMatch.other_user.id,
+            recipientName: selectedMatch.other_user.full_name,
+            httpStatus: 200,
+            error: wasThrottled ? `Throttled (1 per ${responseBody.throttleMinutes}min)` : null,
+            success: !wasThrottled,
           });
-
-          if (!response.ok) {
-            let errorBody: unknown = null;
-            try {
-              errorBody = await response.json();
-            } catch {
-              errorBody = await response.text();
-            }
-            console.error("Email notification error:", response.status, errorBody);
-            setEmailDebug({
-              timestamp: new Date().toISOString(),
-              recipientId: selectedMatch.other_user.id,
-              recipientName: selectedMatch.other_user.full_name,
-              httpStatus: response.status,
-              error: typeof errorBody === 'string' ? errorBody : JSON.stringify(errorBody),
-              success: false,
-            });
-          } else {
-            let responseBody: any = null;
-            try { responseBody = await response.clone().json(); } catch {}
-            const wasThrottled = responseBody?.reason === 'throttled';
-            setEmailDebug({
-              timestamp: new Date().toISOString(),
-              recipientId: selectedMatch.other_user.id,
-              recipientName: selectedMatch.other_user.full_name,
-              httpStatus: response.status,
-              error: wasThrottled ? `Throttled (1 per ${responseBody.throttleMinutes}min)` : null,
-              success: !wasThrottled,
-            });
-          }
         }
       } catch (invokeError) {
         console.error("Failed to trigger new message email:", invokeError);
