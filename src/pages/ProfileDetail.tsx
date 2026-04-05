@@ -136,12 +136,12 @@ const ProfileDetail = () => {
   }, [id, user, isAdmin]);
 
   const rawPhotos = profile
-    ? [
+    ? [...new Set([
         ...(profile.photos || []),
         ...(profile.avatar_url && !(profile.photos || []).includes(profile.avatar_url)
           ? [profile.avatar_url]
           : []),
-      ].filter(Boolean) as string[]
+      ].filter(Boolean))] as string[]
     : [];
   
   const photos = useSignedPhotos(rawPhotos);
