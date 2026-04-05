@@ -33,6 +33,7 @@ interface Profile {
   gender: string | null;
   country: string | null;
   city: string | null;
+  province: string | null;
   bio: string | null;
   interests: string[] | null;
   relationship_intent: string | null;
@@ -1030,7 +1031,7 @@ const Discover = () => {
                               </div>
                               <div className="mt-1 flex items-center gap-1.5 text-sm text-primary-foreground/80">
                                 <MapPin className="h-3.5 w-3.5" />
-                                {[currentProfile.city, currentProfile.country].filter(Boolean).join(", ") || "Location not set"}
+                                {[currentProfile.city, currentProfile.province, currentProfile.country].filter(Boolean).join(", ") || "Location not set"}
                               </div>
                             </div>
                           </div>
@@ -1126,7 +1127,7 @@ const Discover = () => {
                         </div>
                         <div className="mt-1 flex items-center gap-1 text-sm text-muted-foreground">
                           <MapPin className="h-3.5 w-3.5" />
-                          {[currentProfile.city, currentProfile.country].filter(Boolean).join(", ") || "Location not set"}
+                          {[currentProfile.city, currentProfile.province, currentProfile.country].filter(Boolean).join(", ") || "Location not set"}
                           {currentProfile.country && <span className="ml-1">{getFlagEmoji(currentProfile.country)}</span>}
                         </div>
                       </div>

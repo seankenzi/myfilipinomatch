@@ -21,6 +21,7 @@ interface Profile {
   gender: string | null;
   country: string | null;
   city: string | null;
+  province: string | null;
   bio: string | null;
   interests: string[] | null;
   relationship_intent: string | null;
@@ -86,7 +87,7 @@ const ProfileDetail = () => {
       if (!profileData && isAdmin) {
         const { data: directData } = await supabase
           .from("profiles")
-          .select("id, full_name, age, gender, country, city, bio, interests, relationship_intent, relocation_intent, photos, avatar_url, is_verified, is_premium, user_type, international_preference, education, language, want_children, height_cm, weight_kg, relationship_status, created_at, last_seen")
+          .select("id, full_name, age, gender, country, city, province, bio, interests, relationship_intent, relocation_intent, photos, avatar_url, is_verified, is_premium, user_type, international_preference, education, language, want_children, height_cm, weight_kg, relationship_status, created_at, last_seen")
           .eq("id", id)
           .maybeSingle();
         profileData = directData;
@@ -289,7 +290,7 @@ const ProfileDetail = () => {
             </div>
             <div className="flex items-center justify-center gap-1 text-sm text-muted-foreground">
               <MapPin className="h-4 w-4" />
-              {[profile.city, profile.country].filter(Boolean).join(", ") || "Location not set"}
+              {[profile.city, profile.province, profile.country].filter(Boolean).join(", ") || "Location not set"}
               {profile.country && <span className="ml-1">{getFlagEmoji(profile.country)}</span>}
             </div>
           </div>

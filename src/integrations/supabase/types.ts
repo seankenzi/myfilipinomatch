@@ -531,6 +531,7 @@ export type Database = {
           photos: string[] | null
           preferred_max_age: number | null
           preferred_min_age: number | null
+          province: string | null
           relationship_intent: string | null
           relationship_status: string | null
           relocation_intent: string | null
@@ -563,6 +564,7 @@ export type Database = {
           photos?: string[] | null
           preferred_max_age?: number | null
           preferred_min_age?: number | null
+          province?: string | null
           relationship_intent?: string | null
           relationship_status?: string | null
           relocation_intent?: string | null
@@ -595,6 +597,7 @@ export type Database = {
           photos?: string[] | null
           preferred_max_age?: number | null
           preferred_min_age?: number | null
+          province?: string | null
           relationship_intent?: string | null
           relationship_status?: string | null
           relocation_intent?: string | null
@@ -833,6 +836,7 @@ export type Database = {
           last_seen: string | null
           onboarding_completed: boolean | null
           photos: string[] | null
+          province: string | null
           relationship_intent: string | null
           relationship_status: string | null
           relocation_intent: string | null
@@ -860,6 +864,7 @@ export type Database = {
           last_seen?: string | null
           onboarding_completed?: boolean | null
           photos?: string[] | null
+          province?: string | null
           relationship_intent?: string | null
           relationship_status?: string | null
           relocation_intent?: string | null
@@ -887,6 +892,7 @@ export type Database = {
           last_seen?: string | null
           onboarding_completed?: boolean | null
           photos?: string[] | null
+          province?: string | null
           relationship_intent?: string | null
           relationship_status?: string | null
           relocation_intent?: string | null
@@ -927,6 +933,7 @@ export type Database = {
           language: string
           last_seen: string
           photos: string[]
+          province: string
           relationship_intent: string
           relationship_status: string
           relocation_intent: string
@@ -976,6 +983,7 @@ export type Database = {
           language: string
           last_seen: string
           photos: string[]
+          province: string
           relationship_intent: string
           relationship_status: string
           relocation_intent: string
