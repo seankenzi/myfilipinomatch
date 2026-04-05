@@ -904,84 +904,45 @@ export type Database = {
       }
     }
     Functions: {
-      browse_profiles:
-        | {
-            Args: {
-              exclude_ids?: string[]
-              filter_country?: string
-              filter_gender?: string
-              filter_max_age?: number
-              filter_min_age?: number
-              filter_user_type?: string
-              result_limit?: number
-            }
-            Returns: {
-              age: number
-              avatar_url: string
-              bio: string
-              city: string
-              country: string
-              created_at: string
-              education: string
-              full_name: string
-              gender: string
-              height_cm: number
-              id: string
-              interests: string[]
-              international_preference: boolean
-              is_premium: boolean
-              is_verified: boolean
-              language: string
-              last_seen: string
-              photos: string[]
-              province: string
-              relationship_intent: string
-              relationship_status: string
-              relocation_intent: string
-              user_type: string
-              want_children: string
-              weight_kg: number
-            }[]
-          }
-        | {
-            Args: {
-              exclude_ids?: string[]
-              filter_country?: string
-              filter_gender?: string
-              filter_max_age?: number
-              filter_min_age?: number
-              filter_user_type?: string
-              result_limit?: number
-              result_offset?: number
-            }
-            Returns: {
-              age: number
-              avatar_url: string
-              bio: string
-              city: string
-              country: string
-              created_at: string
-              education: string
-              full_name: string
-              gender: string
-              height_cm: number
-              id: string
-              interests: string[]
-              international_preference: boolean
-              is_premium: boolean
-              is_verified: boolean
-              language: string
-              last_seen: string
-              photos: string[]
-              province: string
-              relationship_intent: string
-              relationship_status: string
-              relocation_intent: string
-              user_type: string
-              want_children: string
-              weight_kg: number
-            }[]
-          }
+      browse_profiles: {
+        Args: {
+          exclude_ids?: string[]
+          filter_country?: string
+          filter_gender?: string
+          filter_max_age?: number
+          filter_min_age?: number
+          filter_user_type?: string
+          result_limit?: number
+          result_offset?: number
+        }
+        Returns: {
+          age: number
+          avatar_url: string
+          bio: string
+          city: string
+          country: string
+          created_at: string
+          education: string
+          full_name: string
+          gender: string
+          height_cm: number
+          id: string
+          interests: string[]
+          international_preference: boolean
+          is_premium: boolean
+          is_verified: boolean
+          language: string
+          last_seen: string
+          photos: string[]
+          province: string
+          relationship_intent: string
+          relationship_status: string
+          relocation_intent: string
+          user_type: string
+          want_children: string
+          weight_kg: number
+        }[]
+      }
       cleanup_stale_video_signals: { Args: never; Returns: undefined }
       create_match_if_mutual: {
         Args: { other_user_id: string }
