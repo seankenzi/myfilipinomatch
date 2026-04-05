@@ -46,5 +46,5 @@ export async function getSignedPhotoUrls(urlsOrPaths: string[], expiresIn = 3600
   }
   
   // Return signed URL when available, empty string for missing/errored files
-  return data.map((item, i) => item.signedUrl || (item.error ? "" : urlsOrPaths[i]));
+  return data.map((item) => item.signedUrl || "");
 }
