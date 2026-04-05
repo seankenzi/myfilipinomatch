@@ -49,7 +49,7 @@ const ProfileCompletion = ({ profile, onEditClick }: ProfileCompletionProps) => 
       label: "Write a bio",
       prompt: "Tell others what makes you unique",
       icon: FileText,
-      done: profile.bio.length >= 100,
+      done: profile.bio.length >= 150,
       action: onEditClick,
     },
     {
