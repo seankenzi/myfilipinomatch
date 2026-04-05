@@ -56,7 +56,8 @@ Deno.serve(async (req) => {
 
   // Parse request body
   let templateName: string
-  let recipientEmail: string
+  let recipientEmail: string | undefined
+  let recipientUserId: string | undefined
   let idempotencyKey: string
   let messageId: string
   let templateData: Record<string, any> = {}
@@ -64,6 +65,7 @@ Deno.serve(async (req) => {
     const body = await req.json()
     templateName = body.templateName || body.template_name
     recipientEmail = body.recipientEmail || body.recipient_email
+    recipientUserId = body.recipientUserId || body.recipient_user_id
     messageId = crypto.randomUUID()
     idempotencyKey = body.idempotencyKey || body.idempotency_key || messageId
     if (body.templateData && typeof body.templateData === 'object') {
@@ -105,15 +107,41 @@ Deno.serve(async (req) => {
     )
   }
 
-  // Resolve effective recipient: template-level `to` takes precedence over
-  // the caller-provided recipientEmail. This allows notification templates
-  // to always send to a fixed address (e.g., site owner from env var).
-  const effectiveRecipient = template.to || recipientEmail
+  // Create Supabase client with service role (bypasses RLS)
+  const supabase = createClient(supabaseUrl, supabaseServiceKey)
+
+  let resolvedRecipientEmail = template.to || recipientEmail
+
+  if (!resolvedRecipientEmail && recipientUserId) {
+    const { data: recipientProfile, error: recipientLookupError } = await supabase
+      .from('profiles')
+      .select('email')
+      .eq('id', recipientUserId)
+      .maybeSingle()
+
+    if (recipientLookupError) {
+      console.error('Recipient lookup failed', {
+        error: recipientLookupError,
+        recipientUserId,
+      })
+      return new Response(
+        JSON.stringify({ error: 'Failed to resolve recipient email' }),
+        {
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      )
+    }
+
+    resolvedRecipientEmail = recipientProfile?.email ?? undefined
+  }
+
+  const effectiveRecipient = resolvedRecipientEmail?.trim()
 
   if (!effectiveRecipient) {
     return new Response(
       JSON.stringify({
-        error: 'recipientEmail is required (unless the template defines a fixed recipient)',
+        error: 'recipientEmail or recipientUserId is required (unless the template defines a fixed recipient)',
       }),
       {
         status: 400,
@@ -121,9 +149,6 @@ Deno.serve(async (req) => {
       }
     )
   }
-
-  // Create Supabase client with service role (bypasses RLS)
-  const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
   // 2. Check suppression list (fail-closed: if we can't verify, don't send)
   const { data: suppressed, error: suppressionError } = await supabase
