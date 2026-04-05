@@ -85,17 +85,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     };
   }, [user]);
 
+  // Fallback: if the auth webhook didn't fire, trigger signup emails client-side
   useEffect(() => {
     let cancelled = false;
 
-    const maybeTriggerOAuthSignupEmails = async () => {
+    const maybeTriggerSignupEmails = async () => {
       if (!user || !session) {
         attemptedSignupEmailSyncUserId.current = null;
-        return;
-      }
-
-      const authProvider = session.user.app_metadata?.provider;
-      if (!authProvider || authProvider === "email") {
         return;
       }
 
@@ -120,45 +116,54 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return;
       }
 
-      const invokeSignupSync = async (accessToken: string) =>
+      // Wait a short delay to give the webhook a chance to fire first
+      await new Promise((resolve) => setTimeout(resolve, 8000));
+      if (cancelled) return;
+
+      // Re-check in case webhook fired during the delay
+      const { data: recheckProfile } = await supabase
+        .from("profiles")
+        .select("welcome_email_sent")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      if (cancelled || recheckProfile?.welcome_email_sent) {
+        return;
+      }
+
+      const authProvider = session.user.app_metadata?.provider;
+      const trigger = authProvider && authProvider !== "email" ? "oauth-signup-sync" : "email-signup-sync";
+
+      const invokeSync = async (accessToken: string) =>
         supabase.functions.invoke("auth-email-hook", {
-          body: { trigger: "oauth-signup-sync" },
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
+          body: { trigger },
+          headers: { Authorization: `Bearer ${accessToken}` },
         });
 
       let accessToken = session.access_token;
 
       if (!accessToken) {
         const { data: refreshed, error: refreshError } = await supabase.auth.refreshSession();
-        if (cancelled || refreshError) {
-          return;
-        }
+        if (cancelled || refreshError) return;
         accessToken = refreshed.session?.access_token ?? "";
       }
 
-      if (!accessToken) {
-        return;
-      }
+      if (!accessToken) return;
 
-      let { error: syncError } = await invokeSignupSync(accessToken);
+      let { error: syncError } = await invokeSync(accessToken);
 
       if (syncError && /401|jwt|unauthorized|auth/i.test(syncError.message || "")) {
         const { data: refreshed, error: refreshError } = await supabase.auth.refreshSession();
-        if (cancelled || refreshError || !refreshed.session?.access_token) {
-          return;
-        }
-
-        ({ error: syncError } = await invokeSignupSync(refreshed.session.access_token));
+        if (cancelled || refreshError || !refreshed.session?.access_token) return;
+        ({ error: syncError } = await invokeSync(refreshed.session.access_token));
       }
 
       if (syncError) {
-        console.error("OAuth signup email sync failed", syncError);
+        console.error("Signup email sync failed", syncError);
       }
     };
 
-    void maybeTriggerOAuthSignupEmails();
+    void maybeTriggerSignupEmails();
 
     return () => {
       cancelled = true;
