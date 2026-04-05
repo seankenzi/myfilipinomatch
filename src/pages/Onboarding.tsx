@@ -73,7 +73,8 @@ const Onboarding = () => {
   const [cityOpen, setCityOpen] = useState(false);
   const provinceCities = province ? getCitiesByProvince(province) : [];
   // Step 4: Basic Profile
-  const [fullName, setFullName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [age, setAge] = useState("");
   const [gender, setGender] = useState("");
   // Step 5: Bio
