@@ -125,7 +125,7 @@ const Onboarding = () => {
       case 2: return !!relationshipIntent;
       case 3: return userType === "foreigner" ? (!!country && !!city) : !!city;
       case 4: return !!fullName.trim() && !!age && parseInt(age) >= 18 && !!gender;
-      case 5: return bio.trim().length >= 100; // bio is mandatory (min 100 chars)
+      case 5: return bio.trim().length >= 150; // bio is mandatory (min 150 chars)
       case 6: return interests.length >= 3;
       case 7: return photos.length >= 3;
       case 8: return true; // verification prompt
@@ -450,7 +450,7 @@ const Onboarding = () => {
               <div className="text-center space-y-2">
                 <Sparkles className="h-10 w-10 text-primary mx-auto" />
                 <h2 className="text-2xl font-bold font-display">Write a short bio</h2>
-                <p className="text-sm text-muted-foreground">Help others get to know you (minimum 100 characters)</p>
+                <p className="text-sm text-muted-foreground">Help others get to know you (minimum 150 characters)</p>
               </div>
 
               <div className="space-y-1.5">
@@ -463,8 +463,8 @@ const Onboarding = () => {
                   rows={5}
                   className="text-base resize-none"
                 />
-                <p className={`text-xs text-right ${bio.trim().length < 100 ? 'text-destructive' : 'text-muted-foreground'}`}>
-                  {bio.trim().length < 100 ? `${100 - bio.trim().length} more characters needed` : `${bio.length}/300`}
+                <p className={`text-xs text-right ${bio.trim().length < 150 ? 'text-destructive' : 'text-muted-foreground'}`}>
+                  {bio.trim().length < 150 ? `${150 - bio.trim().length} more characters needed` : `${bio.length}/300`}
                 </p>
               </div>
 
