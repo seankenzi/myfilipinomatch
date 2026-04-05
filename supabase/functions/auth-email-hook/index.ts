@@ -328,7 +328,7 @@ async function triggerSignupAppEmails(
   }
 }
 
-async function handleOAuthSignupSync(req: Request): Promise<Response> {
+async function handleSignupSync(req: Request): Promise<Response> {
   const authHeader = req.headers.get('Authorization')
 
   if (!authHeader?.startsWith('Bearer ')) {
@@ -348,7 +348,8 @@ async function handleOAuthSignupSync(req: Request): Promise<Response> {
     })
   }
 
-  if (body.trigger !== 'oauth-signup-sync') {
+  const validTriggers = ['oauth-signup-sync', 'email-signup-sync']
+  if (!body.trigger || !validTriggers.includes(body.trigger)) {
     return new Response(JSON.stringify({ error: 'Unsupported request' }), {
       status: 400,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -359,7 +360,7 @@ async function handleOAuthSignupSync(req: Request): Promise<Response> {
   const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
 
   if (!supabaseUrl || !supabaseServiceKey) {
-    console.error('Missing required environment variables for OAuth signup sync')
+    console.error('Missing required environment variables for signup sync')
     return new Response(JSON.stringify({ error: 'Server configuration error' }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -371,7 +372,7 @@ async function handleOAuthSignupSync(req: Request): Promise<Response> {
 
   const { data: authData, error: authError } = await supabase.auth.getUser(token)
   if (authError || !authData.user) {
-    console.error('OAuth signup sync auth failed', { error: authError })
+    console.error('Signup sync auth failed', { error: authError })
     return new Response(JSON.stringify({ error: 'Unauthorized' }), {
       status: 401,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -379,14 +380,6 @@ async function handleOAuthSignupSync(req: Request): Promise<Response> {
   }
 
   const user = authData.user
-  const provider = typeof user.app_metadata?.provider === 'string' ? user.app_metadata.provider : null
-
-  if (!provider || provider === 'email') {
-    return new Response(JSON.stringify({ success: true, skipped: 'non_oauth_signup' }), {
-      status: 200,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    })
-  }
 
   const { data: profile, error: profileError } = await supabase
     .from('profiles')
@@ -395,7 +388,7 @@ async function handleOAuthSignupSync(req: Request): Promise<Response> {
     .maybeSingle()
 
   if (profileError) {
-    console.error('Failed to load profile for OAuth signup sync', {
+    console.error('Failed to load profile for signup sync', {
       error: profileError,
       userId: user.id,
     })
@@ -434,6 +427,8 @@ async function handleOAuthSignupSync(req: Request): Promise<Response> {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
   }
+
+  console.log('Signup sync triggered', { trigger: body.trigger, userId: user.id, email: userEmail })
 
   await triggerSignupAppEmails(supabase, {
     data: {
@@ -681,7 +676,7 @@ Deno.serve(async (req) => {
 
   try {
     if (req.headers.get('Authorization')?.startsWith('Bearer ')) {
-      return await handleOAuthSignupSync(req)
+      return await handleSignupSync(req)
     }
 
     return await handleWebhook(req)
