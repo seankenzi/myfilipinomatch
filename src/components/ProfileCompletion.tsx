@@ -6,7 +6,8 @@ import {
 } from "lucide-react";
 
 interface ProfileData {
-  full_name: string;
+  firstName: string;
+  lastName: string;
   age: number | null;
   gender: string;
   country: string;
@@ -57,7 +58,7 @@ const ProfileCompletion = ({ profile, onEditClick }: ProfileCompletionProps) => 
       label: "Complete basics",
       prompt: "Add your name, age & gender",
       icon: Sparkles,
-      done: !!profile.full_name && !!profile.age && !!profile.gender,
+      done: !!profile.firstName && !!profile.lastName && !!profile.age && !!profile.gender,
       action: onEditClick,
     },
     {
