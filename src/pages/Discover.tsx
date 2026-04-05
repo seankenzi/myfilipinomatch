@@ -1312,6 +1312,7 @@ const Discover = () => {
                     <p className="text-sm text-muted-foreground">No profiles found. Try adjusting your filters.</p>
                   </div>
                 ) : (
+                  <>
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
                     {profiles.map((profile) => (
                       <LazyCard key={`lazy-${profile.id}`}>
@@ -1440,6 +1441,7 @@ const Discover = () => {
                   {!hasMore && profiles.length > 0 && (
                     <p className="text-center text-sm text-muted-foreground py-4">You've seen all profiles</p>
                   )}
+                  </>
                 )}
               </div>
             </div>
