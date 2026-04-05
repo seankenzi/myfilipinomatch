@@ -27,7 +27,8 @@ const Profile = () => {
   const [editing, setEditing] = useState(false);
 
   const [profile, setProfile] = useState({
-    full_name: "",
+    firstName: "",
+    lastName: "",
     age: null as number | null,
     gender: "",
     country: "",
@@ -53,8 +54,10 @@ const Profile = () => {
     if (!user) return;
     const { data, error } = await supabase.from("profiles").select("*").eq("id", user.id).single();
     if (data) {
+      const nameParts = (data.full_name || "").trim().split(/\s+/);
       setProfile({
-        full_name: data.full_name || "",
+        firstName: nameParts[0] || "",
+        lastName: nameParts.slice(1).join(" ") || "",
         age: data.age,
         gender: data.gender || "",
         country: data.country || "",
@@ -82,7 +85,7 @@ const Profile = () => {
       return;
     }
     const { error } = await supabase.from("profiles").update({
-      full_name: profile.full_name,
+      full_name: `${profile.firstName.trim()} ${profile.lastName.trim()}`.trim(),
       age: profile.age,
       gender: profile.gender || null,
       country: profile.country || null,
@@ -140,7 +143,7 @@ const Profile = () => {
           <div className="relative mb-6">
             <div className="relative mx-auto h-32 w-32">
               {avatarUrl ? (
-                <img src={avatarUrl} alt={`${profile.full_name} profile photo`} loading="lazy" className="h-full w-full rounded-full object-cover border-4 border-card shadow-elevated" />
+                <img src={avatarUrl} alt={`${profile.firstName} ${profile.lastName} profile photo`} loading="lazy" className="h-full w-full rounded-full object-cover border-4 border-card shadow-elevated" />
               ) : (
                 <div className="h-full w-full rounded-full border-4 border-card bg-muted flex items-center justify-center shadow-elevated">
                   <Camera className="h-8 w-8 text-muted-foreground" />
@@ -150,7 +153,7 @@ const Profile = () => {
             <div className="mt-4 text-center">
               <div className="flex items-center justify-center gap-2">
                 <h1 className="text-xl font-bold">
-                  {profile.full_name || "Complete your profile"}{profile.age ? `, ${profile.age}` : ""}
+                  {`${profile.firstName} ${profile.lastName}`.trim() || "Complete your profile"}{profile.age ? `, ${profile.age}` : ""}
                 </h1>
                 {profile.is_verified && <Shield className="h-5 w-5 text-secondary fill-secondary/30" />}
               </div>
@@ -201,9 +204,15 @@ const Profile = () => {
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <Label className="text-xs">Full Name</Label>
-                    <Input value={profile.full_name} onChange={(e) => setProfile({ ...profile, full_name: e.target.value })} />
+                    <Label className="text-xs">First Name *</Label>
+                    <Input value={profile.firstName} onChange={(e) => setProfile({ ...profile, firstName: e.target.value })} placeholder="First name" />
                   </div>
+                  <div>
+                    <Label className="text-xs">Last Name *</Label>
+                    <Input value={profile.lastName} onChange={(e) => setProfile({ ...profile, lastName: e.target.value })} placeholder="Last name" />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
                   <div>
                     <Label className="text-xs">Age</Label>
                     <Input type="number" value={profile.age || ""} onChange={(e) => setProfile({ ...profile, age: parseInt(e.target.value) || null })} />
