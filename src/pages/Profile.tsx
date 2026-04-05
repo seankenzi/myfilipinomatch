@@ -157,7 +157,7 @@ const Profile = () => {
               {(profile.city || profile.country) && (
                 <div className="mt-1 flex items-center justify-center gap-1 text-sm text-muted-foreground">
                   <MapPin className="h-3.5 w-3.5" />
-                  {[profile.city, profile.country].filter(Boolean).join(", ")}
+                  {[profile.city, profile.province, profile.country].filter(Boolean).join(", ")}
                 </div>
               )}
             </div>
