@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import { getProvinceNames, getCitiesByProvince } from "@/data/philippineProvinces";
 import { detectContactInfo } from "@/lib/contactFilter";
 import { useNavigate } from "react-router-dom";
 import { Heart, Globe, MapPin, User, Camera, Shield, ArrowRight, ArrowLeft, Sparkles, CheckCircle, Users, Search } from "lucide-react";
@@ -42,22 +43,6 @@ const COUNTRIES = [
   "Uruguay","Uzbekistan","Vanuatu","Vatican City","Venezuela","Vietnam","Yemen","Zambia","Zimbabwe",
 ];
 
-const PH_CITIES = [
-  "Angeles City", "Antipolo", "Bacolod", "Bacoor", "Baguio", "Batangas City",
-  "Biñan", "Butuan", "Cabanatuan", "Cabuyao", "Cagayan de Oro", "Calamba",
-  "Calocan", "Caloocan", "Cavite City", "Cebu City", "Cotabato City",
-  "Dagupan", "Dasmarinas", "Davao City", "Dipolog", "Dumaguete",
-  "General Santos", "General Trias", "Ilo-ilo City", "Imus",
-  "Kalookan", "Lapu-Lapu City", "Las Piñas", "Legazpi", "Lipa",
-  "Lucena", "Makati", "Malabon", "Mandaluyong", "Mandaue",
-  "Manila", "Marawi", "Marikina", "Meycauayan", "Muntinlupa",
-  "Naga", "Navotas", "Olongapo", "Ormoc", "Pagadian",
-  "Paranaque", "Pasay", "Pasig", "Puerto Princesa",
-  "Quezon City", "Roxas City", "San Fernando (La Union)", "San Fernando (Pampanga)",
-  "San Jose del Monte", "San Pablo", "San Pedro", "Santa Rosa",
-  "Santiago", "Tacloban", "Taguig", "Tarlac City", "Tayabas",
-  "Tuguegarao", "Valenzuela", "Zamboanga City", "Other",
-];
 
 const INTERESTS = [
   "Travel ✈️", "Cooking 🍳", "Music 🎵", "Movies 🎬", "Fitness 💪",
