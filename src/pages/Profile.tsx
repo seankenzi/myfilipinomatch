@@ -86,6 +86,7 @@ const Profile = () => {
       age: profile.age,
       gender: profile.gender || null,
       country: profile.country || null,
+      province: profile.province || null,
       city: profile.city || null,
       bio: profile.bio,
       interests: profile.interests,
