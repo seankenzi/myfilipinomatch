@@ -5,13 +5,17 @@ import "./index.css";
 const serviceWorkerCleanupKey = "__lovable_service_worker_cleanup_v2";
 
 const cleanupStaleServiceWorkers = async () => {
+  // Skip if already cleaned up (use localStorage to persist across tab discards)
+  if (localStorage.getItem(serviceWorkerCleanupKey)) {
+    return;
+  }
+
   const registrations = await (navigator.serviceWorker?.getRegistrations() ?? Promise.resolve([]));
   const cacheKeys = "caches" in window ? await caches.keys() : [];
 
-  if (
-    (registrations.length === 0 && cacheKeys.length === 0) ||
-    window.sessionStorage.getItem(serviceWorkerCleanupKey)
-  ) {
+  if (registrations.length === 0 && cacheKeys.length === 0) {
+    // Nothing to clean — mark as done so we never check again
+    localStorage.setItem(serviceWorkerCleanupKey, "true");
     return;
   }
 
@@ -21,7 +25,7 @@ const cleanupStaleServiceWorkers = async () => {
     await Promise.all(cacheKeys.map((cacheKey) => caches.delete(cacheKey)));
   }
 
-  window.sessionStorage.setItem(serviceWorkerCleanupKey, "true");
+  localStorage.setItem(serviceWorkerCleanupKey, "true");
   window.location.reload();
 };
 
