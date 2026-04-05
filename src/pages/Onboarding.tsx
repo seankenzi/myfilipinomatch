@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { getProvinceNames, getCitiesByProvince } from "@/data/philippineProvinces";
+import { hasStateDropdown, getStatesByCountry, getSubdivisionLabel } from "@/data/countryStates";
 import { detectContactInfo } from "@/lib/contactFilter";
 import { useNavigate } from "react-router-dom";
 import { Heart, Globe, MapPin, User, Camera, Shield, ArrowRight, ArrowLeft, Sparkles, CheckCircle, Users, Search } from "lucide-react";
@@ -150,7 +151,7 @@ const Onboarding = () => {
         user_type: userType,
         relationship_intent: relationshipIntent,
         country: userType === "foreigner" ? country : "Philippines",
-        province: userType === "philippines" ? province : null,
+        province: province || null,
         city: city,
         full_name: fullName.trim(),
         age: parseInt(age),
@@ -311,7 +312,7 @@ const Onboarding = () => {
                   {userType === "foreigner" ? "Where are you from?" : "Where in the Philippines?"}
                 </h2>
                 <p className="text-sm text-muted-foreground">
-                  {userType === "foreigner" ? "Select your country and city" : "Select your province and city"}
+                  {userType === "foreigner" ? "Select your country, state/province and city" : "Select your province and city"}
                 </p>
               </div>
               {userType === "foreigner" && (
@@ -329,7 +330,7 @@ const Onboarding = () => {
                         <CommandEmpty>No country found.</CommandEmpty>
                         <CommandGroup>
                           {COUNTRIES.map((c) => (
-                            <CommandItem key={c} value={c} onSelect={(val) => { setCountry(val); setCountryOpen(false); }} className={country === c ? "bg-primary/10" : ""}>
+                            <CommandItem key={c} value={c} onSelect={(val) => { setCountry(val); setProvince(""); setCity(""); setCountryOpen(false); }} className={country === c ? "bg-primary/10" : ""}>
                               {c}
                             </CommandItem>
                           ))}
@@ -339,7 +340,44 @@ const Onboarding = () => {
                   </PopoverContent>
                 </Popover>
               )}
-              {userType === "foreigner" && (
+              {userType === "foreigner" && country && (
+                <div className="space-y-3">
+                  <Label className="text-sm text-muted-foreground">{getSubdivisionLabel(country)}{hasStateDropdown(country) ? " *" : ""}</Label>
+                  {hasStateDropdown(country) ? (
+                    <Popover open={provinceOpen} onOpenChange={setProvinceOpen}>
+                      <PopoverTrigger asChild>
+                        <Button variant="outline" role="combobox" aria-expanded={provinceOpen} className="w-full text-base h-12 rounded-xl justify-between font-normal">
+                          {province || `Select your ${getSubdivisionLabel(country).toLowerCase()}...`}
+                          <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                        <Command>
+                          <CommandInput placeholder={`Search ${getSubdivisionLabel(country).toLowerCase()}...`} />
+                          <CommandList>
+                            <CommandEmpty>Not found.</CommandEmpty>
+                            <CommandGroup>
+                              {getStatesByCountry(country).map((s) => (
+                                <CommandItem key={s} value={s} onSelect={(val) => { setProvince(val); setProvinceOpen(false); }} className={province === s ? "bg-primary/10" : ""}>
+                                  {s}
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
+                  ) : (
+                    <Input
+                      placeholder={`Type your ${getSubdivisionLabel(country).toLowerCase()}...`}
+                      value={province}
+                      onChange={(e) => setProvince(e.target.value)}
+                      className="text-base h-12 rounded-xl"
+                    />
+                  )}
+                </div>
+              )}
+              {userType === "foreigner" && country && (
                 <div className="space-y-3">
                   <Label className="text-sm text-muted-foreground">Your city *</Label>
                   <Input
