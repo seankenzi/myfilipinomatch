@@ -47,9 +47,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
-
-      // Signup emails (welcome + admin-new-signup) are triggered exclusively
-      // by the backend auth-email-hook. No client-side fallback needed.
     });
 
     return () => {
