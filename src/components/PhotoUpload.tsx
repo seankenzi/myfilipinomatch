@@ -31,7 +31,8 @@ const PhotoUpload = ({ photos, onPhotosChange, maxPhotos = 6 }: PhotoUploadProps
     if (!user) return;
 
     const fileExt = file.name.split(".").pop();
-    const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+    const uniqueId = `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+    const fileName = `${user.id}/${uniqueId}.${fileExt}`;
 
     const { error } = await supabase.storage
       .from("profile-photos")
