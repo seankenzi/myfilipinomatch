@@ -58,6 +58,7 @@ const Profile = () => {
         age: data.age,
         gender: data.gender || "",
         country: data.country || "",
+        province: data.province || "",
         city: data.city || "",
         bio: data.bio || "",
         interests: (data.interests as string[]) || [],
