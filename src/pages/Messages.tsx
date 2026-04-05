@@ -563,13 +563,16 @@ const Messages = () => {
               success: false,
             });
           } else {
+            let responseBody: any = null;
+            try { responseBody = await response.clone().json(); } catch {}
+            const wasThrottled = responseBody?.reason === 'throttled';
             setEmailDebug({
               timestamp: new Date().toISOString(),
               recipientId: selectedMatch.other_user.id,
               recipientName: selectedMatch.other_user.full_name,
               httpStatus: response.status,
-              error: null,
-              success: true,
+              error: wasThrottled ? `Throttled (1 per ${responseBody.throttleMinutes}min)` : null,
+              success: !wasThrottled,
             });
           }
         }
