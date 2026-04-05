@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, memo } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Heart, X, MapPin, Shield, Filter, ChevronDown, Star, Flag,
@@ -127,6 +127,43 @@ const SkeletonImage = ({ src, alt, className = "", loading = "lazy" as "lazy" | 
     </div>
   );
 };
+
+// Lazy-render wrapper – defers rendering until the card is near the viewport
+const LazyCard = memo(({ children, className }: { children: React.ReactNode; className?: string }) => {
+  const ref = useRef<HTMLDivElement>(null);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setVisible(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: "300px" }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <div ref={ref} className={className}>
+      {visible ? children : (
+        <div className="rounded-2xl border border-border bg-card overflow-hidden">
+          <div className="aspect-[3/4] bg-muted animate-pulse" />
+          <div className="p-2.5 space-y-2">
+            <div className="h-4 w-2/3 bg-muted rounded animate-pulse" />
+            <div className="h-9 bg-muted rounded-lg animate-pulse" />
+          </div>
+        </div>
+      )}
+    </div>
+  );
+});
+LazyCard.displayName = "LazyCard";
 
 // Photo gallery component for swipe cards
 const PhotoGallery = ({ photos, name }: { photos: string[]; name: string }) => {
@@ -1230,8 +1267,8 @@ const Discover = () => {
                 ) : (
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
                     {profiles.map((profile) => (
+                      <LazyCard key={`lazy-${profile.id}`}>
                       <motion.div
-                        key={profile.id}
                         layout
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -1343,6 +1380,7 @@ const Discover = () => {
                           )}
                         </div>
                       </motion.div>
+                      </LazyCard>
                     ))}
                   </div>
                 )}
