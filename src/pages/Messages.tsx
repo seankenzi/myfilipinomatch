@@ -493,9 +493,6 @@ const Messages = () => {
     setNewMessage("");
 
     const isDm = selectedMatch.source === 'dm';
-    const insertData = isDm
-      ? { conversation_id: selectedMatch.id, sender_id: user.id, content }
-      : { match_id: selectedMatch.id, sender_id: user.id, content };
 
     const messageId = crypto.randomUUID();
     const insertPayload = isDm
