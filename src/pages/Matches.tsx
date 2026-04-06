@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, forwardRef } from "react";
 import { Heart, MessageCircle } from "lucide-react";
 import { Link } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
@@ -27,8 +27,9 @@ const getLastActiveLabel = (lastSeen: string | null) => {
   return formatDistanceToNow(date, { addSuffix: true });
 };
 
-const MatchCard = ({ match }: { match: DisplayMatch }) => (
+const MatchCard = forwardRef<HTMLAnchorElement, { match: DisplayMatch }>(({ match }, ref) => (
   <Link
+    ref={ref}
     key={match.id}
     to={`/messages?match=${match.id}`}
     className="flex items-center gap-4 rounded-2xl border border-border bg-card p-4 shadow-card transition-all hover:shadow-card-hover"
@@ -61,7 +62,9 @@ const MatchCard = ({ match }: { match: DisplayMatch }) => (
       <span className="text-[10px] text-muted-foreground">{match.lastActive}</span>
     </div>
   </Link>
-);
+));
+
+MatchCard.displayName = "MatchCard";
 
 const Matches = () => {
   const { user } = useAuth();
