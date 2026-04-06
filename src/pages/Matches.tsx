@@ -62,7 +62,9 @@ const MatchCard = forwardRef<HTMLAnchorElement, { match: DisplayMatch }>(({ matc
       <span className="text-[10px] text-muted-foreground">{match.lastActive}</span>
     </div>
   </Link>
-);
+));
+
+MatchCard.displayName = "MatchCard";
 
 const Matches = () => {
   const { user } = useAuth();
