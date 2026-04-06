@@ -27,8 +27,9 @@ const getLastActiveLabel = (lastSeen: string | null) => {
   return formatDistanceToNow(date, { addSuffix: true });
 };
 
-const MatchCard = ({ match }: { match: DisplayMatch }) => (
+const MatchCard = forwardRef<HTMLAnchorElement, { match: DisplayMatch }>(({ match }, ref) => (
   <Link
+    ref={ref}
     key={match.id}
     to={`/messages?match=${match.id}`}
     className="flex items-center gap-4 rounded-2xl border border-border bg-card p-4 shadow-card transition-all hover:shadow-card-hover"
