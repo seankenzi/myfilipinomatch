@@ -44,6 +44,17 @@ const COUNTRIES = [
   "Uruguay","Uzbekistan","Vanuatu","Vatican City","Venezuela","Vietnam","Yemen","Zambia","Zimbabwe",
 ];
 
+const COUNTRY_ABBREVIATIONS = new Set([
+  "usa", "us", "uk", "uae", "ussr", "prc", "roc", "drc", "nz", "sa", "ksa",
+]);
+
+const COUNTRIES_LOWER = new Set(COUNTRIES.map((c) => c.toLowerCase()));
+
+const isCityLikeCountry = (value: string): boolean => {
+  const trimmed = value.trim().toLowerCase();
+  return COUNTRIES_LOWER.has(trimmed) || COUNTRY_ABBREVIATIONS.has(trimmed);
+};
+
 
 const INTERESTS = [
   "Travel ✈️", "Cooking 🍳", "Music 🎵", "Movies 🎬", "Fitness 💪",
@@ -122,7 +133,7 @@ const Onboarding = () => {
     switch (step) {
       case 1: return !!userType;
       case 2: return !!relationshipIntent;
-      case 3: return userType === "foreigner" ? (!!country && !!city) : (!!province && !!city);
+      case 3: return userType === "foreigner" ? (!!country && !!city.trim() && !isCityLikeCountry(city)) : (!!province && !!city);
       case 4: return !!firstName.trim() && !!lastName.trim() && !!age && parseInt(age) >= 18 && !!gender;
       case 5: return bio.trim().length >= 150; // bio is mandatory (min 150 chars)
       case 6: return interests.length >= 3;
@@ -436,8 +447,11 @@ const Onboarding = () => {
                     placeholder="Type your city..."
                     value={city}
                     onChange={(e) => setCity(e.target.value)}
-                    className="text-base h-12 rounded-xl"
+                    className={`text-base h-12 rounded-xl ${isCityLikeCountry(city) ? "border-destructive" : ""}`}
                   />
+                  {isCityLikeCountry(city) && (
+                    <p className="text-xs text-destructive">Please enter a city name, not a country.</p>
+                  )}
                 </div>
               )}
               {userType === "philippines" && (
