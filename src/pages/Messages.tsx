@@ -30,7 +30,6 @@ import { useAdmin } from "@/hooks/useAdmin";
 import { format, isToday, isYesterday } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
 
-const FREE_MESSAGE_LIMIT = 3;
 const FREE_DAILY_MESSAGE_LIMIT = 10;
 
 const getInvokeStatus = (error: unknown) => {
@@ -129,7 +128,7 @@ const Messages = () => {
     success: boolean;
   } | null>(null);
 
-  const mySentCount = messages.filter((m) => m.sender_id === user?.id).length;
+  
   const todayStart = new Date();
   todayStart.setHours(0, 0, 0, 0);
   const mySentTodayCount = messages.filter(
