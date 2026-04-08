@@ -222,8 +222,17 @@ const Onboarding = () => {
   };
 
   const next = () => {
-    if (step < TOTAL_STEPS) { setDirection(1); setStep(step + 1); }
-    else saveProfile();
+    if (step < TOTAL_STEPS) {
+      const nextStep = step + 1;
+      setDirection(1);
+      setStep(nextStep);
+      // Track the highest step reached
+      if (user) {
+        supabase.from("profiles").update({ onboarding_step: nextStep }).eq("id", user.id).then();
+      }
+    } else {
+      saveProfile();
+    }
   };
 
   const back = () => {
