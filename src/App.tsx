@@ -15,6 +15,7 @@ import ErrorBoundary from "@/components/ErrorBoundary";
 import ScrollToTop from "@/components/ScrollToTop";
 import IncomingCallHandler from "@/components/IncomingCallHandler";
 import CookieConsent from "@/components/CookieConsent";
+import { usePushSubscription } from "@/hooks/usePushSubscription";
 
 // Eagerly load the landing/index page for fast initial paint
 import Index from "./pages/Index.tsx";
@@ -77,6 +78,11 @@ const PageVisitTracker = () => {
   return null;
 };
 
+const PushSubscriptionManager = () => {
+  usePushSubscription();
+  return null;
+};
+
 const App = () => {
   useOnlineStatus();
   return (
@@ -88,6 +94,7 @@ const App = () => {
       <BrowserRouter>
         <AuthProvider>
           <PageVisitTracker />
+          <PushSubscriptionManager />
           <ScrollToTop />
           <IncomingCallHandler />
           <div className="flex min-h-screen flex-col">
