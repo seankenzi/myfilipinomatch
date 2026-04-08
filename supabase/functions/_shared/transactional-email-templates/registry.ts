@@ -18,6 +18,7 @@ import { template as appCrashAlert } from './app-crash-alert.tsx'
 import { template as videoAnomalyAlert } from './video-anomaly-alert.tsx'
 import { template as adminContactSubmission } from './admin-contact-submission.tsx'
 import { template as newMessage } from './new-message.tsx'
+import { template as onboardingReminder } from './onboarding-reminder.tsx'
 
 export const TEMPLATES: Record<string, TemplateEntry> = {
   'welcome-email': welcomeEmail,
@@ -29,4 +30,5 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'video-anomaly-alert': videoAnomalyAlert,
   'admin-contact-submission': adminContactSubmission,
   'new-message': newMessage,
+  'onboarding-reminder': onboardingReminder,
 }
