@@ -633,7 +633,7 @@ const Messages = () => {
     : "";
 
   return (
-    <div className="flex h-screen flex-col bg-background overflow-hidden">
+    <div className="flex h-dvh flex-col bg-background overflow-hidden">
       <Navbar />
 
       <div className="flex flex-1 overflow-hidden pb-16 md:pb-0">
