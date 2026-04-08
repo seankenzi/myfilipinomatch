@@ -80,6 +80,11 @@ const Profile = () => {
 
   const saveProfile = async () => {
     if (!user) return;
+    if (isCityLikeCountry(profile.city)) {
+      toast({ title: "Invalid city", description: "Please enter a city name, not a country.", variant: "destructive" });
+      setSaving(false);
+      return;
+    }
     const bioContact = detectContactInfo(profile.bio);
     if (bioContact) {
       toast({ title: "Contact info not allowed", description: `Your bio contains ${bioContact}. Please remove it.`, variant: "destructive" });
@@ -291,7 +296,14 @@ const Profile = () => {
                   ) : (
                     <div>
                       <Label className="text-xs">City</Label>
-                      <Input value={profile.city} onChange={(e) => setProfile({ ...profile, city: e.target.value })} />
+                      <Input
+                        value={profile.city}
+                        onChange={(e) => setProfile({ ...profile, city: e.target.value })}
+                        className={isCityLikeCountry(profile.city) ? "border-destructive" : ""}
+                      />
+                      {isCityLikeCountry(profile.city) && (
+                        <p className="text-xs text-destructive mt-1">Please enter a city name, not a country.</p>
+                      )}
                     </div>
                   );
                 })()}
