@@ -4,7 +4,7 @@ import {
   Users, Heart, MessageSquare, Shield, CreditCard, TrendingUp,
   BarChart3, ArrowLeft, Search, Ban, CheckCircle, XCircle,
   Clock, Eye, Star, AlertTriangle, RefreshCw, ToggleLeft, ToggleRight,
-  Plus, Trash2, Bug, Video, Mail, Inbox, ExternalLink, Monitor, Smartphone, Tablet, Globe, Activity
+  Plus, Trash2, Bug, Video, Mail, Inbox, ExternalLink, Monitor, Smartphone, Tablet, Globe, Activity, Flag
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -1740,6 +1740,175 @@ const AnalyticsTab = () => {
       <p className="text-xs text-muted-foreground text-center">
         Live analytics from tracked page visits. Data updates in real-time as users browse.
       </p>
+    </div>
+  );
+};
+
+// ─── Flagged Users Tab ───
+const FlaggedUsersTab = () => {
+  const { toast } = useToast();
+  const navigate = useNavigate();
+  const [flags, setFlags] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [avatars, setAvatars] = useState<Record<string, string>>({});
+
+  const fetchFlags = async () => {
+    setLoading(true);
+    const { data, error } = await supabase
+      .from("notifications")
+      .select("*")
+      .eq("type", "flagged_user")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      toast({ title: "Error loading flags", description: error.message, variant: "destructive" });
+      setLoading(false);
+      return;
+    }
+
+    setFlags(data || []);
+
+    // Load avatars for flagged users
+    const userIds = [...new Set((data || []).map((f: any) => f.related_user_id).filter(Boolean))];
+    if (userIds.length > 0) {
+      const { data: profiles } = await supabase
+        .from("profiles")
+        .select("id, full_name, avatar_url, user_type, country, created_at")
+        .in("id", userIds);
+      if (profiles) {
+        const avatarMap: Record<string, string> = {};
+        for (const p of profiles) {
+          if (p.avatar_url) {
+            const url = await getSignedPhotoUrl(p.avatar_url);
+            if (url) avatarMap[p.id] = url;
+          }
+        }
+        setAvatars(avatarMap);
+        // Store profile data for display
+        setFlagProfiles(profiles.reduce((acc: any, p: any) => { acc[p.id] = p; return acc; }, {}));
+      }
+    }
+
+    setLoading(false);
+  };
+
+  const [flagProfiles, setFlagProfiles] = useState<Record<string, any>>({});
+
+  useEffect(() => { fetchFlags(); }, []);
+
+  const dismissFlag = async (notifId: string) => {
+    const { error } = await supabase
+      .from("notifications")
+      .update({ read: true })
+      .eq("id", notifId);
+    if (error) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Flag dismissed" });
+      setFlags(prev => prev.filter(f => f.id !== notifId));
+    }
+  };
+
+  if (loading) {
+    return <div className="flex justify-center py-20"><div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" /></div>;
+  }
+
+  const unresolvedFlags = flags.filter(f => !f.read);
+  const resolvedFlags = flags.filter(f => f.read);
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg font-semibold flex items-center gap-2">
+          <Flag className="h-5 w-5 text-destructive" /> Flagged Users
+          {unresolvedFlags.length > 0 && (
+            <span className="ml-2 rounded-full bg-destructive px-2.5 py-0.5 text-xs font-medium text-destructive-foreground">
+              {unresolvedFlags.length}
+            </span>
+          )}
+        </h2>
+        <Button variant="outline" size="sm" onClick={fetchFlags}>
+          <RefreshCw className="h-3.5 w-3.5 mr-1" /> Refresh
+        </Button>
+      </div>
+
+      {unresolvedFlags.length === 0 && resolvedFlags.length === 0 && (
+        <div className="text-center py-16 text-muted-foreground">
+          <Flag className="h-12 w-12 mx-auto mb-3 opacity-30" />
+          <p className="font-medium">No flagged users</p>
+          <p className="text-sm">Users selecting "Foreigner" with a Philippine IP will appear here.</p>
+        </div>
+      )}
+
+      {unresolvedFlags.length > 0 && (
+        <div className="space-y-3">
+          <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">Pending Review ({unresolvedFlags.length})</h3>
+          {unresolvedFlags.map((flag) => {
+            const profile = flagProfiles[flag.related_user_id];
+            return (
+              <div key={flag.id} className="rounded-lg border border-destructive/30 bg-destructive/5 p-4 space-y-2">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    {avatars[flag.related_user_id] ? (
+                      <img src={avatars[flag.related_user_id]} alt="" className="h-10 w-10 rounded-full object-cover" />
+                    ) : (
+                      <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center">
+                        <Users className="h-5 w-5 text-muted-foreground" />
+                      </div>
+                    )}
+                    <div>
+                      <p className="font-medium text-sm">{profile?.full_name || "Unknown User"}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {profile?.country || "—"} · {profile?.user_type || "—"} · Joined {profile?.created_at ? format(new Date(profile.created_at), "MMM d, yyyy") : "—"}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <Button size="sm" variant="outline" onClick={() => navigate(`/profile/${flag.related_user_id}`)}>
+                      <Eye className="h-3.5 w-3.5 mr-1" /> View
+                    </Button>
+                    <Button size="sm" variant="ghost" onClick={() => dismissFlag(flag.id)}>
+                      <CheckCircle className="h-3.5 w-3.5 mr-1" /> Dismiss
+                    </Button>
+                  </div>
+                </div>
+                <div className="rounded bg-background/80 p-2.5 text-xs text-muted-foreground border">
+                  <AlertTriangle className="h-3.5 w-3.5 inline mr-1 text-destructive" />
+                  {flag.body}
+                </div>
+                <p className="text-xs text-muted-foreground">{format(new Date(flag.created_at), "MMM d, yyyy hh:mm a")}</p>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {resolvedFlags.length > 0 && (
+        <div className="space-y-3">
+          <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">Dismissed ({resolvedFlags.length})</h3>
+          {resolvedFlags.map((flag) => {
+            const profile = flagProfiles[flag.related_user_id];
+            return (
+              <div key={flag.id} className="rounded-lg border p-4 opacity-60 space-y-1">
+                <div className="flex items-center gap-3">
+                  {avatars[flag.related_user_id] ? (
+                    <img src={avatars[flag.related_user_id]} alt="" className="h-8 w-8 rounded-full object-cover" />
+                  ) : (
+                    <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center">
+                      <Users className="h-4 w-4 text-muted-foreground" />
+                    </div>
+                  )}
+                  <div>
+                    <p className="font-medium text-sm">{profile?.full_name || "Unknown User"}</p>
+                    <p className="text-xs text-muted-foreground">{flag.body}</p>
+                  </div>
+                </div>
+                <p className="text-xs text-muted-foreground">{format(new Date(flag.created_at), "MMM d, yyyy hh:mm a")}</p>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 };
