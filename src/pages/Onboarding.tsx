@@ -179,6 +179,39 @@ const Onboarding = () => {
 
       if (error) throw error;
 
+      // IP-based detection: flag foreigners with Philippine IP for admin review
+      if (userType === "foreigner") {
+        try {
+          const ipRes = await fetch("https://ipapi.co/json/");
+          if (ipRes.ok) {
+            const ipData = await ipRes.json();
+            if (ipData.country_name === "Philippines" || ipData.country_code === "PH") {
+              // Notify all admins about suspicious foreigner signup
+              const { data: adminEmails } = await supabase.rpc("get_admin_emails");
+              if (adminEmails && adminEmails.length > 0) {
+                const { data: adminRoles } = await supabase
+                  .from("user_roles")
+                  .select("user_id")
+                  .eq("role", "admin");
+                if (adminRoles) {
+                  for (const admin of adminRoles) {
+                    await supabase.from("notifications").insert({
+                      user_id: admin.user_id,
+                      type: "flagged_user",
+                      title: "⚠️ Suspicious Foreigner Signup",
+                      body: `${firstName.trim()} ${lastName.trim()} selected "Foreigner" but has a Philippine IP address (${ipData.ip}). Selected country: ${country}.`,
+                      related_user_id: user.id,
+                    });
+                  }
+                }
+              }
+            }
+          }
+        } catch {
+          // Silently fail — don't block onboarding for IP check failures
+        }
+      }
+
       toast({ title: "Profile complete! 🎉", description: "Welcome to MyFilipinoMatch." });
       navigate("/discover");
     } catch (err: any) {
