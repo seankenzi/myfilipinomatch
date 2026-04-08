@@ -133,7 +133,7 @@ const Onboarding = () => {
     switch (step) {
       case 1: return !!userType;
       case 2: return !!relationshipIntent;
-      case 3: return userType === "foreigner" ? (!!country && !!city) : (!!province && !!city);
+      case 3: return userType === "foreigner" ? (!!country && !!city.trim() && !isCityLikeCountry(city)) : (!!province && !!city);
       case 4: return !!firstName.trim() && !!lastName.trim() && !!age && parseInt(age) >= 18 && !!gender;
       case 5: return bio.trim().length >= 150; // bio is mandatory (min 150 chars)
       case 6: return interests.length >= 3;
