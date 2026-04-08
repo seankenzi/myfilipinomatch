@@ -334,7 +334,7 @@ const Onboarding = () => {
                       <CommandList>
                         <CommandEmpty>No country found.</CommandEmpty>
                         <CommandGroup>
-                          {COUNTRIES.map((c) => (
+                          {COUNTRIES.filter((c) => c !== "Philippines").map((c) => (
                             <CommandItem key={c} value={c} onSelect={(val) => { setCountry(val); setProvince(""); setCity(""); setCountryOpen(false); }} className={country === c ? "bg-primary/10" : ""}>
                               {c}
                             </CommandItem>
