@@ -91,13 +91,18 @@ const Onboarding = () => {
     const syncOnboardingStatus = async () => {
       const { data } = await supabase
         .from("profiles")
-        .select("onboarding_completed")
+        .select("onboarding_completed, onboarding_step")
         .eq("id", user.id)
         .single();
 
       if (data?.onboarding_completed) {
         navigate("/discover", { replace: true });
         return;
+      }
+
+      // Track that user started onboarding (step 1)
+      if (data && (!data.onboarding_step || data.onboarding_step < 1)) {
+        await supabase.from("profiles").update({ onboarding_step: 1 }).eq("id", user.id);
       }
 
       const meta = user.user_metadata;
@@ -222,8 +227,17 @@ const Onboarding = () => {
   };
 
   const next = () => {
-    if (step < TOTAL_STEPS) { setDirection(1); setStep(step + 1); }
-    else saveProfile();
+    if (step < TOTAL_STEPS) {
+      const nextStep = step + 1;
+      setDirection(1);
+      setStep(nextStep);
+      // Track the highest step reached
+      if (user) {
+        supabase.from("profiles").update({ onboarding_step: nextStep }).eq("id", user.id).then();
+      }
+    } else {
+      saveProfile();
+    }
   };
 
   const back = () => {

@@ -528,6 +528,7 @@ export type Database = {
           language: string | null
           last_seen: string | null
           onboarding_completed: boolean | null
+          onboarding_step: number
           photos: string[] | null
           preferred_max_age: number | null
           preferred_min_age: number | null
@@ -561,6 +562,7 @@ export type Database = {
           language?: string | null
           last_seen?: string | null
           onboarding_completed?: boolean | null
+          onboarding_step?: number
           photos?: string[] | null
           preferred_max_age?: number | null
           preferred_min_age?: number | null
@@ -594,6 +596,7 @@ export type Database = {
           language?: string | null
           last_seen?: string | null
           onboarding_completed?: boolean | null
+          onboarding_step?: number
           photos?: string[] | null
           preferred_max_age?: number | null
           preferred_min_age?: number | null

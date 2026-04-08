@@ -232,12 +232,13 @@ const UsersTab = () => {
               <thead className="bg-muted/50">
                 <tr>
                   <th className="text-left p-3 font-medium text-muted-foreground">User</th>
-                  <th className="text-left p-3 font-medium text-muted-foreground">Email</th>
-                  <th className="text-center p-3 font-medium text-muted-foreground">Verified</th>
-                  <th className="text-center p-3 font-medium text-muted-foreground">Premium</th>
-                   <th className="text-left p-3 font-medium text-muted-foreground">Joined</th>
-                   <th className="text-left p-3 font-medium text-muted-foreground">Last Active</th>
-                   <th className="text-right p-3 font-medium text-muted-foreground">Actions</th>
+                   <th className="text-left p-3 font-medium text-muted-foreground">Email</th>
+                   <th className="text-center p-3 font-medium text-muted-foreground">Verified</th>
+                   <th className="text-center p-3 font-medium text-muted-foreground">Premium</th>
+                   <th className="text-center p-3 font-medium text-muted-foreground">Step</th>
+                    <th className="text-left p-3 font-medium text-muted-foreground">Joined</th>
+                    <th className="text-left p-3 font-medium text-muted-foreground">Last Active</th>
+                    <th className="text-right p-3 font-medium text-muted-foreground">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
@@ -259,8 +260,17 @@ const UsersTab = () => {
                     <td className="p-3 text-center">
                       {u.is_premium ? <Star className="h-4 w-4 text-accent mx-auto" /> : <span className="text-muted-foreground/40">—</span>}
                     </td>
-                     <td className="p-3 text-muted-foreground text-xs">{format(new Date(u.created_at), "MMM d, yyyy")}</td>
-                     <td className="p-3 text-muted-foreground text-xs">{u.last_seen ? format(new Date(u.last_seen), "MMM d, yyyy hh:mm a") : "Never"}</td>
+                     <td className="p-3 text-center">
+                       {u.onboarding_completed ? (
+                         <span className="text-xs text-secondary font-medium">✓ Done</span>
+                       ) : u.onboarding_step > 0 ? (
+                         <span className="text-xs text-accent font-medium">{u.onboarding_step}/8</span>
+                       ) : (
+                         <span className="text-xs text-muted-foreground/40">0/8</span>
+                       )}
+                     </td>
+                      <td className="p-3 text-muted-foreground text-xs">{format(new Date(u.created_at), "MMM d, yyyy")}</td>
+                      <td className="p-3 text-muted-foreground text-xs">{u.last_seen ? format(new Date(u.last_seen), "MMM d, yyyy hh:mm a") : "Never"}</td>
                     <td className="p-3">
                       <div className="flex gap-1 justify-end" onClick={(e) => e.stopPropagation()}>
                         <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => handleVerify(u.id, !u.is_verified)}>
