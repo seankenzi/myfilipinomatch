@@ -447,8 +447,11 @@ const Onboarding = () => {
                     placeholder="Type your city..."
                     value={city}
                     onChange={(e) => setCity(e.target.value)}
-                    className="text-base h-12 rounded-xl"
+                    className={`text-base h-12 rounded-xl ${isCityLikeCountry(city) ? "border-destructive" : ""}`}
                   />
+                  {isCityLikeCountry(city) && (
+                    <p className="text-xs text-destructive">Please enter a city name, not a country.</p>
+                  )}
                 </div>
               )}
               {userType === "philippines" && (
