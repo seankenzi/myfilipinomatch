@@ -44,6 +44,17 @@ const COUNTRIES = [
   "Uruguay","Uzbekistan","Vanuatu","Vatican City","Venezuela","Vietnam","Yemen","Zambia","Zimbabwe",
 ];
 
+const COUNTRY_ABBREVIATIONS = new Set([
+  "usa", "us", "uk", "uae", "ussr", "prc", "roc", "drc", "nz", "sa", "ksa",
+]);
+
+const COUNTRIES_LOWER = new Set(COUNTRIES.map((c) => c.toLowerCase()));
+
+const isCityLikeCountry = (value: string): boolean => {
+  const trimmed = value.trim().toLowerCase();
+  return COUNTRIES_LOWER.has(trimmed) || COUNTRY_ABBREVIATIONS.has(trimmed);
+};
+
 
 const INTERESTS = [
   "Travel ✈️", "Cooking 🍳", "Music 🎵", "Movies 🎬", "Fitness 💪",
