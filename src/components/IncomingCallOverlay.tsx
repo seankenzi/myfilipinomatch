@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Phone, PhoneOff, Video } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
@@ -10,6 +11,13 @@ interface IncomingCallOverlayProps {
 }
 
 const IncomingCallOverlay = ({ call, onAccept, onDecline }: IncomingCallOverlayProps) => {
+  // Preload the Daily SDK as soon as the incoming call overlay appears
+  useEffect(() => {
+    if (call) {
+      import("@daily-co/daily-js").catch(() => {});
+    }
+  }, [call]);
+
   return (
     <AnimatePresence>
       {call && (
