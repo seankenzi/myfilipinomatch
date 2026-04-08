@@ -766,7 +766,7 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
                     ref={remoteVideoRef}
                     autoPlay
                     playsInline
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-contain"
                   />
                   {(!callEstablished || remoteVideoOff) && !connectionLost && (
                     <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-black/80">
@@ -814,7 +814,7 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
                   ref={remoteVideoRef}
                   autoPlay
                   playsInline
-                  className="absolute inset-0 w-full h-full object-cover"
+                  className="absolute inset-0 w-full h-full object-contain"
                 />
 
                 {/* Waiting / no remote video */}
