@@ -636,7 +636,7 @@ const Messages = () => {
     <div className="flex h-dvh flex-col bg-background overflow-hidden">
       <Navbar />
 
-      <div className="flex flex-1 overflow-hidden pb-16 md:pb-0">
+      <div className={`flex flex-1 overflow-hidden ${selectedMatch ? "pb-0" : "pb-16 md:pb-0"}`}> 
         {/* ──── Match List Sidebar ──── */}
         <div
           className={`w-full md:w-80 lg:w-96 border-r border-border bg-card flex flex-col ${
@@ -1126,7 +1126,7 @@ const Messages = () => {
         userName={selectedMatch?.other_user.full_name}
       />
 
-      <BottomNav />
+      {!selectedMatch && <BottomNav />}
 
       {/* Admin Email Debug Panel */}
       {isAdmin && emailDebug && (

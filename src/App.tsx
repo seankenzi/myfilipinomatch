@@ -2,7 +2,7 @@ import { lazy, Suspense } from "react";
 import { usePageVisitTracker } from "@/hooks/usePageVisitTracker";
 import useOnlineStatus from "@/hooks/useOnlineStatus";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
@@ -83,25 +83,20 @@ const PushSubscriptionManager = () => {
   return null;
 };
 
-const App = () => {
-  useOnlineStatus();
+const AppShell = () => {
+  const { pathname } = useLocation();
+  const isMessagesRoute = pathname === "/messages";
+
   return (
-  <HelmetProvider>
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <AuthProvider>
-          <PageVisitTracker />
-          <PushSubscriptionManager />
-          <ScrollToTop />
-          <IncomingCallHandler />
-          <div className="flex min-h-screen flex-col">
-            
-            <div className="flex-1 pb-16 md:pb-0">
-              <ErrorBoundary>
-              <Suspense fallback={<LazyFallback />}>
+    <AuthProvider>
+      <PageVisitTracker />
+      <PushSubscriptionManager />
+      <ScrollToTop />
+      <IncomingCallHandler />
+      <div className="flex min-h-screen flex-col">
+        <div className={isMessagesRoute ? "flex-1" : "flex-1 pb-16 md:pb-0"}>
+          <ErrorBoundary>
+            <Suspense fallback={<LazyFallback />}>
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/login" element={<Login />} />
@@ -133,17 +128,30 @@ const App = () => {
                 <Route path="/email-unsubscribe" element={<EmailUnsubscribe />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
-              </Suspense>
-              </ErrorBoundary>
-            </div>
-            <Footer />
-            <CookieConsent />
-          </div>
-        </AuthProvider>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-  </HelmetProvider>
+            </Suspense>
+          </ErrorBoundary>
+        </div>
+        <Footer />
+        <CookieConsent />
+      </div>
+    </AuthProvider>
+  );
+};
+
+const App = () => {
+  useOnlineStatus();
+  return (
+    <HelmetProvider>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <AppShell />
+          </BrowserRouter>
+        </TooltipProvider>
+      </QueryClientProvider>
+    </HelmetProvider>
   );
 };
 
