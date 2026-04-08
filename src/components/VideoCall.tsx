@@ -105,6 +105,8 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
   const [isCameraOff, setIsCameraOff] = useState(false);
   const [remoteVideoOff, setRemoteVideoOff] = useState(false);
   const [isGridMode, setIsGridMode] = useState(false);
+  const [controlsVisible, setControlsVisible] = useState(true);
+  const controlsTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const closeUi = useCallback(
     (toastMessage?: { title: string; description?: string }) => {
@@ -514,6 +516,9 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
       callStartTimeRef.current = Date.now();
       setElapsedSeconds(0);
 
+      // Auto-hide controls after 3 seconds once call is established
+      controlsTimerRef.current = setTimeout(() => setControlsVisible(false), 3000);
+
       // Sync their tracks
       syncTracks(event.participant);
 
@@ -854,25 +859,12 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
               </div>
             )}
 
-            {/* Timer overlay */}
-            {!joinRoomUrl && (
-              callEstablished ? (
-                <div
-                  className={`absolute top-4 right-4 z-20 flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium shadow-lg backdrop-blur-sm ${
-                    isLowTime
-                      ? "bg-destructive/90 text-destructive-foreground animate-pulse"
-                      : "bg-card/80 text-foreground"
-                  }`}
-                >
-                  <Clock className="h-3.5 w-3.5" />
-                  {formatTime(timeRemaining)}
-                </div>
-              ) : (
-                <div className="absolute top-4 right-4 z-20 flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium shadow-lg backdrop-blur-sm bg-card/80 text-muted-foreground">
-                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                  Waiting for {otherUserName}…
-                </div>
-              )
+            {/* Waiting indicator (no timer) */}
+            {!callEstablished && !joinRoomUrl && (
+              <div className="absolute top-4 right-4 z-20 flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium shadow-lg backdrop-blur-sm bg-card/80 text-muted-foreground">
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                Waiting for {otherUserName}…
+              </div>
             )}
 
             {/* Floating controls */}
