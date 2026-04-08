@@ -295,6 +295,7 @@ const Discover = () => {
 
   // Premium & limits
   const [isPremium, setIsPremium] = useState(false);
+  const [currentPlan, setCurrentPlan] = useState<string | null>(null);
   const [dailyLikesUsed, setDailyLikesUsed] = useState(0);
 
   // Undo pass
@@ -325,6 +326,15 @@ const Discover = () => {
         .eq("id", user.id)
         .single();
       setIsPremium(profileData?.is_premium === true);
+
+      // Fetch current plan
+      const { data: subData } = await supabase
+        .from("subscriptions")
+        .select("plan")
+        .eq("user_id", user.id)
+        .eq("status", "active")
+        .maybeSingle();
+      setCurrentPlan(subData?.plan || null);
 
       // Count today's likes
       const todayStart = new Date();
@@ -1424,6 +1434,24 @@ const Discover = () => {
                       </LazyCard>
                     ))}
                   </div>
+
+                  {/* Subtle upgrade prompt for free/monthly users */}
+                  {(!isPremium || (currentPlan === 'monthly')) && profiles.length >= 6 && (
+                    <button
+                      onClick={() => navigate("/premium")}
+                      className="my-4 w-full rounded-xl border border-primary/20 bg-primary/5 px-4 py-3 text-center transition-colors hover:bg-primary/10"
+                    >
+                      <p className="text-sm text-foreground font-medium">
+                        <Sparkles className="inline h-3.5 w-3.5 text-primary mr-1.5 -mt-0.5" />
+                        {!isPremium
+                          ? "Want to appear higher in search results? Upgrade to Premium"
+                          : "Upgrade to a 3-Month plan for Priority in Discover"}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        Get seen by more people — your profile ranks higher automatically
+                      </p>
+                    </button>
+                  )}
                   {/* Infinite scroll sentinel */}
                   <div ref={sentinelRef} className="h-1" />
                   {loadingMore && (
