@@ -327,6 +327,15 @@ const Discover = () => {
         .single();
       setIsPremium(profileData?.is_premium === true);
 
+      // Fetch current plan
+      const { data: subData } = await supabase
+        .from("subscriptions")
+        .select("plan")
+        .eq("user_id", user.id)
+        .eq("status", "active")
+        .maybeSingle();
+      setCurrentPlan(subData?.plan || null);
+
       // Count today's likes
       const todayStart = new Date();
       todayStart.setHours(0, 0, 0, 0);
