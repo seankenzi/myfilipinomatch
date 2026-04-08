@@ -456,49 +456,31 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
     };
 
     callFrame.on("joined-meeting", () => {
-      void safeDailyOp(async () => {
-        await callFrame.setUserName(localDisplayNameRef.current, { thisMeetingOnly: true });
-
-        // Request HD camera input (1280x720 @ 30fps)
-        try {
-          await callFrame.updateInputSettings({
-            video: {
-              processor: { type: 'none' as const },
-              settings: {
-                width: { min: 640, ideal: 1280 },
-                height: { min: 480, ideal: 720 },
-                frameRate: { ideal: 30 },
-              },
+      // Run all quality settings in parallel (non-blocking)
+      void Promise.allSettled([
+        callFrame.updateInputSettings({
+          video: {
+            processor: { type: 'none' as const },
+            settings: {
+              width: { min: 640, ideal: 1280 },
+              height: { min: 480, ideal: 720 },
+              frameRate: { ideal: 30 },
             },
-          });
-        } catch (e) {
-          console.warn("Failed to set HD input settings:", e);
-        }
-
-        // Set higher send quality
-        try {
-          await callFrame.updateSendSettings({
-            video: {
-              maxQuality: 'high',
-              encodings: {
-                low: { maxBitrate: 200000, maxFramerate: 15 },
-                high: { maxBitrate: 2500000, maxFramerate: 30 },
-              },
+          },
+        }).catch((e) => console.warn("Failed to set HD input settings:", e)),
+        callFrame.updateSendSettings({
+          video: {
+            maxQuality: 'high',
+            encodings: {
+              low: { maxBitrate: 200000, maxFramerate: 15 },
+              high: { maxBitrate: 2500000, maxFramerate: 30 },
             },
-          });
-        } catch (e) {
-          console.warn("Failed to set send settings:", e);
-        }
-
-        // Request high-quality receive from remote participants
-        try {
-          await callFrame.updateReceiveSettings({
-            '*': { video: { layer: 2 } },
-          });
-        } catch (e) {
-          console.warn("Failed to set receive settings:", e);
-        }
-      });
+          },
+        }).catch((e) => console.warn("Failed to set send settings:", e)),
+        callFrame.updateReceiveSettings({
+          '*': { video: { layer: 2 } },
+        }).catch((e) => console.warn("Failed to set receive settings:", e)),
+      ]);
       // Sync local tracks after joining
       const localP = callFrame.participants()?.local;
       if (localP) syncTracks(localP);
@@ -623,8 +605,8 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
     // Join the room
     let isCancelled = false;
     void (async () => {
-      const displayName = await fetchLocalDisplayName();
-      localDisplayNameRef.current = displayName;
+      // Start fetching display name and joining in parallel
+      const displayNamePromise = fetchLocalDisplayName();
 
       const joinOpts: {
         url: string;
@@ -632,20 +614,23 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
         userName?: string;
       } = {
         url,
-        userName: displayName,
+        userName: localDisplayNameRef.current,
       };
       if (token) joinOpts.token = token;
 
+      // Resolve display name — use it if ready before join, otherwise update after
+      displayNamePromise.then((name) => {
+        localDisplayNameRef.current = name;
+        joinOpts.userName = name;
+      }).catch(() => {});
+
       try {
         if (isCancelled || callFrame.isDestroyed()) return;
+        // Brief wait for display name (max 200ms), then join regardless
+        await Promise.race([displayNamePromise, new Promise((r) => setTimeout(r, 200))]);
+        joinOpts.userName = localDisplayNameRef.current;
+
         await callFrame.join(joinOpts);
-        if (!isCancelled && !callFrame.isDestroyed()) {
-          await callFrame
-            .setUserName(displayName, { thisMeetingOnly: true })
-            .catch((setNameError: unknown) => {
-              console.warn("Failed to set Daily display name:", setNameError);
-            });
-        }
       } catch (err: any) {
         if (err?.message?.includes("postMessage") || callFrame.isDestroyed()) return;
         console.error("Daily join error:", err);
