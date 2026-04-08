@@ -13,6 +13,8 @@ interface VideoCallProps {
   open: boolean;
   onClose: () => void;
   joinRoomUrl?: string;
+  /** Pre-acquired media stream from user gesture — ensures getUserMedia works on mobile WebViews */
+  preAcquiredStream?: MediaStream | null;
 }
 
 /** Extract base room URL (without query params) and token from a full Daily URL */
