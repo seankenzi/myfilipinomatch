@@ -1923,6 +1923,81 @@ const FlaggedUsersTab = () => {
   );
 };
 
+// ─── App Version Tab ───
+const AppVersionTab = () => {
+  const { toast } = useToast();
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [latestVersion, setLatestVersion] = useState("");
+  const [minVersion, setMinVersion] = useState("");
+  const [storeUrl, setStoreUrl] = useState("");
+
+  useEffect(() => {
+    const fetch = async () => {
+      const { data } = await supabase
+        .from("app_config")
+        .select("key, value")
+        .in("key", ["min_app_version", "latest_app_version", "play_store_url"]);
+      const map: Record<string, string> = {};
+      for (const row of data || []) map[row.key] = row.value;
+      setLatestVersion(map.latest_app_version ?? "");
+      setMinVersion(map.min_app_version ?? "");
+      setStoreUrl(map.play_store_url ?? "");
+      setLoading(false);
+    };
+    fetch();
+  }, []);
+
+  const save = async () => {
+    setSaving(true);
+    const entries = [
+      { key: "latest_app_version", value: latestVersion },
+      { key: "min_app_version", value: minVersion },
+      { key: "play_store_url", value: storeUrl },
+    ];
+    for (const entry of entries) {
+      await supabase.from("app_config").upsert(entry, { onConflict: "key" });
+    }
+    setSaving(false);
+    toast({ title: "App version config saved ✅" });
+  };
+
+  if (loading) return <div className="flex justify-center py-20"><div className="h-6 w-6 animate-spin rounded-full border-4 border-primary border-t-transparent" /></div>;
+
+  return (
+    <div className="space-y-6 max-w-lg">
+      <div>
+        <h3 className="text-lg font-semibold mb-1 flex items-center gap-2"><Smartphone className="h-5 w-5 text-primary" /> App Version Management</h3>
+        <p className="text-sm text-muted-foreground">Control in-app update prompts for native users.</p>
+      </div>
+
+      <div className="space-y-4">
+        <div>
+          <label className="text-sm font-medium text-foreground">Latest App Version</label>
+          <p className="text-xs text-muted-foreground mb-1">Users below this version see a dismissible "Update Available" prompt.</p>
+          <Input value={latestVersion} onChange={(e) => setLatestVersion(e.target.value)} placeholder="e.g. 1.0.3" />
+        </div>
+
+        <div>
+          <label className="text-sm font-medium text-foreground">Minimum App Version</label>
+          <p className="text-xs text-muted-foreground mb-1">Users below this version see a mandatory "Update Required" block.</p>
+          <Input value={minVersion} onChange={(e) => setMinVersion(e.target.value)} placeholder="e.g. 1.0.0" />
+        </div>
+
+        <div>
+          <label className="text-sm font-medium text-foreground">Play Store URL</label>
+          <p className="text-xs text-muted-foreground mb-1">Where users are directed to update.</p>
+          <Input value={storeUrl} onChange={(e) => setStoreUrl(e.target.value)} placeholder="https://play.google.com/store/apps/details?id=..." />
+        </div>
+      </div>
+
+      <Button onClick={save} disabled={saving}>
+        {saving ? "Saving…" : "Save Changes"}
+      </Button>
+    </div>
+  );
+};
+
 // ─── Main Admin Dashboard ───
 const AdminDashboard = () => {
   const navigate = useNavigate();
