@@ -654,7 +654,7 @@ const Messages = () => {
           </div>
 
           {/* Conversation List */}
-          <div className="flex-1 overflow-y-auto">
+          <div className="flex-1 overflow-y-auto scrollbar-thin">
             {loading ? (
               <div className="flex items-center justify-center py-20">
                 <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
@@ -754,7 +754,7 @@ const Messages = () => {
           {selectedMatch ? (
             <>
               {/* Chat Header */}
-              <div className="flex items-center gap-3 px-4 py-3 border-b border-border bg-card shadow-sm">
+              <div className="flex items-center gap-3 px-4 py-3 border-b border-border bg-card shadow-sm sticky top-0 z-10">
                 <button
                   onClick={() => setSelectedMatch(null)}
                   className="md:hidden rounded-full p-2.5 hover:bg-muted transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
