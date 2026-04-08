@@ -143,16 +143,10 @@ const Messages = () => {
     setIsMutualMatch(selectedMatch.source === 'match');
   }, [selectedMatch]);
 
-  const isLocked = !isPremium && (
-    isMutualMatch
-      ? mySentTodayCount >= FREE_DAILY_MESSAGE_LIMIT
-      : mySentCount >= FREE_MESSAGE_LIMIT
-  );
-  const remainingFree = isPremium
+  const isLocked = !isPremium && isMutualMatch && mySentTodayCount >= FREE_DAILY_MESSAGE_LIMIT;
+  const remainingFree = isPremium || !isMutualMatch
     ? Infinity
-    : isMutualMatch
-      ? Math.max(0, FREE_DAILY_MESSAGE_LIMIT - mySentTodayCount)
-      : Math.max(0, FREE_MESSAGE_LIMIT - mySentCount);
+    : Math.max(0, FREE_DAILY_MESSAGE_LIMIT - mySentTodayCount);
 
   // Close emoji picker on outside click
   useEffect(() => {
