@@ -29,25 +29,56 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     let mounted = true;
 
-    const initializeAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-
+    // IMPORTANT: Set up the listener BEFORE getSession to avoid missing events
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (!mounted) return;
 
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-    };
+      if (event === 'TOKEN_REFRESHED') {
+        console.log('[Auth] Token refreshed successfully');
+      }
 
-    initializeAuth();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      if (!mounted) return;
+      if (event === 'SIGNED_OUT') {
+        console.log('[Auth] User signed out');
+        setSession(null);
+        setUser(null);
+        setLoading(false);
+        return;
+      }
 
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
     });
+
+    // Now get the initial session
+    const initializeAuth = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+
+        if (!mounted) return;
+
+        if (error) {
+          console.error('[Auth] Failed to get session:', error.message);
+          // Don't sign out on transient errors — just clear state gracefully
+          setSession(null);
+          setUser(null);
+          setLoading(false);
+          return;
+        }
+
+        setSession(session);
+        setUser(session?.user ?? null);
+        setLoading(false);
+      } catch (err) {
+        if (!mounted) return;
+        console.error('[Auth] Unexpected error during init:', err);
+        setSession(null);
+        setUser(null);
+        setLoading(false);
+      }
+    };
+
+    initializeAuth();
 
     return () => {
       mounted = false;
