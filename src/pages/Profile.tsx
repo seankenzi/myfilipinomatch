@@ -166,6 +166,8 @@ const Profile = () => {
             </div>
           </div>
 
+          {/* Profile Boost */}
+          {profile.is_premium && <ProfileBoostButton userId={user?.id} />}
 
           {/* Profile Completion */}
           <ProfileCompletion profile={profile} onEditClick={() => setEditing(true)} />
