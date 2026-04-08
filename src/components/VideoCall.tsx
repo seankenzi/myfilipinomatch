@@ -13,6 +13,8 @@ interface VideoCallProps {
   open: boolean;
   onClose: () => void;
   joinRoomUrl?: string;
+  /** Pre-acquired media stream from user gesture — ensures getUserMedia works on mobile WebViews */
+  preAcquiredStream?: MediaStream | null;
 }
 
 /** Extract base room URL (without query params) and token from a full Daily URL */
@@ -63,7 +65,7 @@ const attachTrack = (
   resumeMediaElement(el);
 };
 
-const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: VideoCallProps) => {
+const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl, preAcquiredStream }: VideoCallProps) => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const dailyCallRef = useRef<DailyCall | null>(null);
@@ -448,9 +450,14 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
     const isCaller = !joinRoomUrl;
     const { url, token } = parseDailyUrl(roomUrl);
 
+    // Use pre-acquired stream tracks if available (essential for mobile WebViews
+    // where getUserMedia must be called within a user gesture context)
+    const videoTrack = preAcquiredStream?.getVideoTracks()[0] ?? true;
+    const audioTrack = preAcquiredStream?.getAudioTracks()[0] ?? true;
+
     const callFrame = Daily.createCallObject({
-      videoSource: true,
-      audioSource: true,
+      videoSource: videoTrack,
+      audioSource: audioTrack,
     });
 
     dailyCallRef.current = callFrame;

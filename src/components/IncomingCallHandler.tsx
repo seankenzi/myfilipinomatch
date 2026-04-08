@@ -15,11 +15,23 @@ const IncomingCallHandler = () => {
     matchId: string;
     roomUrl: string;
     callerName: string;
+    stream: MediaStream | null;
   } | null>(null);
 
   const handleAccept = async () => {
+    // Acquire media stream IMMEDIATELY in user gesture context (critical for mobile WebViews)
+    let stream: MediaStream | null = null;
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+    } catch {
+      // Permission denied or no camera — proceed without pre-acquired stream
+    }
+
     const call = await acceptCall();
-    if (!call) return;
+    if (!call) {
+      if (stream) stream.getTracks().forEach(t => t.stop());
+      return;
+    }
 
     // Get a unique token for the callee via the join action
     try {
@@ -69,6 +81,7 @@ const IncomingCallHandler = () => {
           matchId: call.match_id,
           roomUrl: data.full_room_url,
           callerName: call.caller_name || "Someone",
+          stream,
         });
         return;
       }
@@ -93,8 +106,14 @@ const IncomingCallHandler = () => {
             matchId={acceptedCall.matchId}
             otherUserName={acceptedCall.callerName}
             open={true}
-            onClose={() => setAcceptedCall(null)}
+            onClose={() => {
+              if (acceptedCall.stream) {
+                acceptedCall.stream.getTracks().forEach(t => t.stop());
+              }
+              setAcceptedCall(null);
+            }}
             joinRoomUrl={acceptedCall.roomUrl}
+            preAcquiredStream={acceptedCall.stream}
           />
         </Suspense>
       )}

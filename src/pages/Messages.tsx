@@ -113,6 +113,7 @@ const Messages = () => {
   const [reportReason, setReportReason] = useState("");
   const [reportDetails, setReportDetails] = useState("");
   const [videoCallOpen, setVideoCallOpen] = useState(false);
+  const [videoStream, setVideoStream] = useState<MediaStream | null>(null);
   const [videoUpgradeOpen, setVideoUpgradeOpen] = useState(false);
   const [pendingVideoOpen, setPendingVideoOpen] = useState(shouldAutoOpenVideo);
   const [isOtherTyping, setIsOtherTyping] = useState(false);
@@ -806,7 +807,16 @@ const Messages = () => {
 
                 <div className="flex items-center gap-1">
                   <button
-                    onClick={() => setVideoCallOpen(true)}
+                    onClick={async () => {
+                      try {
+                        const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+                        setVideoStream(stream);
+                      } catch {
+                        // Permission denied or no camera — proceed without pre-acquired stream
+                        setVideoStream(null);
+                      }
+                      setVideoCallOpen(true);
+                    }}
                     className="rounded-full p-2.5 hover:bg-primary/10 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
                     title="Video Call"
                   >
@@ -1115,7 +1125,14 @@ const Messages = () => {
           matchId={selectedMatch.id}
           otherUserName={selectedMatch.other_user.full_name}
           open={videoCallOpen}
-          onClose={() => setVideoCallOpen(false)}
+          onClose={() => {
+            setVideoCallOpen(false);
+            if (videoStream) {
+              videoStream.getTracks().forEach(t => t.stop());
+              setVideoStream(null);
+            }
+          }}
+          preAcquiredStream={videoStream}
         />
       )}
 

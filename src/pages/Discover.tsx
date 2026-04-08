@@ -310,6 +310,7 @@ const Discover = () => {
   const [videoCallOpen, setVideoCallOpen] = useState(false);
   const [videoCallMatchId, setVideoCallMatchId] = useState<string | null>(null);
   const [videoCallUserName, setVideoCallUserName] = useState("");
+  const [videoStream, setVideoStream] = useState<MediaStream | null>(null);
 
   // Boost
   const [isBoosted, setIsBoosted] = useState(false);
@@ -662,6 +663,14 @@ const Discover = () => {
 
     if (!user) return;
 
+    // Acquire media stream IMMEDIATELY in user gesture context (critical for mobile WebViews)
+    let stream: MediaStream | null = null;
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+    } catch {
+      // Permission denied or no camera — proceed without pre-acquired stream
+    }
+
     // Look up existing match
     const { data: matchesData } = await supabase
       .from("matches")
@@ -674,6 +683,7 @@ const Discover = () => {
     });
 
     if (existingMatch) {
+      setVideoStream(stream);
       setVideoCallMatchId(existingMatch.id);
       setVideoCallUserName(profile.full_name);
       setVideoCallOpen(true);
@@ -686,10 +696,13 @@ const Discover = () => {
         .maybeSingle() as any;
 
       if (dmData) {
+        setVideoStream(stream);
         setVideoCallMatchId(dmData.id);
         setVideoCallUserName(profile.full_name);
         setVideoCallOpen(true);
       } else {
+        // No match/DM — stop the stream since we won't use it
+        if (stream) stream.getTracks().forEach(t => t.stop());
         toast({
           title: "💬 Direct Message first",
           description: `Use Direct Message ✨ to connect with ${profile.full_name.split(" ")[0]}, then you can video call.`,
@@ -1559,7 +1572,15 @@ const Discover = () => {
           matchId={videoCallMatchId}
           otherUserName={videoCallUserName}
           open={videoCallOpen}
-          onClose={() => { setVideoCallOpen(false); setVideoCallMatchId(null); }}
+          onClose={() => {
+            setVideoCallOpen(false);
+            setVideoCallMatchId(null);
+            if (videoStream) {
+              videoStream.getTracks().forEach(t => t.stop());
+              setVideoStream(null);
+            }
+          }}
+          preAcquiredStream={videoStream}
         />
       )}
 
