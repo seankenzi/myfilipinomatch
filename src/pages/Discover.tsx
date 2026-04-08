@@ -310,6 +310,7 @@ const Discover = () => {
   const [videoCallOpen, setVideoCallOpen] = useState(false);
   const [videoCallMatchId, setVideoCallMatchId] = useState<string | null>(null);
   const [videoCallUserName, setVideoCallUserName] = useState("");
+  const [videoStream, setVideoStream] = useState<MediaStream | null>(null);
 
   // Boost
   const [isBoosted, setIsBoosted] = useState(false);
@@ -1559,7 +1560,15 @@ const Discover = () => {
           matchId={videoCallMatchId}
           otherUserName={videoCallUserName}
           open={videoCallOpen}
-          onClose={() => { setVideoCallOpen(false); setVideoCallMatchId(null); }}
+          onClose={() => {
+            setVideoCallOpen(false);
+            setVideoCallMatchId(null);
+            if (videoStream) {
+              videoStream.getTracks().forEach(t => t.stop());
+              setVideoStream(null);
+            }
+          }}
+          preAcquiredStream={videoStream}
         />
       )}
 
