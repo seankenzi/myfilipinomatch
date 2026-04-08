@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { detectContactInfo } from "@/lib/contactFilter";
+import { isCityLikeCountry } from "@/lib/cityValidation";
 import { Camera, Edit, Shield, MapPin, Heart, Globe, Settings, LogOut, Crown, Save } from "lucide-react";
 import ProfileBoostButton from "@/components/ProfileBoostButton";
 import ProfileCompletion from "@/components/ProfileCompletion";
