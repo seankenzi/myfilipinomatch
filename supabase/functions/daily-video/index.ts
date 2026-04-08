@@ -434,6 +434,66 @@ Deno.serve(async (req) => {
         status: "ringing",
       });
 
+    // Send web push notification to the callee
+    try {
+      const { data: pushSubs } = await supabaseAdmin
+        .from("push_subscriptions")
+        .select("endpoint, p256dh, auth")
+        .eq("user_id", calleeId);
+
+      if (pushSubs && pushSubs.length > 0) {
+        const callerName = await resolveDisplayName();
+        const VAPID_PRIVATE_KEY = Deno.env.get("VAPID_PRIVATE_KEY");
+        const VAPID_PUBLIC_KEY = "BEk1S7G1LkzUf3gvf4RdCUEDuIGzA_8E2GSJnQxdwZBMdK_INyo6Ys8bTrOEiLMoO71UGhtgD63foBY7FP7bBv4";
+
+        if (VAPID_PRIVATE_KEY) {
+          // Dynamic import web-push compatible library for Deno
+          const { default: webpush } = await import("https://esm.sh/web-push@3.6.7");
+          webpush.setVapidDetails(
+            "mailto:support@myfilipinomatch.lovable.app",
+            VAPID_PUBLIC_KEY,
+            VAPID_PRIVATE_KEY
+          );
+
+          const payload = JSON.stringify({
+            title: "Incoming Video Call 📞",
+            body: `${callerName} is calling you!`,
+            url: `/messages?match=${match_id}&openVideo=1`,
+          });
+
+          await Promise.allSettled(
+            pushSubs.map((sub) =>
+              webpush
+                .sendNotification(
+                  {
+                    endpoint: sub.endpoint,
+                    keys: { p256dh: sub.p256dh, auth: sub.auth },
+                  },
+                  payload,
+                  { TTL: 30 }
+                )
+                .catch((err: unknown) => {
+                  console.warn("Push send failed:", err);
+                  // Remove invalid subscriptions (410 Gone or 404)
+                  if (err && typeof err === "object" && "statusCode" in err) {
+                    const code = (err as { statusCode: number }).statusCode;
+                    if (code === 410 || code === 404) {
+                      supabaseAdmin
+                        .from("push_subscriptions")
+                        .delete()
+                        .eq("endpoint", sub.endpoint)
+                        .then(() => {});
+                    }
+                  }
+                })
+            )
+          );
+        }
+      }
+    } catch (pushErr) {
+      console.warn("Push notification error (non-fatal):", pushErr);
+    }
+
     return new Response(
       JSON.stringify({
         room_url: roomUrl,
