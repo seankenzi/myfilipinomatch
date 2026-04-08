@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { detectContactInfo } from "@/lib/contactFilter";
-import { Camera, Edit, Shield, MapPin, Heart, Globe, Settings, LogOut, Crown, Save, Zap, Loader2 } from "lucide-react";
+import { Camera, Edit, Shield, MapPin, Heart, Globe, Settings, LogOut, Crown, Save } from "lucide-react";
+import ProfileBoostButton from "@/components/ProfileBoostButton";
 import ProfileCompletion from "@/components/ProfileCompletion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
