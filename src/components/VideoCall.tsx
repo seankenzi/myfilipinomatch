@@ -35,6 +35,13 @@ const formatTime = (totalSeconds: number) => {
   return `${m}:${String(s).padStart(2, "0")}`;
 };
 
+const resumeMediaElement = (el: HTMLVideoElement | HTMLAudioElement) => {
+  const playPromise = el.play();
+  if (playPromise && typeof playPromise.catch === "function") {
+    playPromise.catch(() => undefined);
+  }
+};
+
 /** Attach a MediaStreamTrack to a <video> or <audio> element */
 const attachTrack = (
   el: HTMLVideoElement | HTMLAudioElement | null,
@@ -42,13 +49,18 @@ const attachTrack = (
 ) => {
   if (!el) return;
   if (!track) {
+    el.pause();
     el.srcObject = null;
     return;
   }
   // Avoid re-attaching the same track
   const existing = el.srcObject as MediaStream | null;
-  if (existing?.getTracks()[0]?.id === track.id) return;
+  if (existing?.getTracks()[0]?.id === track.id) {
+    if (el.paused) resumeMediaElement(el);
+    return;
+  }
   el.srcObject = new MediaStream([track]);
+  resumeMediaElement(el);
 };
 
 const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: VideoCallProps) => {
@@ -773,99 +785,62 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
 
         {roomUrl && (
           <div className={`relative h-full w-full overflow-hidden bg-black ${isGridMode ? "flex flex-col md:flex-row" : ""}`}>
-            {isGridMode ? (
-              /* ── Grid mode: side-by-side (desktop) ── */
-              <>
-                {/* Remote video tile */}
-                <div className="relative flex-1 h-full bg-black">
-                  <video
-                    ref={remoteVideoRef}
-                    autoPlay
-                    playsInline
-                    className="w-full h-full object-contain"
-                  />
-                  {(!callEstablished || remoteVideoOff) && !connectionLost && (
-                    <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-black/80">
-                      <div className="flex flex-col items-center gap-3">
-                        <div className="flex h-20 w-20 items-center justify-center rounded-full bg-muted/30 backdrop-blur-sm">
-                          <User className="h-10 w-10 text-muted-foreground" />
-                        </div>
-                        <span className="text-sm font-medium text-white drop-shadow-md">
-                          {callEstablished ? `${otherUserName}'s camera is off` : `Waiting for ${otherUserName}…`}
-                        </span>
-                      </div>
+            <div className={isGridMode ? "relative flex-1 h-full bg-black" : "absolute inset-0 bg-black"}>
+              <video
+                ref={remoteVideoRef}
+                autoPlay
+                playsInline
+                className={`h-full w-full object-contain ${isGridMode ? "" : "absolute inset-0"}`}
+              />
+
+              {(!callEstablished || remoteVideoOff) && !connectionLost && (
+                <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-black/80">
+                  <div className="flex flex-col items-center gap-3">
+                    <div className={`flex items-center justify-center rounded-full bg-muted/30 backdrop-blur-sm ${isGridMode ? "h-20 w-20" : "h-24 w-24"}`}>
+                      <User className={`${isGridMode ? "h-10 w-10" : "h-12 w-12"} text-muted-foreground`} />
                     </div>
-                  )}
-                  <div className="absolute bottom-3 left-3 z-20 rounded-full bg-black/60 px-3 py-1 text-xs text-white backdrop-blur-sm">
-                    {otherUserName}
+                    <span className={`${isGridMode ? "text-sm" : "text-base"} font-medium text-white drop-shadow-md`}>
+                      {callEstablished ? `${otherUserName}'s camera is off` : `Waiting for ${otherUserName}…`}
+                    </span>
                   </div>
                 </div>
+              )}
 
-                {/* Local video tile */}
-                <div className="relative flex-1 h-full bg-black border-l-2 border-white/10">
-                  <video
-                    ref={localVideoRef}
-                    autoPlay
-                    playsInline
-                    muted
-                    className="w-full h-full object-cover"
-                    style={{ transform: "scaleX(-1)" }}
-                  />
-                  {isCameraOff && (
-                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-muted/90">
-                      <User className="h-10 w-10 text-muted-foreground" />
-                      <span className="text-xs text-muted-foreground mt-1">Camera off</span>
-                    </div>
-                  )}
-                  <div className="absolute bottom-3 left-3 z-20 rounded-full bg-black/60 px-3 py-1 text-xs text-white backdrop-blur-sm">
-                    You
-                  </div>
+              <div className="absolute bottom-3 left-3 z-20 rounded-full bg-black/60 px-3 py-1 text-xs text-white backdrop-blur-sm">
+                {otherUserName}
+              </div>
+            </div>
+
+            <div
+              className={isGridMode
+                ? "relative flex-1 h-full overflow-hidden bg-black border-t-2 border-white/10 md:border-l-2 md:border-t-0"
+                : "absolute bottom-24 right-4 z-20 h-40 w-28 overflow-hidden rounded-xl border-2 border-white/20 bg-black shadow-xl sm:h-44 sm:w-32"
+              }
+            >
+              <video
+                ref={localVideoRef}
+                autoPlay
+                playsInline
+                muted
+                className="h-full w-full object-cover"
+                style={{ transform: "scaleX(-1)" }}
+              />
+
+              {isCameraOff && (
+                <div className="absolute inset-0 flex flex-col items-center justify-center bg-muted/90">
+                  <User className={`${isGridMode ? "h-10 w-10" : "h-6 w-6"} text-muted-foreground`} />
+                  <span className={`${isGridMode ? "text-xs" : "text-[10px]"} mt-1 text-muted-foreground`}>
+                    Camera off
+                  </span>
                 </div>
-              </>
-            ) : (
-              /* ── PiP mode: remote fullscreen, local small ── */
-              <>
-                {/* Remote video — fullscreen */}
-                <video
-                  ref={remoteVideoRef}
-                  autoPlay
-                  playsInline
-                  className="absolute inset-0 w-full h-full object-contain"
-                />
+              )}
 
-                {/* Waiting / no remote video */}
-                {(!callEstablished || remoteVideoOff) && !connectionLost && (
-                  <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-black/80">
-                    <div className="flex flex-col items-center gap-3">
-                      <div className="flex h-24 w-24 items-center justify-center rounded-full bg-muted/30 backdrop-blur-sm">
-                        <User className="h-12 w-12 text-muted-foreground" />
-                      </div>
-                      <span className="text-base font-medium text-white drop-shadow-md">
-                        {callEstablished ? `${otherUserName}'s camera is off` : `Waiting for ${otherUserName}…`}
-                      </span>
-                    </div>
-                  </div>
-                )}
-
-                {/* Local video — small PiP in bottom-right */}
-                <div className="absolute bottom-24 right-4 z-20 w-28 h-40 sm:w-32 sm:h-44 rounded-xl overflow-hidden shadow-xl border-2 border-white/20 bg-black">
-                  <video
-                    ref={localVideoRef}
-                    autoPlay
-                    playsInline
-                    muted
-                    className="w-full h-full object-cover"
-                    style={{ transform: "scaleX(-1)" }}
-                  />
-                  {isCameraOff && (
-                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-muted/90">
-                      <User className="h-6 w-6 text-muted-foreground" />
-                      <span className="text-[10px] text-muted-foreground mt-1">Camera off</span>
-                    </div>
-                  )}
+              {isGridMode && (
+                <div className="absolute bottom-3 left-3 z-20 rounded-full bg-black/60 px-3 py-1 text-xs text-white backdrop-blur-sm">
+                  You
                 </div>
-              </>
-            )}
+              )}
+            </div>
 
             {/* Remote audio */}
             <audio ref={remoteAudioRef} autoPlay />
