@@ -728,10 +728,17 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
 
   const timeRemaining = Math.max(0, remainingSeconds - elapsedSeconds);
   const isLowTime = timeRemaining <= 300;
+  const safeAreaTopOffset = "calc(env(safe-area-inset-top, 0px) + 1rem)";
+  const safeAreaBottomOffset = "calc(env(safe-area-inset-bottom, 0px) + 1rem)";
+  const controlsDocked = !callEstablished || controlsVisible;
+  const callerNameBottomOffset = controlsDocked
+    ? "calc(env(safe-area-inset-bottom, 0px) + 7rem)"
+    : safeAreaBottomOffset;
+  const controlsBottomOffset = "calc(env(safe-area-inset-bottom, 0px) + 1.5rem)";
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && handleClose()}>
-      <DialogContent className="max-w-[95vw] w-full h-[95vh] p-0 overflow-hidden rounded-xl">
+      <DialogContent className="h-[100dvh] max-h-[100dvh] w-screen max-w-none rounded-none p-0 overflow-hidden sm:h-[95vh] sm:max-h-[95vh] sm:w-full sm:max-w-[95vw] sm:rounded-xl">
         {loading && (
           <div className="flex flex-col items-center justify-center h-full gap-4">
             <Loader2 className="h-10 w-10 animate-spin text-primary" />
@@ -821,7 +828,10 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
                 </div>
               )}
 
-              <div className="absolute bottom-3 left-3 z-20 rounded-full bg-black/60 px-3 py-1 text-xs text-white backdrop-blur-sm">
+              <div
+                className="absolute left-3 z-20 max-w-[calc(100%-9rem)] truncate rounded-full bg-black/60 px-3 py-1 text-xs text-white backdrop-blur-sm sm:max-w-[calc(100%-2rem)]"
+                style={{ bottom: callerNameBottomOffset }}
+              >
                 {otherUserName}
               </div>
             </div>
@@ -871,14 +881,20 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
 
             {/* Waiting indicator (no timer) */}
             {!callEstablished && !joinRoomUrl && (
-              <div className="absolute top-4 right-4 z-20 flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium shadow-lg backdrop-blur-sm bg-card/80 text-muted-foreground">
+              <div
+                className="absolute right-4 z-20 flex max-w-[calc(100%-2rem)] items-center gap-1.5 rounded-full bg-card/80 px-3 py-1.5 text-xs font-medium text-muted-foreground shadow-lg backdrop-blur-sm"
+                style={{ top: safeAreaTopOffset }}
+              >
                 <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                Waiting for {otherUserName}…
+                <span className="truncate">Waiting for {otherUserName}…</span>
               </div>
             )}
 
             {/* Floating controls — auto-hide after call established */}
-            <div className={`absolute inset-x-0 bottom-6 z-30 flex justify-center px-4 transition-opacity duration-300 ${callEstablished && !controlsVisible ? "opacity-0 pointer-events-none" : "opacity-100"}`}>
+            <div
+              className={`absolute inset-x-0 z-30 flex justify-center px-4 transition-opacity duration-300 ${callEstablished && !controlsVisible ? "opacity-0 pointer-events-none" : "opacity-100"}`}
+              style={{ bottom: controlsBottomOffset }}
+            >
               <div className="flex max-w-full items-center gap-3 rounded-full border border-border/40 bg-foreground/55 px-4 py-3 shadow-lg backdrop-blur-md">
                 <Button
                   variant={isMuted ? "secondary" : "outline"}
