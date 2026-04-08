@@ -130,6 +130,8 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
       setIsCameraOff(false);
       setRemoteVideoOff(false);
       setIsGridMode(false);
+      setControlsVisible(true);
+      if (controlsTimerRef.current) clearTimeout(controlsTimerRef.current);
       destroyCallFrame();
 
       if (toastMessage) {
@@ -789,7 +791,15 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
         )}
 
         {roomUrl && (
-          <div className={`relative h-full w-full overflow-hidden bg-black ${isGridMode ? "flex flex-col md:flex-row" : ""}`}>
+          <div
+            className={`relative h-full w-full overflow-hidden bg-black ${isGridMode ? "flex flex-col md:flex-row" : ""}`}
+            onClick={() => {
+              if (!callEstablished) return;
+              setControlsVisible(true);
+              if (controlsTimerRef.current) clearTimeout(controlsTimerRef.current);
+              controlsTimerRef.current = setTimeout(() => setControlsVisible(false), 3000);
+            }}
+          >
             <div className={isGridMode ? "relative flex-1 h-full bg-black" : "absolute inset-0 bg-black"}>
               <video
                 ref={remoteVideoRef}
@@ -867,8 +877,8 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
               </div>
             )}
 
-            {/* Floating controls */}
-            <div className="absolute inset-x-0 bottom-6 z-30 flex justify-center px-4">
+            {/* Floating controls — auto-hide after call established */}
+            <div className={`absolute inset-x-0 bottom-6 z-30 flex justify-center px-4 transition-opacity duration-300 ${callEstablished && !controlsVisible ? "opacity-0 pointer-events-none" : "opacity-100"}`}>
               <div className="flex max-w-full items-center gap-3 rounded-full border border-border/40 bg-foreground/55 px-4 py-3 shadow-lg backdrop-blur-md">
                 <Button
                   variant={isMuted ? "secondary" : "outline"}
@@ -915,16 +925,8 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
                   {isCameraOff ? <VideoOff className="h-5 w-5" /> : <Video className="h-5 w-5" />}
                 </Button>
 
-                {/* Grid/PiP toggle — desktop only */}
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="h-12 w-12 rounded-full shadow-lg bg-card/80 text-foreground"
-                  onClick={() => setIsGridMode((prev) => !prev)}
-                  title={isGridMode ? "Switch to spotlight" : "Switch to grid"}
-                >
-                  {isGridMode ? <Maximize className="h-5 w-5" /> : <LayoutGrid className="h-5 w-5" />}
-                </Button>
+
+
               </div>
             </div>
           </div>
