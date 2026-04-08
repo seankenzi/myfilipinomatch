@@ -1,7 +1,11 @@
 import { Link } from "react-router-dom";
 import logo from "@/assets/myfilipinomatch-logo.png";
 
-const Footer = () => (
+const Footer = () => {
+  const pathname = typeof window !== "undefined" ? window.location.pathname : "";
+  if (pathname === "/messages") return null;
+
+  return (
   <footer className="hidden md:block border-t border-border bg-card">
     <div className="container py-6">
       <div className="relative flex items-center justify-center min-h-[40px]">
