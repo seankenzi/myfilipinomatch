@@ -93,8 +93,8 @@ const AppShell = () => {
       <PushSubscriptionManager />
       <ScrollToTop />
       <IncomingCallHandler />
-      <div className="flex min-h-screen flex-col">
-        <div className={isMessagesRoute ? "flex-1" : "flex-1 pb-16 md:pb-0"}>
+      <div className={`flex flex-col ${isMessagesRoute ? "h-dvh overflow-hidden" : "min-h-screen"}`}>
+        <div className={isMessagesRoute ? "flex-1 overflow-hidden" : "flex-1 pb-16 md:pb-0"}>
           <ErrorBoundary>
             <Suspense fallback={<LazyFallback />}>
               <Routes>
