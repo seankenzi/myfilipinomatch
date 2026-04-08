@@ -295,6 +295,7 @@ const Discover = () => {
 
   // Premium & limits
   const [isPremium, setIsPremium] = useState(false);
+  const [currentPlan, setCurrentPlan] = useState<string | null>(null);
   const [dailyLikesUsed, setDailyLikesUsed] = useState(0);
 
   // Undo pass
