@@ -652,6 +652,22 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl }: Video
     };
   }, [open, roomUrl, fetchLocalDisplayName]);
 
+  // Re-attach tracks when layout mode changes (DOM elements swap)
+  useEffect(() => {
+    const cf = dailyCallRef.current;
+    if (!cf || cf.isDestroyed() || !open || !roomUrl) return;
+    // Small delay to let React commit new video elements to the DOM
+    const id = setTimeout(() => {
+      if (cf.isDestroyed()) return;
+      const participants = cf.participants();
+      if (participants?.local) syncTracks(participants.local);
+      Object.values(participants).forEach((p) => {
+        if (!p.local) syncTracks(p);
+      });
+    }, 50);
+    return () => clearTimeout(id);
+  }, [isGridMode, open, roomUrl, syncTracks]);
+
   // Browser online/offline listeners
   useEffect(() => {
     if (!open || !roomUrl) return;
