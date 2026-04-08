@@ -142,8 +142,9 @@ const Messages = () => {
     setIsMutualMatch(selectedMatch.source === 'match');
   }, [selectedMatch]);
 
-  const isLocked = !isPremium && isMutualMatch && mySentTodayCount >= FREE_DAILY_MESSAGE_LIMIT;
-  const remainingFree = isPremium || !isMutualMatch
+  const otherIsPremium = selectedMatch?.other_user?.is_premium === true;
+  const isLocked = !isPremium && !otherIsPremium && isMutualMatch && mySentTodayCount >= FREE_DAILY_MESSAGE_LIMIT;
+  const remainingFree = isPremium || !isMutualMatch || otherIsPremium
     ? Infinity
     : Math.max(0, FREE_DAILY_MESSAGE_LIMIT - mySentTodayCount);
 
