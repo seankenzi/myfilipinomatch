@@ -663,6 +663,14 @@ const Discover = () => {
 
     if (!user) return;
 
+    // Acquire media stream IMMEDIATELY in user gesture context (critical for mobile WebViews)
+    let stream: MediaStream | null = null;
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+    } catch {
+      // Permission denied or no camera — proceed without pre-acquired stream
+    }
+
     // Look up existing match
     const { data: matchesData } = await supabase
       .from("matches")
@@ -675,6 +683,7 @@ const Discover = () => {
     });
 
     if (existingMatch) {
+      setVideoStream(stream);
       setVideoCallMatchId(existingMatch.id);
       setVideoCallUserName(profile.full_name);
       setVideoCallOpen(true);
@@ -687,10 +696,13 @@ const Discover = () => {
         .maybeSingle() as any;
 
       if (dmData) {
+        setVideoStream(stream);
         setVideoCallMatchId(dmData.id);
         setVideoCallUserName(profile.full_name);
         setVideoCallOpen(true);
       } else {
+        // No match/DM — stop the stream since we won't use it
+        if (stream) stream.getTracks().forEach(t => t.stop());
         toast({
           title: "💬 Direct Message first",
           description: `Use Direct Message ✨ to connect with ${profile.full_name.split(" ")[0]}, then you can video call.`,
