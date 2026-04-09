@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
-const APP_VERSION = "1.0.0";
+const APP_VERSION = "1.0.3";
 
 const compareVersions = (a: string, b: string): number => {
   const pa = a.split(".").map(Number);
