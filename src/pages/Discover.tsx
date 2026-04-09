@@ -25,6 +25,7 @@ import VideoBanner from "@/components/VideoBanner";
 import VideoCallModal from "@/components/VideoCallModal";
 import VideoCall from "@/components/VideoCall";
 import { getSignedPhotoUrls } from "@/lib/storage";
+import { getMediaStreamWithTimeout } from "@/lib/media";
 
 interface Profile {
   id: string;

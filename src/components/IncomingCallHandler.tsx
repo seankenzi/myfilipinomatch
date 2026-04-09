@@ -4,6 +4,7 @@ import { useIncomingCall } from "@/hooks/useIncomingCall";
 import IncomingCallOverlay from "@/components/IncomingCallOverlay";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { getMediaStreamWithTimeout } from "@/lib/media";
 
 const VideoCallLazy = lazy(() => import("@/components/VideoCall"));
 
