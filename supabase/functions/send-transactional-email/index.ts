@@ -214,7 +214,7 @@ Deno.serve(async (req) => {
 
   // 3. Throttle: for "new-message" emails, allow at most one per recipient per 60 minutes
   const THROTTLED_TEMPLATES: Record<string, number> = {
-    'new-message': 60, // minutes
+    'new-message': 720, // 12 hours in minutes
   }
 
   const throttleMinutes = THROTTLED_TEMPLATES[templateName]
