@@ -808,11 +808,10 @@ const Messages = () => {
 
                 <div className="flex items-center gap-1">
                   <button
-                    onClick={() => {
-                      // Open the call UI immediately — never block on getUserMedia
+                    onClick={async () => {
+                      const stream = await getMediaStreamWithTimeout();
+                      setVideoStream(stream);
                       setVideoCallOpen(true);
-                      // Acquire stream in background (with timeout for Android WebView)
-                      getMediaStreamWithTimeout().then(setVideoStream);
                     }}
                     className="rounded-full p-2.5 hover:bg-primary/10 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
                     title="Video Call"
