@@ -2,7 +2,7 @@ import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
 
-const serviceWorkerCleanupKey = "__lovable_service_worker_cleanup_v2";
+const serviceWorkerCleanupKey = "__lovable_service_worker_cleanup_v3";
 
 const cleanupStaleServiceWorkers = async () => {
   // Skip if already cleaned up (use localStorage to persist across tab discards)
