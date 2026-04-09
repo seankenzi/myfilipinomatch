@@ -1386,7 +1386,7 @@ const EmailsTab = () => {
                     <td className="p-3 text-xs font-medium">{log.template_name}</td>
                     <td className="p-3 text-xs text-muted-foreground truncate max-w-[200px]">{log.recipient_email}</td>
                     <td className="p-3 text-center">{statusBadge(log.status)}</td>
-                    <td className="p-3 text-xs text-muted-foreground">{format(new Date(log.created_at), "MMM d, yyyy h:mm a")}</td>
+                    <td className="p-3 text-xs text-muted-foreground">{new Date(log.created_at).toLocaleString("en-US", { timeZone: "Asia/Manila", month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit", hour12: true })}</td>
                     <td className="p-3 text-xs text-destructive truncate max-w-[200px]">{log.error_message || "—"}</td>
                   </tr>
                 ))}
@@ -1733,7 +1733,7 @@ const AnalyticsTab = () => {
                       </td>
                       <td className="py-3 pr-4 text-center font-medium text-foreground">{u.visit_count}</td>
                       <td className="py-3 text-muted-foreground text-xs whitespace-nowrap">
-                        {new Date(u.last_visit).toLocaleDateString()} {new Date(u.last_visit).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                        {new Date(u.last_visit).toLocaleString("en-US", { timeZone: "Asia/Manila", month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit", hour12: true })}
                       </td>
                     </tr>
                   );
