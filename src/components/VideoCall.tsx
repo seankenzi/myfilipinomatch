@@ -485,6 +485,54 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl, preAcqu
       }
     };
 
+    let remoteParticipantConnected = false;
+
+    const startEstablishedState = () => {
+      if (remoteParticipantConnected) return;
+      remoteParticipantConnected = true;
+      setCallEstablished(true);
+      callStartTimeRef.current = Date.now();
+      setElapsedSeconds(0);
+      setConnectionLost(false);
+      setControlsVisible(true);
+
+      if (controlsTimerRef.current) clearTimeout(controlsTimerRef.current);
+      controlsTimerRef.current = setTimeout(() => setControlsVisible(false), 3000);
+
+      if (isCaller && !timerRef.current) {
+        const maxSeconds = remainingSecondsRef.current;
+        timerRef.current = setInterval(() => {
+          setElapsedSeconds((prev) => {
+            const next = prev + 1;
+            if (next >= maxSeconds) {
+              handleClose();
+              toast({
+                title: "Time's up!",
+                description: "You've used your 2 free video call hours this month.",
+              });
+            }
+            if (maxSeconds - next === 300) {
+              toast({
+                title: "⏰ 5 minutes remaining",
+                description: "Your monthly video call time is almost up.",
+              });
+            }
+            return next;
+          });
+        }, 1000);
+      }
+    };
+
+    const syncExistingRemoteParticipants = () => {
+      const participants = Object.values(callFrame.participants() ?? {});
+      const remoteParticipants = participants.filter((participant) => !participant.local);
+
+      if (remoteParticipants.length === 0) return;
+
+      startEstablishedState();
+      remoteParticipants.forEach((participant) => syncTracks(participant));
+    };
+
     callFrame.on("joined-meeting", () => {
       // Run all quality settings in parallel (non-blocking)
       void Promise.allSettled([
@@ -514,11 +562,17 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl, preAcqu
       // Sync local tracks after joining
       const localP = callFrame.participants()?.local;
       if (localP) syncTracks(localP);
+
+      // On Android/native, the remote participant can already be present by the time
+      // join resolves, so don't rely only on the participant-joined event.
+      syncExistingRemoteParticipants();
     });
 
     // Track start/stop events — attach/detach media
     callFrame.on("track-started", (event) => {
-      if (event?.participant) syncTracks(event.participant);
+      if (!event?.participant) return;
+      syncTracks(event.participant);
+      if (!event.participant.local) startEstablishedState();
     });
 
     callFrame.on("track-stopped", (event) => {
@@ -528,39 +582,8 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl, preAcqu
     // Handle remote participant joining -> start timer
     callFrame.on("participant-joined", (event) => {
       if (event?.participant?.local) return;
-      setCallEstablished(true);
-      callStartTimeRef.current = Date.now();
-      setElapsedSeconds(0);
-
-      // Auto-hide controls after 3 seconds once call is established
-      controlsTimerRef.current = setTimeout(() => setControlsVisible(false), 3000);
-
-      // Sync their tracks
+      startEstablishedState();
       syncTracks(event.participant);
-
-      if (isCaller) {
-        if (timerRef.current) clearInterval(timerRef.current);
-        const maxSeconds = remainingSecondsRef.current;
-        timerRef.current = setInterval(() => {
-          setElapsedSeconds((prev) => {
-            const next = prev + 1;
-            if (next >= maxSeconds) {
-              handleClose();
-              toast({
-                title: "Time's up!",
-                description: "You've used your 2 free video call hours this month.",
-              });
-            }
-            if (maxSeconds - next === 300) {
-              toast({
-                title: "⏰ 5 minutes remaining",
-                description: "Your monthly video call time is almost up.",
-              });
-            }
-            return next;
-          });
-        }, 1000);
-      }
     });
 
     // When remote participant leaves
@@ -580,6 +603,7 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl, preAcqu
         setIsMuted(!event.participant.audio);
         setIsCameraOff(!event.participant.video);
       } else {
+        startEstablishedState();
         setRemoteVideoOff(!event.participant.video);
       }
     });
