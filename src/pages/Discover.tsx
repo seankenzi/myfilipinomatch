@@ -663,13 +663,8 @@ const Discover = () => {
 
     if (!user) return;
 
-    // Acquire media stream IMMEDIATELY in user gesture context (critical for mobile WebViews)
-    let stream: MediaStream | null = null;
-    try {
-      stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-    } catch {
-      // Permission denied or no camera — proceed without pre-acquired stream
-    }
+    // Acquire media stream with timeout — never block the UI (Android WebView can hang)
+    const stream = await getMediaStreamWithTimeout();
 
     // Look up existing match
     const { data: matchesData } = await supabase
