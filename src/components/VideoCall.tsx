@@ -452,8 +452,15 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl, preAcqu
 
     // Use pre-acquired stream tracks if available (essential for mobile WebViews
     // where getUserMedia must be called within a user gesture context)
-    const videoTrack = preAcquiredStream?.getVideoTracks()[0] ?? true;
-    const audioTrack = preAcquiredStream?.getAudioTracks()[0] ?? true;
+    const isNativeCapacitor =
+      typeof window !== "undefined" &&
+      typeof (window as Window & { Capacitor?: { isNativePlatform?: () => boolean } }).Capacitor
+        ?.isNativePlatform === "function" &&
+      (window as Window & { Capacitor?: { isNativePlatform?: () => boolean } }).Capacitor
+        ?.isNativePlatform?.() === true;
+
+    const videoTrack = preAcquiredStream?.getVideoTracks()[0] ?? (isNativeCapacitor ? false : true);
+    const audioTrack = preAcquiredStream?.getAudioTracks()[0] ?? (isNativeCapacitor ? false : true);
 
     const callFrame = Daily.createCallObject({
       videoSource: videoTrack,
