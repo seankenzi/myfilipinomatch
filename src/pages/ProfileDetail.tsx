@@ -223,12 +223,18 @@ const ProfileDetail = () => {
           {photos.length > 0 && photos[0] ? (
             <div className="relative w-full max-w-xs mx-auto overflow-hidden rounded-2xl aspect-[3/4] bg-muted">
               {photos[activePhoto] ? (
-                <img
-                  key={activePhoto}
-                  src={photos[activePhoto]}
-                  alt={`${profile.full_name} photo ${activePhoto + 1}`}
-                  className="h-full w-full object-cover"
-                />
+                <>
+                  <div className="absolute inset-0 flex items-center justify-center bg-muted z-0">
+                    <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                  </div>
+                  <img
+                    key={activePhoto}
+                    src={photos[activePhoto]}
+                    alt={`${profile.full_name} photo ${activePhoto + 1}`}
+                    className="relative z-10 h-full w-full object-cover"
+                    loading="eager"
+                  />
+                </>
               ) : (
                 <div className="h-full w-full flex items-center justify-center">
                   <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
