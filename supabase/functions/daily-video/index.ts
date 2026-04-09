@@ -461,7 +461,9 @@ Deno.serve(async (req) => {
             url: `/messages?match=${match_id}&openVideo=1`,
           });
 
-          await Promise.allSettled(
+          console.log(`[push] Sending incoming-call push to ${pushSubs.length} subscription(s) for callee ${calleeId}`);
+
+          const results = await Promise.allSettled(
             pushSubs.map((sub) =>
               webpush
                 .sendNotification(
@@ -473,7 +475,7 @@ Deno.serve(async (req) => {
                   { TTL: 30 }
                 )
                 .catch((err: unknown) => {
-                  console.warn("Push send failed:", err);
+                  console.warn("[push] Push send failed for endpoint:", sub.endpoint, err);
                   // Remove invalid subscriptions (410 Gone or 404)
                   if (err && typeof err === "object" && "statusCode" in err) {
                     const code = (err as { statusCode: number }).statusCode;
@@ -485,9 +487,14 @@ Deno.serve(async (req) => {
                         .then(() => {});
                     }
                   }
+                  throw err;
                 })
             )
           );
+
+          const sent = results.filter((r) => r.status === "fulfilled").length;
+          const failed = results.filter((r) => r.status === "rejected").length;
+          console.log(`[push] Incoming call push results: ${sent} sent, ${failed} failed`);
         }
       }
     } catch (pushErr) {
