@@ -466,7 +466,7 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl, preAcqu
 
     console.log("[VideoCall DEBUG] isNativeCapacitor:", isNativeCapacitor);
     console.log("[VideoCall DEBUG] preAcquiredStream:", !!preAcquiredStream, "video tracks:", preAcquiredStream?.getVideoTracks().length, "audio tracks:", preAcquiredStream?.getAudioTracks().length);
-    console.log("[VideoCall DEBUG] videoSource:", videoTrack === false ? "false" : videoTrack === true ? "true" : "track", "audioSource:", audioTrack === false ? "false" : audioTrack === true ? "true" : "track");
+    console.log("[VideoCall DEBUG] videoSource:", videoTrack === true ? "true" : "track", "audioSource:", audioTrack === true ? "true" : "track");
     console.log("[VideoCall DEBUG] roomUrl:", url, "hasToken:", !!token);
 
     const callFrame = Daily.createCallObject({
