@@ -28,7 +28,7 @@ const canReloadWithoutInterrupting = () => {
   if (document.visibilityState !== "visible") return false;
 
   const activeElement = document.activeElement;
-  if (!activeElement) return true;
+  if (!(activeElement instanceof HTMLElement)) return true;
   if (activeElement.isContentEditable) return false;
 
   if (activeElement instanceof HTMLTextAreaElement) {
