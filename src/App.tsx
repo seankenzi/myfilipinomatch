@@ -1,6 +1,7 @@
 import { lazy, Suspense } from "react";
 import { usePageVisitTracker } from "@/hooks/usePageVisitTracker";
 import useOnlineStatus from "@/hooks/useOnlineStatus";
+import { useAppVersionSync } from "@/hooks/useAppVersionSync";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
@@ -142,6 +143,8 @@ const AppShell = () => {
 
 const App = () => {
   useOnlineStatus();
+  useAppVersionSync();
+
   return (
     <HelmetProvider>
       <QueryClientProvider client={queryClient}>
