@@ -459,8 +459,10 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl, preAcqu
       (window as Window & { Capacitor?: { isNativePlatform?: () => boolean } }).Capacitor
         ?.isNativePlatform?.() === true;
 
-    const videoTrack = preAcquiredStream?.getVideoTracks()[0] ?? (isNativeCapacitor ? false : true);
-    const audioTrack = preAcquiredStream?.getAudioTracks()[0] ?? (isNativeCapacitor ? false : true);
+    // Always fall back to true so Daily can acquire media — defaulting to false
+    // on Capacitor was causing calls with zero video/audio when pre-acquisition timed out.
+    const videoTrack = preAcquiredStream?.getVideoTracks()[0] ?? true;
+    const audioTrack = preAcquiredStream?.getAudioTracks()[0] ?? true;
 
     console.log("[VideoCall DEBUG] isNativeCapacitor:", isNativeCapacitor);
     console.log("[VideoCall DEBUG] preAcquiredStream:", !!preAcquiredStream, "video tracks:", preAcquiredStream?.getVideoTracks().length, "audio tracks:", preAcquiredStream?.getAudioTracks().length);

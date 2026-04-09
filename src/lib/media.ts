@@ -6,7 +6,7 @@
  */
 export const getMediaStreamWithTimeout = (
   constraints: MediaStreamConstraints = { video: true, audio: true },
-  timeoutMs = 3000
+  timeoutMs = 5000
 ): Promise<MediaStream | null> =>
   Promise.race([
     navigator.mediaDevices
