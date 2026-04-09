@@ -9,6 +9,7 @@ import {
 import VideoCallModal from "@/components/VideoCallModal";
 import { detectContactInfo } from "@/lib/contactFilter";
 import { getSignedPhotoUrls } from "@/lib/storage";
+import { getMediaStreamWithTimeout } from "@/lib/media";
 import OnlineStatus from "@/components/OnlineStatus";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -807,15 +808,11 @@ const Messages = () => {
 
                 <div className="flex items-center gap-1">
                   <button
-                    onClick={async () => {
-                      try {
-                        const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-                        setVideoStream(stream);
-                      } catch {
-                        // Permission denied or no camera — proceed without pre-acquired stream
-                        setVideoStream(null);
-                      }
+                    onClick={() => {
+                      // Open the call UI immediately — never block on getUserMedia
                       setVideoCallOpen(true);
+                      // Acquire stream in background (with timeout for Android WebView)
+                      getMediaStreamWithTimeout().then(setVideoStream);
                     }}
                     className="rounded-full p-2.5 hover:bg-primary/10 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
                     title="Video Call"

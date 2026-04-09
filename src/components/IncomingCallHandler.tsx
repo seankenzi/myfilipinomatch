@@ -4,6 +4,7 @@ import { useIncomingCall } from "@/hooks/useIncomingCall";
 import IncomingCallOverlay from "@/components/IncomingCallOverlay";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { getMediaStreamWithTimeout } from "@/lib/media";
 
 const VideoCallLazy = lazy(() => import("@/components/VideoCall"));
 
@@ -19,13 +20,8 @@ const IncomingCallHandler = () => {
   } | null>(null);
 
   const handleAccept = async () => {
-    // Acquire media stream IMMEDIATELY in user gesture context (critical for mobile WebViews)
-    let stream: MediaStream | null = null;
-    try {
-      stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-    } catch {
-      // Permission denied or no camera — proceed without pre-acquired stream
-    }
+    // Acquire media stream with timeout — never block the UI (Android WebView can hang)
+    const stream = await getMediaStreamWithTimeout();
 
     const call = await acceptCall();
     if (!call) {
