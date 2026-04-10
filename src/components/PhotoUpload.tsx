@@ -21,6 +21,21 @@ async function fileHash(file: File): Promise<string> {
     .join("");
 }
 
+/** Detect HEIC/HEIF files by extension or MIME type. */
+function isHeic(file: File): boolean {
+  const ext = file.name.split(".").pop()?.toLowerCase() || "";
+  return ext === "heic" || ext === "heif" || file.type === "image/heic" || file.type === "image/heif";
+}
+
+/** Convert a HEIC file to JPG. Returns original file if not HEIC. */
+async function ensureJpg(file: File): Promise<File> {
+  if (!isHeic(file)) return file;
+  const blob = await heic2any({ blob: file, toType: "image/jpeg", quality: 0.9 });
+  const result = Array.isArray(blob) ? blob[0] : blob;
+  const newName = file.name.replace(/\.heic$/i, ".jpg").replace(/\.heif$/i, ".jpg");
+  return new File([result], newName, { type: "image/jpeg" });
+}
+
 const PhotoUpload = ({ photos, onPhotosChange, maxPhotos = 6 }: PhotoUploadProps) => {
   const [uploading, setUploading] = useState(false);
   const [knownHashes, setKnownHashes] = useState<Set<string>>(new Set());
@@ -31,13 +46,16 @@ const PhotoUpload = ({ photos, onPhotosChange, maxPhotos = 6 }: PhotoUploadProps
   const uploadPhoto = async (file: File) => {
     if (!user) return;
 
-    const fileExt = file.name.split(".").pop();
+    // Convert HEIC to JPG before uploading
+    const converted = await ensureJpg(file);
+
+    const fileExt = converted.name.split(".").pop();
     const uniqueId = `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
     const fileName = `${user.id}/${uniqueId}.${fileExt}`;
 
     const { error } = await supabase.storage
       .from("profile-photos")
-      .upload(fileName, file, { upsert: false });
+      .upload(fileName, converted, { upsert: false });
 
     if (error) throw error;
 
