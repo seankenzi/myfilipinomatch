@@ -231,9 +231,8 @@ const ProfileDetail = () => {
                     key={activePhoto}
                     src={photos[activePhoto]}
                     alt={`${profile.full_name} photo ${activePhoto + 1}`}
-                    className="h-full w-full object-cover"
+                    className="relative z-10 h-full w-full object-cover"
                     loading="eager"
-                    onClick={() => photos.length > 1 && setActivePhoto((p) => (p < photos.length - 1 ? p + 1 : 0))}
                   />
                 </>
               ) : (
