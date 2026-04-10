@@ -1,0 +1,1 @@
+SELECT cron.alter_job(8, '0 9,21 * * *');
