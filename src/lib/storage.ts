@@ -87,9 +87,13 @@ export async function getSignedPhotoUrls(urlsOrPaths: string[], expiresIn = 3600
 
   for (let i = 0; i < toSignIndices.length; i++) {
     const url = data[i]?.signedUrl || "";
-    results[toSignIndices[i]] = url;
+    const idx = toSignIndices[i];
     if (url) {
+      results[idx] = url;
       signedUrlCache.set(toSign[i], { url, expires: now + CACHE_TTL });
+    } else {
+      // Keep the original path as fallback so photos aren't dropped
+      results[idx] = urlsOrPaths[idx];
     }
   }
 
