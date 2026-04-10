@@ -224,15 +224,16 @@ const ProfileDetail = () => {
             <div className="relative w-full max-w-xs mx-auto overflow-hidden rounded-2xl aspect-[3/4] bg-muted">
               {photos[activePhoto] ? (
                 <>
-                  <div className="absolute inset-0 flex items-center justify-center bg-muted z-0">
+                  <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-muted z-0">
                     <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
                   </div>
                   <img
                     key={activePhoto}
                     src={photos[activePhoto]}
                     alt={`${profile.full_name} photo ${activePhoto + 1}`}
-                    className="relative z-10 h-full w-full object-cover"
+                    className="h-full w-full object-cover"
                     loading="eager"
+                    onClick={() => photos.length > 1 && setActivePhoto((p) => (p < photos.length - 1 ? p + 1 : 0))}
                   />
                 </>
               ) : (
@@ -242,7 +243,7 @@ const ProfileDetail = () => {
               )}
               {photos.length > 1 && (
                 <>
-                  <div className="absolute top-3 left-0 right-0 flex justify-center gap-1.5">
+                  <div className="absolute top-3 left-0 right-0 z-20 flex justify-center gap-1.5">
                     {photos.map((_, i) => (
                       <button
                         key={i}
@@ -255,13 +256,13 @@ const ProfileDetail = () => {
                   </div>
                   <button
                     onClick={() => setActivePhoto((p) => (p > 0 ? p - 1 : photos.length - 1))}
-                    className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-card/60 backdrop-blur-sm p-2 hover:bg-card/80 transition-colors"
+                    className="absolute left-2 top-1/2 z-20 -translate-y-1/2 rounded-full bg-card/60 p-2 backdrop-blur-sm transition-colors hover:bg-card/80"
                   >
                     <ArrowLeft className="h-4 w-4 text-foreground" />
                   </button>
                   <button
                     onClick={() => setActivePhoto((p) => (p < photos.length - 1 ? p + 1 : 0))}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-card/60 backdrop-blur-sm p-2 hover:bg-card/80 transition-colors rotate-180"
+                    className="absolute right-2 top-1/2 z-20 -translate-y-1/2 rounded-full bg-card/60 p-2 backdrop-blur-sm transition-colors hover:bg-card/80 rotate-180"
                   >
                     <ArrowLeft className="h-4 w-4 text-foreground" />
                   </button>
