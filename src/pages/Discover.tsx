@@ -382,11 +382,13 @@ const Discover = () => {
     const BATCH = 50;
     const applySignedBatch = (batch: string[], signed: string[]) => {
       const map = new Map<string, string>();
-      batch.forEach((p, idx) => map.set(p, signed[idx] || ""));
+      batch.forEach((p, idx) => { if (signed[idx]) map.set(p, signed[idx]); });
+      if (map.size === 0) return;
       setProfiles((prev) => prev.map((profile) => {
         let changed = false;
         const newPhotos = profile.photos?.map((ph) => {
-          if (map.has(ph)) { changed = true; return map.get(ph)!; }
+          const signedUrl = map.get(ph);
+          if (signedUrl) { changed = true; return signedUrl; }
           return ph;
         }).filter(Boolean) || null;
         const newAvatar = profile.avatar_url && map.has(profile.avatar_url)

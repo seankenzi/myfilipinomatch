@@ -56,16 +56,20 @@ export function useSignedPhotos(photos: string[]): string[] {
     getSignedPhotoUrls(misses).then((urls) => {
       if (cancelled) return;
       const now = Date.now();
-      // Merge into hits
+      // Merge into hits — keep original path as fallback if signing failed
       for (let i = 0; i < missIndices.length; i++) {
-        hits[missIndices[i]] = urls[i];
-        signedUrlCache.set(misses[i], { url: urls[i], expires: now + CACHE_TTL });
+        const signed = urls[i];
+        if (signed) {
+          hits[missIndices[i]] = signed;
+          signedUrlCache.set(misses[i], { url: signed, expires: now + CACHE_TTL });
+        } else {
+          hits[missIndices[i]] = misses[i]; // keep original path
+        }
       }
-      // Filter out empty strings (missing/errored files)
       const filtered = hits.filter(Boolean);
       setSignedUrls(filtered);
       // Preload all images
-      hits.forEach((url) => { if (url) { const img = new Image(); img.src = url; } });
+      filtered.forEach((url) => { const img = new Image(); img.src = url; });
     });
 
     return () => { cancelled = true; };
