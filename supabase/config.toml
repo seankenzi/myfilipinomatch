@@ -15,3 +15,5 @@ project_id = "qxxehbdtfxbapxanqefv"
     verify_jwt = false
   [functions.check-video-anomalies]
     verify_jwt = false
+  [functions.convert-heic-photos]
+    verify_jwt = false
