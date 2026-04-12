@@ -28,9 +28,15 @@ const COUNTRY_ABBREVIATIONS = new Set([
   "usa", "us", "uk", "uae", "ussr", "prc", "roc", "drc", "nz", "sa", "ksa",
 ]);
 
+// Common partial/misspelled country names that users enter as city
+const COUNTRY_VARIANTS = new Set([
+  "philippine", "filipino", "filipina", "pilipinas", "pilipino",
+  "american", "canadian", "australian", "british", "japanese",
+]);
+
 export const isCityLikeCountry = (value: string): boolean => {
   const trimmed = value.trim().toLowerCase();
-  return COUNTRIES_LOWER.has(trimmed) || COUNTRY_ABBREVIATIONS.has(trimmed);
+  return COUNTRIES_LOWER.has(trimmed) || COUNTRY_ABBREVIATIONS.has(trimmed) || COUNTRY_VARIANTS.has(trimmed);
 };
 
 export { COUNTRIES };
