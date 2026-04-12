@@ -1,0 +1,1 @@
+UPDATE public.profiles SET city = NULL WHERE id = '9d13aa90-ac52-45bd-abf0-0815b7513d71' AND city = 'Philippine';
