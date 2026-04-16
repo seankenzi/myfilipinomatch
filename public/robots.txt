@@ -1,4 +1,15 @@
 User-agent: *
 Allow: /
+Disallow: /discover
+Disallow: /profile
+Disallow: /matches
+Disallow: /messages
+Disallow: /settings
+Disallow: /verification
+Disallow: /admin
+Disallow: /premium
+Disallow: /notifications
+Disallow: /who-liked-me
+Disallow: /onboarding
 
 Sitemap: https://www.myfilipinomatch.com/sitemap.xml
