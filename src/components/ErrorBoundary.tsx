@@ -88,6 +88,23 @@ class ErrorBoundary extends Component<Props, State> {
 
   render() {
     if (this.state.hasError) {
+      // Friendly screen for stale-chunk errors (lazyRetry triggers a reload)
+      if (this.state.error && this.isStaleChunkError(this.state.error)) {
+        return (
+          <div className="flex min-h-[60vh] items-center justify-center p-6">
+            <div className="max-w-md text-center space-y-4">
+              <RefreshCw className="h-10 w-10 text-primary mx-auto animate-spin" />
+              <h2 className="text-xl font-semibold text-foreground">
+                Updating to the latest version…
+              </h2>
+              <p className="text-sm text-muted-foreground">
+                A newer version of the app is available. Reloading now.
+              </p>
+            </div>
+          </div>
+        );
+      }
+
       return (
         <div className="flex min-h-[60vh] items-center justify-center p-6">
           <div className="max-w-md text-center space-y-4">
