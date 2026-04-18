@@ -103,7 +103,7 @@ const NoPhotoPlaceholder = ({ className = "", variant = "card" }: { className?: 
 );
 
 // Image with shimmer skeleton placeholder
-const SkeletonImage = ({ src, alt, className = "", loading = "lazy" as "lazy" | "eager" }: { src: string; alt: string; className?: string; loading?: "lazy" | "eager" }) => {
+const SkeletonImage = ({ src, alt, className = "", loading = "lazy" as "lazy" | "eager", priority = false }: { src: string; alt: string; className?: string; loading?: "lazy" | "eager"; priority?: boolean }) => {
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState(false);
   const isSignedUrl = src.startsWith("http");
@@ -121,6 +121,9 @@ const SkeletonImage = ({ src, alt, className = "", loading = "lazy" as "lazy" | 
           alt={alt}
           className={`h-full w-full object-cover transition-opacity duration-300 ${loaded ? "opacity-100" : "opacity-0"}`}
           loading={loading}
+          // @ts-expect-error fetchpriority is a valid HTML attribute, not yet in React types
+          fetchpriority={priority ? "high" : undefined}
+          decoding="async"
           onLoad={() => setLoaded(true)}
           onError={() => setError(true)}
         />
@@ -185,6 +188,7 @@ const PhotoGallery = ({ photos, name }: { photos: string[]; name: string }) => {
         alt={`${name} photo ${photoIndex + 1}`}
         className="h-full w-full"
         loading="eager"
+        priority
       />
       {/* Photo indicator dots */}
       {photos.length > 1 && (
