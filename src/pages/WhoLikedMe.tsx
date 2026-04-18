@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import Navbar from "@/components/Navbar";
 import BottomNav from "@/components/BottomNav";
+import SEO from "@/components/SEO";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -190,6 +191,7 @@ const WhoLikedMe = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEO title="Who Liked Me" canonical="/who-liked-me" noIndex />
       <Navbar />
       <main className="container max-w-4xl px-4 pb-24 pt-6">
         {/* Header */}

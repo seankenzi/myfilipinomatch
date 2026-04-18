@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { MailX, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
 import Navbar from "@/components/Navbar";
+import SEO from "@/components/SEO";
 
 type UnsubState = "loading" | "valid" | "already" | "invalid" | "success" | "error";
 
@@ -65,6 +66,7 @@ const Unsubscribe = () => {
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
+      <SEO title="Unsubscribe" canonical="/unsubscribe" noIndex />
       <Navbar />
       <main className="flex flex-1 items-center justify-center px-4 py-12">
         <div className="w-full max-w-md rounded-2xl border border-border bg-card p-8 shadow-card text-center">

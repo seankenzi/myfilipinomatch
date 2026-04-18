@@ -13,6 +13,7 @@ import BottomNav from "@/components/BottomNav";
 import { getProvinceNames, getCitiesByProvince } from "@/data/philippineProvinces";
 import { hasStateDropdown, getStatesByCountry, getSubdivisionLabel } from "@/data/countryStates";
 import Navbar from "@/components/Navbar";
+import SEO from "@/components/SEO";
 import PhotoUpload from "@/components/PhotoUpload";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -143,6 +144,7 @@ const Profile = () => {
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
+      <SEO title="My Profile" canonical="/profile" noIndex />
       <Navbar />
       <main className="flex-1 px-4 py-6 pb-24 md:pb-6">
         <div className="mx-auto max-w-lg">

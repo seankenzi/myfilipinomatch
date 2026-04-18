@@ -3,6 +3,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { Button } from "@/components/ui/button";
 import Navbar from "@/components/Navbar";
 import BottomNav from "@/components/BottomNav";
+import SEO from "@/components/SEO";
 import visaLogo from "@/assets/visa-logo.svg";
 import mastercardLogo from "@/assets/mastercard-logo.svg";
 import amexLogo from "@/assets/amex-logo.svg";
@@ -190,6 +191,7 @@ const Premium = () => {
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
+      <SEO title="Premium Plans" description="Upgrade to MyFilipinoMatch Premium for unlimited messaging, priority placement, and more." canonical="/premium" />
       <Navbar />
       <main className="flex-1 px-4 py-12 pb-24 md:pb-12">
         <div className="mx-auto max-w-3xl text-center">

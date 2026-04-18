@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
 import Navbar from "@/components/Navbar";
 import BottomNav from "@/components/BottomNav";
+import SEO from "@/components/SEO";
 import { useNotifications, Notification } from "@/hooks/useNotifications";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -38,6 +39,7 @@ export default function Notifications() {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEO title="Notifications" canonical="/notifications" noIndex />
       <Navbar />
       <main className="container max-w-2xl py-6 pb-24 md:pb-6">
         <div className="flex items-center justify-between mb-6">
