@@ -28,7 +28,21 @@ class ErrorBoundary extends Component<Props, State> {
     this.sendCrashNotification(error, errorInfo);
   }
 
+  private isStaleChunkError(error: Error): boolean {
+    const msg = error.message || "";
+    return (
+      msg.includes("Failed to fetch dynamically imported module") ||
+      msg.includes("Importing a module script failed") ||
+      msg.includes("error loading dynamically imported module") ||
+      /ChunkLoadError/i.test(msg) ||
+      /Loading chunk \d+ failed/i.test(msg)
+    );
+  }
+
   private async sendCrashNotification(error: Error, errorInfo: ErrorInfo) {
+    // Skip stale-chunk errors — they're deploy timing, not bugs (lazyRetry auto-reloads)
+    if (this.isStaleChunkError(error)) return;
+
     try {
       const errorKey = `${error.message}-${window.location.pathname}`;
       const storageKey = `crash-notified-${btoa(errorKey).slice(0, 40)}`;
