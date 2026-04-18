@@ -28,7 +28,21 @@ class ErrorBoundary extends Component<Props, State> {
     this.sendCrashNotification(error, errorInfo);
   }
 
+  private isStaleChunkError(error: Error): boolean {
+    const msg = error.message || "";
+    return (
+      msg.includes("Failed to fetch dynamically imported module") ||
+      msg.includes("Importing a module script failed") ||
+      msg.includes("error loading dynamically imported module") ||
+      /ChunkLoadError/i.test(msg) ||
+      /Loading chunk \d+ failed/i.test(msg)
+    );
+  }
+
   private async sendCrashNotification(error: Error, errorInfo: ErrorInfo) {
+    // Skip stale-chunk errors — they're deploy timing, not bugs (lazyRetry auto-reloads)
+    if (this.isStaleChunkError(error)) return;
+
     try {
       const errorKey = `${error.message}-${window.location.pathname}`;
       const storageKey = `crash-notified-${btoa(errorKey).slice(0, 40)}`;
@@ -74,6 +88,23 @@ class ErrorBoundary extends Component<Props, State> {
 
   render() {
     if (this.state.hasError) {
+      // Friendly screen for stale-chunk errors (lazyRetry triggers a reload)
+      if (this.state.error && this.isStaleChunkError(this.state.error)) {
+        return (
+          <div className="flex min-h-[60vh] items-center justify-center p-6">
+            <div className="max-w-md text-center space-y-4">
+              <RefreshCw className="h-10 w-10 text-primary mx-auto animate-spin" />
+              <h2 className="text-xl font-semibold text-foreground">
+                Updating to the latest version…
+              </h2>
+              <p className="text-sm text-muted-foreground">
+                A newer version of the app is available. Reloading now.
+              </p>
+            </div>
+          </div>
+        );
+      }
+
       return (
         <div className="flex min-h-[60vh] items-center justify-center p-6">
           <div className="max-w-md text-center space-y-4">
