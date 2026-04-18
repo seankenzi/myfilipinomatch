@@ -144,7 +144,7 @@ const ProfileDetail = () => {
       ].filter(Boolean))] as string[]
     : [];
   
-  const photos = useSignedPhotos(rawPhotos);
+  const photos = useSignedPhotos(rawPhotos, "detail");
 
   const handleLike = async () => {
     if (!user || !profile) return;
@@ -233,6 +233,9 @@ const ProfileDetail = () => {
                     alt={`${profile.full_name} photo ${activePhoto + 1}`}
                     className="relative z-10 h-full w-full object-cover"
                     loading="eager"
+                    decoding="async"
+                    // @ts-expect-error fetchpriority is a valid HTML attribute, not yet in React types
+                    fetchpriority="high"
                   />
                 </>
               ) : (
