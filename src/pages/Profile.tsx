@@ -131,7 +131,7 @@ const Profile = () => {
   };
 
   const rawAvatarUrl = profile.photos[0] || profile.avatar_url;
-  const avatarUrl = useSignedPhoto(rawAvatarUrl || null);
+  const avatarUrl = useSignedPhoto(rawAvatarUrl || null, "detail");
 
   if (loading) {
     return (

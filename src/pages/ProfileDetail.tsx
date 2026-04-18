@@ -144,7 +144,7 @@ const ProfileDetail = () => {
       ].filter(Boolean))] as string[]
     : [];
   
-  const photos = useSignedPhotos(rawPhotos);
+  const photos = useSignedPhotos(rawPhotos, "detail");
 
   const handleLike = async () => {
     if (!user || !profile) return;

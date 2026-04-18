@@ -142,7 +142,7 @@ const PhotoUpload = ({ photos, onPhotosChange, maxPhotos = 6 }: PhotoUploadProps
   };
 
   // Get signed URLs for display
-  const signedUrls = useSignedPhotos(photos);
+  const signedUrls = useSignedPhotos(photos, "thumb");
 
   return (
     <div>

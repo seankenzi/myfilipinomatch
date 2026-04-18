@@ -400,7 +400,7 @@ const Discover = () => {
     };
     for (let i = 0; i < allPaths.length; i += BATCH) {
       const batch = allPaths.slice(i, i + BATCH);
-      getSignedPhotoUrls(batch).then((signed) => applySignedBatch(batch, signed));
+      getSignedPhotoUrls(batch, "grid").then((signed) => applySignedBatch(batch, signed));
     }
   }, []);
 
