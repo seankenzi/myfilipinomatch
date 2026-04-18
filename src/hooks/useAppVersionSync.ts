@@ -4,6 +4,7 @@ const VERSION_ENDPOINT = "/version.json";
 const VERSION_QUERY_PARAM = "__app_update";
 const RELOAD_GUARD_KEY = "__app_reload_target__";
 const CHECK_INTERVAL_MS = 60_000;
+const FOCUS_CHECK_DEBOUNCE_MS = 5 * 60_000; // 5 minutes
 
 type VersionPayload = {
   buildId?: string | null;
@@ -86,6 +87,7 @@ const fetchLatestBuildId = async () => {
 export const useAppVersionSync = () => {
   const pendingBuildIdRef = useRef<string | null>(null);
   const checkingRef = useRef(false);
+  const lastFocusCheckRef = useRef<number>(0);
 
   useEffect(() => {
     if (import.meta.env.DEV) {
@@ -130,16 +132,28 @@ export const useAppVersionSync = () => {
       }
     };
 
+    // Debounced focus check — only re-check version if 5+ minutes have passed.
+    // Always flush a pending reload (cheap, no network) so users still get
+    // updates already detected by the background interval.
+    const handleFocusOrVisibility = () => {
+      flushPendingReload();
+
+      const now = Date.now();
+      if (now - lastFocusCheckRef.current < FOCUS_CHECK_DEBOUNCE_MS) {
+        return;
+      }
+      lastFocusCheckRef.current = now;
+      void checkForNewBuild();
+    };
+
     const handleVisibilityChange = () => {
       if (document.visibilityState === "visible") {
-        flushPendingReload();
-        void checkForNewBuild();
+        handleFocusOrVisibility();
       }
     };
 
     const handleFocus = () => {
-      flushPendingReload();
-      void checkForNewBuild();
+      handleFocusOrVisibility();
     };
 
     const handleOnline = () => {
