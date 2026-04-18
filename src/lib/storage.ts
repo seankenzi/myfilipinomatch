@@ -51,7 +51,9 @@ function transformFromContext(context?: PhotoContext): TransformOptions | undefi
   if (!context || context === "original") return undefined;
   const preset = PHOTO_TRANSFORMS[context];
   if (!preset.width && !preset.quality) return undefined;
-  return { ...preset, resize: "cover" };
+  // Use "contain" so Supabase preserves the original aspect ratio when only
+  // width is specified. CSS (object-cover) handles any framing/cropping.
+  return { ...preset, resize: "contain" };
 }
 
 /**
