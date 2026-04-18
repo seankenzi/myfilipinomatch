@@ -12,6 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import Navbar from "@/components/Navbar";
 import BottomNav from "@/components/BottomNav";
+import SEO from "@/components/SEO";
 import { format } from "date-fns";
 
 const Settings = () => {
@@ -120,6 +121,7 @@ const Settings = () => {
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
+      <SEO title="Settings" canonical="/settings" noIndex />
       <Navbar />
       <main className="flex-1 px-4 py-6 pb-24 md:pb-6">
         <div className="mx-auto max-w-lg">

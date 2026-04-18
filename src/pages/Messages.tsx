@@ -24,6 +24,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import BottomNav from "@/components/BottomNav";
 import VideoCall from "@/components/VideoCall";
 import Navbar from "@/components/Navbar";
+import SEO from "@/components/SEO";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -636,6 +637,7 @@ const Messages = () => {
 
   return (
     <div className="flex h-dvh flex-col bg-background overflow-hidden">
+      <SEO title="Messages" canonical="/messages" noIndex />
       <Navbar />
 
       <div className={`flex flex-1 overflow-hidden ${selectedMatch ? "pb-0" : "pb-16 md:pb-0"}`}> 

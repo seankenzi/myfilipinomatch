@@ -18,6 +18,7 @@ import {
 import { motion, AnimatePresence, PanInfo } from "framer-motion";
 import BottomNav from "@/components/BottomNav";
 import Navbar from "@/components/Navbar";
+import SEO from "@/components/SEO";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -771,6 +772,7 @@ const Discover = () => {
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
+      <SEO title="Discover" canonical="/discover" noIndex />
       <Navbar />
       
       <main className="flex flex-1 flex-col items-center px-4 py-4 pb-24 md:pb-6">

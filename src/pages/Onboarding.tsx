@@ -17,6 +17,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import PhotoUpload from "@/components/PhotoUpload";
+import SEO from "@/components/SEO";
 import { motion, AnimatePresence } from "framer-motion";
 import { Slider } from "@/components/ui/slider";
 
@@ -238,6 +239,7 @@ const Onboarding = () => {
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
+      <SEO title="Complete Your Profile" canonical="/onboarding" noIndex />
       {/* Progress bar */}
       <div className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur px-4 py-3">
         <div className="mx-auto max-w-lg">

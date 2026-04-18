@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import logo from "@/assets/myfilipinomatch-logo.png";
+import SEO from "@/components/SEO";
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState("");
@@ -31,6 +32,7 @@ const ForgotPassword = () => {
 
   return (
     <div className="flex min-h-screen items-center justify-center px-4 py-12">
+      <SEO title="Forgot Password" canonical="/forgot-password" noIndex />
       <div className="w-full max-w-md animate-scale-in">
         <div className="mb-8 text-center">
           <Link to="/" className="inline-flex items-center gap-2 mb-6">

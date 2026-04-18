@@ -5,6 +5,7 @@ import { formatDistanceToNow } from "date-fns";
 import { Button } from "@/components/ui/button";
 import BottomNav from "@/components/BottomNav";
 import Navbar from "@/components/Navbar";
+import SEO from "@/components/SEO";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { getSignedPhotoUrl } from "@/lib/storage";
@@ -142,6 +143,7 @@ const Matches = () => {
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
+      <SEO title="Matches" canonical="/matches" noIndex />
       <Navbar />
       <main className="flex-1 px-4 py-6 pb-24 md:pb-6">
         <div className="mx-auto max-w-2xl">
