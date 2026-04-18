@@ -1,12 +1,13 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { Navigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, session, loading } = useAuth();
   const [checkingOnboarding, setCheckingOnboarding] = useState(true);
   const [onboardingComplete, setOnboardingComplete] = useState<boolean | null>(null);
+  const lastCheckedUserIdRef = useRef<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -15,8 +16,16 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
       if (loading) return;
 
       if (!user || !session) {
+        lastCheckedUserIdRef.current = null;
         if (!cancelled) {
           setOnboardingComplete(null);
+          setCheckingOnboarding(false);
+        }
+        return;
+      }
+
+      if (lastCheckedUserIdRef.current === user.id) {
+        if (!cancelled) {
           setCheckingOnboarding(false);
         }
         return;
@@ -37,16 +46,17 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
         return;
       }
 
+      lastCheckedUserIdRef.current = user.id;
       setOnboardingComplete(!!data?.onboarding_completed);
       setCheckingOnboarding(false);
     };
 
-    checkOnboardingStatus();
+    void checkOnboardingStatus();
 
     return () => {
       cancelled = true;
     };
-  }, [user, session, loading]);
+  }, [user?.id, !!session, loading]);
 
   if (loading || checkingOnboarding) {
     return (
