@@ -3,6 +3,7 @@ import { useEffect, useRef } from "react";
 const VERSION_ENDPOINT = "/version.json";
 const VERSION_QUERY_PARAM = "__app_update";
 const RELOAD_GUARD_KEY = "__app_reload_target__";
+const LAST_FOCUS_CHECK_KEY = "__app_last_focus_check__";
 const CHECK_INTERVAL_MS = 60_000;
 const FOCUS_CHECK_DEBOUNCE_MS = 5 * 60_000; // 5 minutes
 
@@ -24,6 +25,17 @@ const passiveInputTypes = new Set([
   "month",
   "week",
 ]);
+
+const readLastFocusCheck = () => {
+  const storedValue = localStorage.getItem(LAST_FOCUS_CHECK_KEY);
+  const parsedValue = storedValue ? Number.parseInt(storedValue, 10) : Number.NaN;
+
+  return Number.isFinite(parsedValue) ? parsedValue : 0;
+};
+
+const writeLastFocusCheck = (timestamp: number) => {
+  localStorage.setItem(LAST_FOCUS_CHECK_KEY, timestamp.toString());
+};
 
 const canReloadWithoutInterrupting = () => {
   if (document.visibilityState !== "visible") return false;
@@ -87,7 +99,7 @@ const fetchLatestBuildId = async () => {
 export const useAppVersionSync = () => {
   const pendingBuildIdRef = useRef<string | null>(null);
   const checkingRef = useRef(false);
-  const lastFocusCheckRef = useRef<number>(0);
+  const lastFocusCheckRef = useRef<number>(readLastFocusCheck());
 
   useEffect(() => {
     if (import.meta.env.DEV) {
@@ -132,9 +144,6 @@ export const useAppVersionSync = () => {
       }
     };
 
-    // Debounced focus check — only re-check version if 5+ minutes have passed.
-    // Always flush a pending reload (cheap, no network) so users still get
-    // updates already detected by the background interval.
     const handleFocusOrVisibility = () => {
       flushPendingReload();
 
@@ -142,7 +151,9 @@ export const useAppVersionSync = () => {
       if (now - lastFocusCheckRef.current < FOCUS_CHECK_DEBOUNCE_MS) {
         return;
       }
+
       lastFocusCheckRef.current = now;
+      writeLastFocusCheck(now);
       void checkForNewBuild();
     };
 
