@@ -334,8 +334,8 @@ const Landing = () => {
       <LazySection>
       <section className="relative py-12 md:py-20 overflow-hidden" style={{ background: 'linear-gradient(180deg, hsl(175 40% 40% / 0.05), hsl(350 65% 55% / 0.05))' }}>
         <div className="container relative z-10">
-          <div className="mx-auto max-w-5xl grid gap-10 md:grid-cols-2 items-center">
-            <div>
+          <div className="mx-auto max-w-5xl">
+            <div className="max-w-2xl mx-auto text-center">
               <div className="mb-6 inline-flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-secondary to-primary/60">
                 <Shield className="h-7 w-7 text-primary-foreground" />
               </div>
@@ -345,7 +345,7 @@ const Landing = () => {
               <p className="mb-8 text-muted-foreground">
                 Your safety is our top priority. We invest in keeping our community trustworthy.
               </p>
-              <div className="flex flex-col gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-left">
                 {[
                   { icon: Users, text: "Active moderation team", color: "text-primary" },
                   { icon: AlertTriangle, text: "Report & block system", color: "text-accent" },
@@ -365,7 +365,7 @@ const Landing = () => {
                 Visit our Trust & Safety Center <ArrowRight className="h-4 w-4" />
               </Link>
             </div>
-            <div className="flex flex-col gap-4">
+            <div className="mt-12 grid gap-6 md:grid-cols-2">
               <div className="relative rounded-3xl overflow-hidden shadow-elevated ring-4 ring-primary/10 aspect-[3/2]">
                 <img
                   src={coupleBinondo}
