@@ -15,6 +15,7 @@ import heroCouple2Mobile from "@/assets/hero-couple-2-mobile.jpg";
 import heroCouple3Mobile from "@/assets/hero-couple-3-mobile.jpg";
 import coupleCafe from "@/assets/couple-cafe.jpg";
 import coupleBinondo from "@/assets/couple-binondo.jpg";
+import coupleMarket from "@/assets/couple-market.jpg";
 import mariaPhoto from "@/assets/test-profiles/maria.jpg";
 import jamesPhoto from "@/assets/test-profiles/james.jpg";
 import anaPhoto from "@/assets/test-profiles/ana.jpg";
@@ -364,15 +365,27 @@ const Landing = () => {
                 Visit our Trust & Safety Center <ArrowRight className="h-4 w-4" />
               </Link>
             </div>
-            <div className="relative rounded-3xl overflow-hidden shadow-elevated ring-4 ring-primary/10 aspect-square">
-              <img
-                src={coupleBinondo}
-                alt="Foreign man and Filipina smiling together in Binondo, Manila"
-                className="h-full w-full object-cover"
-                loading="lazy"
-                width={1024}
-                height={1024}
-              />
+            <div className="flex flex-col gap-4">
+              <div className="relative rounded-3xl overflow-hidden shadow-elevated ring-4 ring-primary/10 aspect-[3/2]">
+                <img
+                  src={coupleBinondo}
+                  alt="Foreign man and Filipina smiling together in Binondo, Manila"
+                  className="h-full w-full object-cover"
+                  loading="lazy"
+                  width={1200}
+                  height={800}
+                />
+              </div>
+              <div className="relative rounded-3xl overflow-hidden shadow-elevated ring-4 ring-secondary/10 aspect-[3/2]">
+                <img
+                  src={coupleMarket}
+                  alt="Foreign man and Filipina shopping together at a Filipino market"
+                  className="h-full w-full object-cover"
+                  loading="lazy"
+                  width={1200}
+                  height={800}
+                />
+              </div>
             </div>
           </div>
         </div>
