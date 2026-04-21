@@ -789,11 +789,11 @@ const Discover = () => {
           </div>
 
           {/* Top Bar */}
-          <div className="mb-4 flex items-center gap-2">
+          <div className="mb-4 flex items-center gap-2 flex-wrap">
             <div className="flex rounded-xl border border-border bg-card p-1 shadow-card">
               <button
                 onClick={() => setViewMode("list")}
-                className={`flex items-center gap-1.5 rounded-lg px-4 py-2.5 text-xs font-medium transition-all min-h-[44px] ${
+                className={`flex items-center gap-1.5 rounded-lg px-3 sm:px-4 py-2.5 text-xs font-medium transition-all min-h-[44px] ${
                   viewMode === "list"
                     ? "bg-primary text-primary-foreground shadow-sm"
                     : "text-muted-foreground hover:text-foreground"
@@ -804,7 +804,7 @@ const Discover = () => {
               </button>
               <button
                 onClick={() => setViewMode("swipe")}
-                className={`flex items-center gap-1.5 rounded-lg px-4 py-2.5 text-xs font-medium transition-all min-h-[44px] ${
+                className={`flex items-center gap-1.5 rounded-lg px-3 sm:px-4 py-2.5 text-xs font-medium transition-all min-h-[44px] ${
                   viewMode === "swipe"
                     ? "bg-primary text-primary-foreground shadow-sm"
                     : "text-muted-foreground hover:text-foreground"
@@ -817,11 +817,9 @@ const Discover = () => {
 
             <div className="flex-1" />
 
-            <span className="text-xs text-muted-foreground">{profiles.length} people</span>
-
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className={`relative flex items-center gap-1.5 rounded-xl border px-4 py-2.5 text-xs font-medium shadow-card transition-all min-h-[44px] ${
+              className={`relative flex items-center gap-1.5 rounded-xl border px-3 sm:px-4 py-2.5 text-xs font-medium shadow-card transition-all min-h-[44px] ${
                 showFilters || activeFilterCount > 0
                   ? "border-primary bg-primary/5 text-primary"
                   : "border-border bg-card text-muted-foreground hover:border-primary/30"
@@ -835,6 +833,10 @@ const Discover = () => {
                 </span>
               )}
             </button>
+
+            <span className="basis-full text-xs text-muted-foreground sm:basis-auto sm:order-first sm:ml-2">
+              {profiles.length} people
+            </span>
           </div>
 
           {/* Filter Panel */}
