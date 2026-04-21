@@ -72,9 +72,9 @@ const Navbar = ({ bannerSubtitle }: NavbarProps) => {
     <>
     <header className="sticky top-0 z-50 border-b border-border bg-card/90 backdrop-blur-md">
       <div className="container flex h-16 items-center justify-between">
-        <Link to={user ? "/discover" : "/"} className="flex items-center gap-2 min-w-0">
+        <Link to={user ? "/discover" : "/"} className="flex items-center gap-2 min-w-0 flex-shrink">
           <img src={logo} alt="MyFilipinoMatch" className="h-9 w-9 md:h-10 md:w-10 flex-shrink-0" />
-          <span className="text-lg md:text-xl font-display font-bold text-foreground truncate">
+          <span className="text-base sm:text-lg md:text-xl font-display font-bold text-foreground truncate">
             MyFilipinoMatch
           </span>
         </Link>
@@ -142,15 +142,21 @@ const Navbar = ({ bannerSubtitle }: NavbarProps) => {
                 </Link>
               )}
               <NotificationBell />
-              <Link to="/profile">
+              <Link to="/profile" className="hidden md:inline-flex">
                 <Button variant="ghost" size="sm">
                   <User className="mr-1 h-4 w-4" />
                   Profile
                 </Button>
               </Link>
-              <Button variant="ghost" size="sm" onClick={async () => { await signOut(); navigate("/"); }}>
-                <LogOut className="mr-1 h-4 w-4" />
-                Log out
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={async () => { await signOut(); navigate("/"); }}
+                className="px-2 md:px-3"
+                aria-label="Log out"
+              >
+                <LogOut className="h-4 w-4 md:mr-1" />
+                <span className="hidden md:inline">Log out</span>
               </Button>
             </>
           ) : (
