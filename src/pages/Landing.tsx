@@ -14,7 +14,7 @@ import heroCoupleMobile from "@/assets/hero-couple-mobile.jpg";
 import heroCouple2Mobile from "@/assets/hero-couple-2-mobile.jpg";
 import heroCouple3Mobile from "@/assets/hero-couple-3-mobile.jpg";
 import coupleCafe from "@/assets/couple-cafe.jpg";
-import coupleGarden from "@/assets/couple-garden.jpg";
+import coupleBinondo from "@/assets/couple-binondo.jpg";
 import mariaPhoto from "@/assets/test-profiles/maria.jpg";
 import jamesPhoto from "@/assets/test-profiles/james.jpg";
 import anaPhoto from "@/assets/test-profiles/ana.jpg";
@@ -364,14 +364,14 @@ const Landing = () => {
                 Visit our Trust & Safety Center <ArrowRight className="h-4 w-4" />
               </Link>
             </div>
-            <div className="relative rounded-3xl overflow-hidden shadow-elevated ring-4 ring-primary/10">
+            <div className="relative rounded-3xl overflow-hidden shadow-elevated ring-4 ring-primary/10 aspect-square">
               <img
-                src={coupleGarden}
-                alt="Happy couple in a tropical garden"
-                className="h-full w-full object-cover min-h-[350px]"
+                src={coupleBinondo}
+                alt="Foreign man and Filipina smiling together in Binondo, Manila"
+                className="h-full w-full object-cover"
                 loading="lazy"
-                width={800}
-                height={544}
+                width={1024}
+                height={1024}
               />
             </div>
           </div>
