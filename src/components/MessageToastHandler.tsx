@@ -85,6 +85,7 @@ const MessageToastHandler = () => {
         async (payload) => {
           const msg: any = payload.new;
           if (!msg || msg.sender_id === user.id) return;
+          if (!msg.id || !markSeen(`m:${msg.id}`)) return;
 
           // Resolve the match → confirm current user is a participant
           let cached = matchCache.current.get(msg.match_id);
@@ -118,6 +119,7 @@ const MessageToastHandler = () => {
         async (payload) => {
           const msg: any = payload.new;
           if (!msg || msg.sender_id === user.id) return;
+          if (!msg.id || !markSeen(`d:${msg.id}`)) return;
 
           let cached = dmCache.current.get(msg.conversation_id);
           if (!cached) {
