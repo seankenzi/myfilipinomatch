@@ -22,6 +22,22 @@ const MessageToastHandler = () => {
   );
   const nameCache = useRef<Map<string, string>>(new Map());
 
+  // Dedup: track recently-toasted message IDs so reconnects / rapid duplicate
+  // postgres_changes events don't spawn multiple toasts for the same message.
+  // Bounded LRU-ish set (FIFO eviction) — persists across channel resubscribes.
+  const seenMessageIds = useRef<Set<string>>(new Set());
+  const SEEN_MAX = 200;
+  const markSeen = (id: string): boolean => {
+    if (seenMessageIds.current.has(id)) return false;
+    seenMessageIds.current.add(id);
+    if (seenMessageIds.current.size > SEEN_MAX) {
+      // Evict oldest (Set preserves insertion order)
+      const oldest = seenMessageIds.current.values().next().value;
+      if (oldest !== undefined) seenMessageIds.current.delete(oldest);
+    }
+    return true;
+  };
+
   useEffect(() => {
     if (!user) return;
 
@@ -69,6 +85,7 @@ const MessageToastHandler = () => {
         async (payload) => {
           const msg: any = payload.new;
           if (!msg || msg.sender_id === user.id) return;
+          if (!msg.id || !markSeen(`m:${msg.id}`)) return;
 
           // Resolve the match → confirm current user is a participant
           let cached = matchCache.current.get(msg.match_id);
@@ -102,6 +119,7 @@ const MessageToastHandler = () => {
         async (payload) => {
           const msg: any = payload.new;
           if (!msg || msg.sender_id === user.id) return;
+          if (!msg.id || !markSeen(`d:${msg.id}`)) return;
 
           let cached = dmCache.current.get(msg.conversation_id);
           if (!cached) {
