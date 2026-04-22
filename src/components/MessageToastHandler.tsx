@@ -85,8 +85,7 @@ const MessageToastHandler = () => {
             icon: "/favicon.ico",
             badge: "/favicon.ico",
             tag: `chat:${openPath}`, // collapse repeats from same conversation
-            renotify: true,
-          });
+          } as NotificationOptions);
           n.onclick = () => {
             window.focus();
             navigate(openPath);
