@@ -50,7 +50,16 @@ export function usePageVisitTracker() {
           .catch(() => null),
         fetch("https://ipapi.co/country_name/")
           .then(r => r.text())
-          .then(t => t.trim() || null)
+          .then(t => {
+            const v = (t || "").trim();
+            // Reject empty, error messages, or anything that doesn't look like a country name.
+            // ipapi.co returns a pricing/error message when rate-limited, which we must not store.
+            if (!v) return null;
+            if (v.length > 60) return null;
+            if (/https?:\/\//i.test(v)) return null;
+            if (/error|undefined|rate|limit|sign up|trial|contact us|pricing/i.test(v)) return null;
+            return v;
+          })
           .catch(() => null),
       ]);
       await supabase.from("page_visits").insert({
