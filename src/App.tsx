@@ -15,6 +15,7 @@ import AdminRoute from "@/components/AdminRoute";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import ScrollToTop from "@/components/ScrollToTop";
 import IncomingCallHandler from "@/components/IncomingCallHandler";
+import MessageToastHandler from "@/components/MessageToastHandler";
 
 import CookieConsent from "@/components/CookieConsent";
 import { usePushSubscription } from "@/hooks/usePushSubscription";
@@ -95,6 +96,7 @@ const AppShell = () => {
       <PushSubscriptionManager />
       <ScrollToTop />
       <IncomingCallHandler />
+      <MessageToastHandler />
       
       <div className={`flex flex-col ${isMessagesRoute ? "h-dvh overflow-hidden" : "min-h-screen"}`}>
         <div className={isMessagesRoute ? "flex-1 overflow-hidden" : "flex-1 pb-16 md:pb-0"}>
