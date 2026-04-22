@@ -22,6 +22,22 @@ const MessageToastHandler = () => {
   );
   const nameCache = useRef<Map<string, string>>(new Map());
 
+  // Dedup: track recently-toasted message IDs so reconnects / rapid duplicate
+  // postgres_changes events don't spawn multiple toasts for the same message.
+  // Bounded LRU-ish set (FIFO eviction) — persists across channel resubscribes.
+  const seenMessageIds = useRef<Set<string>>(new Set());
+  const SEEN_MAX = 200;
+  const markSeen = (id: string): boolean => {
+    if (seenMessageIds.current.has(id)) return false;
+    seenMessageIds.current.add(id);
+    if (seenMessageIds.current.size > SEEN_MAX) {
+      // Evict oldest (Set preserves insertion order)
+      const oldest = seenMessageIds.current.values().next().value;
+      if (oldest !== undefined) seenMessageIds.current.delete(oldest);
+    }
+    return true;
+  };
+
   useEffect(() => {
     if (!user) return;
 
