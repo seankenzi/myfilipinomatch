@@ -27,6 +27,7 @@ import VideoCallModal from "@/components/VideoCallModal";
 import VideoCall from "@/components/VideoCall";
 import { getSignedPhotoUrls } from "@/lib/storage";
 import { getMediaStreamWithTimeout } from "@/lib/media";
+import NotificationPermissionPrompt from "@/components/NotificationPermissionPrompt";
 
 interface Profile {
   id: string;
@@ -777,6 +778,8 @@ const Discover = () => {
       
       <main className="flex flex-1 flex-col items-center px-4 py-4 pb-24 md:pb-6">
         <div className="w-full max-w-6xl">
+
+          <NotificationPermissionPrompt />
 
           {/* Hero section */}
           <div className="mb-4 rounded-2xl bg-gradient-to-r from-primary/5 via-accent/5 to-primary/5 border border-primary/10 p-4 text-center">
