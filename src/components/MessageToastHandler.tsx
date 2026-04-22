@@ -65,6 +65,37 @@ const MessageToastHandler = () => {
       openPath: string
     ) => {
       const preview = content.length > 100 ? `${content.slice(0, 100)}…` : content;
+
+      // Fallback: if tab is unfocused/hidden and the user has granted notification
+      // permission, surface an OS-level banner so they see it while in another tab
+      // or app. (Background delivery when the site is fully closed is handled by
+      // the push service worker.)
+      const isHidden =
+        typeof document !== "undefined" &&
+        (document.visibilityState === "hidden" || !document.hasFocus());
+
+      if (
+        isHidden &&
+        typeof Notification !== "undefined" &&
+        Notification.permission === "granted"
+      ) {
+        try {
+          const n = new Notification(`💬 ${senderName}`, {
+            body: preview,
+            icon: "/favicon.ico",
+            badge: "/favicon.ico",
+            tag: `chat:${openPath}`, // collapse repeats from same conversation
+          } as NotificationOptions);
+          n.onclick = () => {
+            window.focus();
+            navigate(openPath);
+            n.close();
+          };
+        } catch {
+          // Notification constructor can throw on some platforms (e.g. iOS Safari)
+        }
+      }
+
       toast(`💬 ${senderName}`, {
         description: preview,
         icon: <MessageCircle className="h-4 w-4" />,
