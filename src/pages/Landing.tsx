@@ -29,7 +29,7 @@ const heroImages = [
   { desktop: heroCouple3, mobile: heroCouple3Mobile },
 ];
 
-type Faq = { question: string; answer: string; answerNode?: React.ReactNode };
+type Faq = { question: string; answer: string; answerNode?: ReactNode };
 
 const faqs: Faq[] = [
   {
