@@ -8,6 +8,7 @@ import { toast } from "sonner";
 const VAPID_PUBLIC_KEY =
   "BEk1S7G1LkzUf3gvf4RdCUEDuIGzA_8E2GSJnQxdwZBMdK_INyo6Ys8bTrOEiLMoO71UGhtgD63foBY7FP7bBv4";
 const DISMISS_KEY = "notif_prompt_dismissed_at";
+const DENIED_DISMISS_KEY = "notif_prompt_denied_dismissed";
 const DISMISS_HOURS = 24;
 
 function urlBase64ToUint8Array(base64String: string) {
@@ -34,13 +35,25 @@ const NotificationPermissionPrompt = () => {
       setStatus("unsupported");
       return;
     }
-    setStatus(Notification.permission as Status);
+    const currentPermission = Notification.permission as Status;
+    setStatus(currentPermission);
 
-    // Honor a recent dismissal
     try {
-      const ts = Number(localStorage.getItem(DISMISS_KEY) || 0);
-      if (ts && Date.now() - ts < DISMISS_HOURS * 60 * 60 * 1000) {
-        setDismissed(true);
+      // Permanent dismissal for "denied" — only re-show if permission changes
+      if (currentPermission === "denied") {
+        if (localStorage.getItem(DENIED_DISMISS_KEY) === "denied") {
+          setDismissed(true);
+        }
+      } else {
+        // Permission changed away from denied — clear the permanent flag
+        if (localStorage.getItem(DENIED_DISMISS_KEY)) {
+          localStorage.removeItem(DENIED_DISMISS_KEY);
+        }
+        // Honor a recent 24h dismissal for "default" state
+        const ts = Number(localStorage.getItem(DISMISS_KEY) || 0);
+        if (ts && Date.now() - ts < DISMISS_HOURS * 60 * 60 * 1000) {
+          setDismissed(true);
+        }
       }
     } catch {
       // ignore
@@ -107,7 +120,12 @@ const NotificationPermissionPrompt = () => {
 
   const handleDismiss = () => {
     try {
-      localStorage.setItem(DISMISS_KEY, String(Date.now()));
+      if (status === "denied") {
+        // Permanent dismissal until the browser permission changes
+        localStorage.setItem(DENIED_DISMISS_KEY, "denied");
+      } else {
+        localStorage.setItem(DISMISS_KEY, String(Date.now()));
+      }
     } catch {
       // ignore
     }
