@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, type ReactNode } from "react";
 import { Heart, Shield, ArrowRight, UserPlus, Search, MessagesSquare, ShieldCheck, Ban, Lock, Eye, BadgeCheck, Users, AlertTriangle, Star } from "lucide-react";
 import { Link } from "react-router-dom";
 import SEO from "@/components/SEO";
