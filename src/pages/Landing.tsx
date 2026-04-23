@@ -511,7 +511,7 @@ const Landing = () => {
                     {faq.question}
                   </AccordionTrigger>
                   <AccordionContent className="text-sm text-muted-foreground leading-relaxed pb-5">
-                    {faq.answer}
+                    {faq.answerNode ?? faq.answer}
                   </AccordionContent>
                 </AccordionItem>
               ))}
