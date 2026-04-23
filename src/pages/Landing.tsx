@@ -110,8 +110,8 @@ const Landing = () => {
         <div className="container relative z-10 px-5 py-12 md:py-20">
           <div className="max-w-2xl animate-slide-up">
             <h1 className="mb-4 md:mb-6 text-3xl font-bold leading-tight text-primary-foreground md:text-6xl lg:text-7xl" style={{ fontFamily: 'var(--font-display)' }}>
-              Find Your Filipina Soulmate
-              <span className="block mt-1 md:mt-2 text-primary-foreground/90 text-xl md:text-4xl lg:text-5xl">— Not Fake Profiles</span>
+              MyFilipinoMatch — Meet Real, Verified Filipina Singles
+              <span className="block mt-1 md:mt-2 text-primary-foreground/90 text-xl md:text-4xl lg:text-5xl">No Fake Profiles, Free to Join</span>
             </h1>
             <p className="mb-6 md:mb-8 max-w-lg text-base text-primary-foreground/85 md:text-xl leading-relaxed">
               Join a trusted platform where foreign men meet verified Filipinas ready for genuine, long-term connections.
@@ -340,7 +340,7 @@ const Landing = () => {
                 <Shield className="h-7 w-7 text-primary-foreground" />
               </div>
               <h2 className="mb-4 text-3xl font-bold md:text-4xl" style={{ fontFamily: 'var(--font-display)' }}>
-                Safe, Secure, and Built for Real Connections
+                Safe, Secure & Built for Real, Verified Connections
               </h2>
               <p className="mb-8 text-muted-foreground">
                 Your safety is our top priority. We invest in keeping our community trustworthy.
