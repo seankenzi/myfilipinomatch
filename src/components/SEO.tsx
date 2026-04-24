@@ -30,7 +30,7 @@ const SEO = ({
   prerenderStatusCode,
   prerenderRedirect,
 }: SEOProps) => {
-  const fullTitle = title ? `${title} | ${SITE_NAME}` : `${SITE_NAME} — Real Verified Profiles, No Fake Accounts`;
+  const fullTitle = title ? `${title} | ${SITE_NAME}` : `${SITE_NAME} — Meet Real, Verified Filipina Singles`;
   const canonicalUrl = canonical ? `${BASE_URL}${canonical}` : undefined;
 
   return (

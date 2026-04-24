@@ -153,7 +153,7 @@ const Signup = () => {
 
   return (
     <div className="flex min-h-screen items-center justify-center px-5 py-8 md:py-12 bg-background">
-      <SEO title="Sign Up Free" description="Create your free MyFilipinoMatch account and start meeting verified Filipino singles looking for serious relationships." canonical="/signup" />
+      <SEO title="Join Free — Filipino Dating Site" description="Create your free account on MyFilipinoMatch and browse thousands of verified Filipina profiles. Find a real connection — no bots, no fake accounts." canonical="/signup" />
       <div className="w-full max-w-md animate-scale-in">
         {/* Logo & Header */}
         <div className="mb-6 md:mb-8 text-center">

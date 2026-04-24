@@ -83,7 +83,7 @@ const Support = () => {
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
-      <SEO title="Support & Help" description="Get help with your MyFilipinoMatch account. Contact our support team, browse FAQs, and find answers." canonical="/support" />
+      <SEO title="Contact Us — Support" description="Have a question or need help? Our MyFilipinoMatch support team is ready to assist you. Get in touch and we'll respond as quickly as possible." canonical="/support" />
       <Navbar />
       <main className="flex-1 px-4 py-12 pb-24 md:pb-12">
         <div className="mx-auto max-w-2xl">

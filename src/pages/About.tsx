@@ -6,8 +6,8 @@ const About = () => {
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <SEO
-        title="About Us"
-        description="Learn about MyFilipinoMatch — a trusted dating platform connecting foreigners with verified Filipino singles for genuine, lasting relationships."
+        title="About — Trusted Filipino Dating Site"
+        description="MyFilipinoMatch was built to connect foreign men with genuine Filipina singles. Learn why we're the trusted, affordable alternative to other Filipino dating sites."
         canonical="/about"
         jsonLd={{
           "@context": "https://schema.org",
