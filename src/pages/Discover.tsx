@@ -773,7 +773,7 @@ const Discover = () => {
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
-      <SEO title="Discover" canonical="/discover" noIndex />
+      <SEO title="Browse Verified Filipina Profiles" description="Browse real, verified profiles of Filipina singles looking for genuine relationships. Every profile is checked so you can date with confidence." canonical="/discover" noIndex />
       <Navbar />
       
       <main className="flex flex-1 flex-col items-center px-4 py-4 pb-24 md:pb-6">

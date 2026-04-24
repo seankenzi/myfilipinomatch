@@ -191,7 +191,7 @@ const Premium = () => {
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
-      <SEO title="Premium Plans" description="Upgrade to MyFilipinoMatch Premium for unlimited messaging, priority placement, and more." canonical="/premium" />
+      <SEO title="Affordable Dating Plans" description="MyFilipinoMatch offers the most affordable premium plans in Filipino dating. Get full access to verified profiles without breaking the bank. View our plans today." canonical="/premium" />
       <Navbar />
       <main className="flex-1 px-4 py-12 pb-24 md:pb-12">
         <div className="mx-auto max-w-3xl text-center">

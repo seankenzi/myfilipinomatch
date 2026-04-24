@@ -11,6 +11,155 @@ export interface BlogPost {
 
 export const blogPosts: BlogPost[] = [
   {
+    slug: "how-to-meet-genuine-filipina-singles-online",
+    title: "How to Meet Genuine Filipina Singles Online (Without Getting Scammed)",
+    excerpt:
+      "Want to meet real Filipina women online? Here's how to avoid fake profiles and find genuine connections on Filipino dating sites like MyFilipinoMatch.",
+    category: "Safety",
+    author: "MyFilipinoMatch Team",
+    date: "2026-04-22",
+    readTime: "6 min read",
+    content: `Meeting someone special online is exciting — but in the world of Filipino dating, fake profiles and scammers have made it harder to know who to trust. The good news? With the right platform and the right approach, finding a genuine Filipina partner online is absolutely possible.
+
+Here's everything you need to know.
+
+## Why Filipino Dating Sites Are Popular Worldwide
+
+The Philippines has one of the warmest, most family-oriented cultures in the world. Filipinas are known for their loyalty, strong values, and genuine desire for meaningful relationships — qualities that attract men from the USA, UK, Australia, Europe, and beyond.
+
+With millions of Filipinas actively looking for international partners, online dating has become the most practical and effective way to connect across borders.
+
+## The Biggest Problem: Fake Profiles
+
+The most common complaint on Filipino dating sites is fake accounts. These are profiles created by scammers — often posing as attractive Filipinas — with the goal of extracting money from interested men.
+
+Warning signs of fake profiles include:
+- Profile photos that look too professional or model-like
+- Immediate requests for money or gifts
+- Vague answers that don't match their profile details
+- Reluctance to video call
+
+## How MyFilipinoMatch Solves This
+
+MyFilipinoMatch was built specifically to address this problem. Every profile on the platform goes through a verification process, so you know you're connecting with a real person — not a bot or scammer.
+
+This commitment to verified profiles is what sets MyFilipinoMatch apart from larger, more crowded platforms where fake accounts often slip through undetected.
+
+## Tips for Finding a Genuine Connection
+
+**1. Always verify before you invest emotionally.** Request a video call early in your conversation. Genuine women will have no problem with this. Anyone who consistently avoids video calls should raise concern.
+
+**2. Take your time.** Scammers typically try to move fast — rushing you into emotional attachment before asking for money. Genuine connections develop naturally over time.
+
+**3. Ask specific questions.** Real people have specific details about their lives — their job, their neighborhood, their family. Vague or inconsistent answers are a red flag.
+
+**4. Use a verified platform.** Choosing a dating site that actively verifies profiles — like MyFilipinoMatch — removes much of the risk from the start.
+
+## Start With Confidence
+
+Meeting a genuine Filipina online doesn't have to be a gamble. With MyFilipinoMatch's verified profiles, smarter matching, and affordable plans, you can focus on building a real connection — not worrying about who's real and who isn't.`,
+  },
+  {
+    slug: "filipino-dating-culture-what-foreign-men-need-to-know",
+    title: "Filipino Dating Culture: What Foreign Men Need to Know Before Dating a Filipina",
+    excerpt:
+      "Thinking about dating a Filipina? Here's an honest guide to Filipino dating culture, relationship expectations, and tips for building a lasting connection.",
+    category: "Culture",
+    author: "MyFilipinoMatch Team",
+    date: "2026-04-15",
+    readTime: "7 min read",
+    content: `Dating someone from a different culture is one of the most rewarding experiences a person can have — but it also comes with things you need to understand before diving in. If you're a foreign man interested in dating a Filipina, this guide will help you start on the right foot.
+
+## Family is Everything
+
+In Filipino culture, family is not just important — it's central to everything. When you date a Filipina, you're not just dating her. You're entering a relationship with her entire family.
+
+This means:
+- Family opinions matter deeply to her
+- She will likely want you to meet her family relatively early
+- Showing respect to her parents and elders is non-negotiable
+- She may have financial responsibilities toward her family
+
+Understanding and respecting this from the start will earn you enormous trust and affection.
+
+## Filipinas Value Loyalty and Commitment
+
+Filipinas generally aren't interested in casual flings. Most women on Filipino dating sites are looking for a serious, long-term relationship — potentially leading to marriage.
+
+If you're looking for something casual, be upfront and honest about it. If you're open to something serious, you'll find that Filipinas make incredibly devoted, caring partners.
+
+## Religion Plays a Role
+
+The Philippines is a predominantly Catholic country, and faith is often a significant part of daily life. Your partner may attend church regularly, celebrate Catholic holidays, and hold traditional values around relationships.
+
+You don't need to share her faith, but showing respect for it goes a long way.
+
+## Communication Style
+
+Filipinas tend to be indirect in how they express displeasure — they may go quiet or seem distant rather than confronting an issue directly. This is cultural, not personal.
+
+Learning to check in, ask how she's feeling, and create a safe space for honest communication will make your relationship much stronger.
+
+## Long Distance is Common — and Manageable
+
+Many Filipino international relationships start online and involve a period of long distance before meeting in person. Filipinas are generally patient and understanding about this, especially when both parties are committed and communicating consistently.
+
+Regular video calls, thoughtful messages, and a clear plan to meet in person are the foundations of a healthy long-distance relationship with a Filipina.
+
+## Where to Start
+
+If you're ready to meet genuine Filipina singles who are looking for meaningful relationships, MyFilipinoMatch connects you with verified profiles — real women, real intentions, and a platform built for serious connections.`,
+  },
+  {
+    slug: "myfilipinomatch-vs-filipinocupid-comparison",
+    title: "MyFilipinoMatch vs FilipinoCupid: Which Filipino Dating Site Is Better?",
+    excerpt:
+      "Comparing MyFilipinoMatch and FilipinoCupid? Here's an honest breakdown of both platforms to help you choose the best Filipino dating site for your needs.",
+    category: "Dating Tips",
+    author: "MyFilipinoMatch Team",
+    date: "2026-04-08",
+    readTime: "6 min read",
+    content: `If you're looking to meet Filipina singles online, two names you'll likely come across are **MyFilipinoMatch** and **FilipinoCupid**. Both platforms cater to foreign men looking to connect with women from the Philippines — but they differ in some important ways.
+
+Here's an honest comparison to help you decide.
+
+## FilipinoCupid: The Big Name
+
+FilipinoCupid has been around since 2001 and has built a large user base over more than two decades. It's operated by Cupid Media, an Australian company that runs over 30 niche dating platforms worldwide.
+
+**Pros:**
+- Large, established user base
+- Well-known brand with long track record
+- Available in English and Filipino
+
+**Cons:**
+- Large platforms attract more fake profiles and scammers
+- Aggressive upsell prompts on free accounts
+- Interface feels dated compared to modern platforms
+- Higher pricing for premium features
+
+## MyFilipinoMatch: The Smarter Alternative
+
+MyFilipinoMatch was built with one goal: connecting foreign men with genuine, verified Filipina singles — without the frustrations that come with larger, less curated platforms.
+
+**Pros:**
+- Verified profiles — every account is checked for authenticity
+- No fake accounts — you're always talking to a real person
+- Smarter matching algorithm — better quality connections
+- More affordable premium plans
+- Cleaner, modern interface
+
+**Cons:**
+- Newer platform, so smaller user base than FilipinoCupid
+- Still growing its member community
+
+## Which Should You Choose?
+
+If you value **quantity** and brand recognition, FilipinoCupid has more members. But if you value **quality, trust, and affordability** — MyFilipinoMatch is the better choice.
+
+A smaller, verified user base beats a large pool of questionable profiles every time. When every profile is real, every conversation is a genuine opportunity.`,
+  },
+  {
     slug: "how-to-spot-fake-profiles-on-dating-sites",
     title: "How to Spot Fake Profiles on Dating Sites",
     excerpt:
