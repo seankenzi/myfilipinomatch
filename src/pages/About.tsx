@@ -1,6 +1,5 @@
 import Navbar from "@/components/Navbar";
 import SEO from "@/components/SEO";
-import { Heart, Users, Award, Globe } from "lucide-react";
 
 const About = () => {
   return (
@@ -29,31 +28,77 @@ const About = () => {
         <div className="mx-auto max-w-3xl">
           <h1 className="text-3xl font-bold mb-6" style={{ fontFamily: 'var(--font-display)' }}>About MyFilipinoMatch</h1>
 
-          <div className="prose prose-sm max-w-none text-muted-foreground space-y-6">
-            <p className="text-base text-foreground leading-relaxed">
-              MyFilipinoMatch is a dating platform dedicated to fostering genuine, meaningful relationships between Filipinos and people from around the world. We believe that love knows no borders.
+          <div className="prose prose-sm max-w-none text-muted-foreground space-y-5 leading-relaxed">
+            <p className="text-base text-foreground">
+              MyFilipinoMatch was created from real conversations, real experiences, and a genuine desire to solve a common problem.
             </p>
 
-            <div className="grid gap-6 sm:grid-cols-2 not-prose mt-8">
-              {[
-                { icon: Heart, title: "Our Mission", desc: "To create a safe, trusted space where serious-minded individuals can find lasting love and meaningful connections." },
-                { icon: Users, title: "Community First", desc: "We prioritize our members' safety and wellbeing with verified profiles, active moderation, and community guidelines." },
-                { icon: Globe, title: "Bridging Cultures", desc: "We celebrate cross-cultural relationships and help people connect across borders with respect and understanding." },
-                { icon: Award, title: "Quality Over Quantity", desc: "We focus on serious relationships — long-term commitments and marriage — not casual encounters." },
-              ].map(({ icon: Icon, title, desc }) => (
-                <div key={title} className="rounded-2xl border border-border bg-card p-6 shadow-card">
-                  <div className="mb-3 inline-flex rounded-xl gradient-hero p-2.5">
-                    <Icon className="h-5 w-5 text-primary-foreground" />
-                  </div>
-                  <h3 className="font-semibold text-foreground mb-1">{title}</h3>
-                  <p className="text-sm text-muted-foreground">{desc}</p>
-                </div>
-              ))}
-            </div>
+            <p>
+              Our journey began on a beautiful island in the Philippines — a place known not just for its scenery, but for the many foreigners who choose to settle there in search of a quieter, happier life. Many of them build meaningful relationships with Filipina partners and start a new chapter in life.
+            </p>
+
+            <p>
+              As the owner of a restaurant and bar in this island, I've had the opportunity to meet and connect with countless travelers, retirees, and expats from around the world. Over time, a common story kept coming up.
+            </p>
+
+            <p>Again and again, I would hear the same stories.</p>
+
+            <p>
+              Men who had spent months talking to someone online…<br />
+              Only to be disappointed when they finally met.
+            </p>
+
+            <p>
+              Men who flew thousands of miles, full of hope…<br />
+              Only to realize the connection wasn't real.
+            </p>
+
+            <p>
+              Men who genuinely wanted something serious…<br />
+              But kept running into people who didn't.
+            </p>
+
+            <p>
+              There was frustration.<br />
+              There was disappointment.<br />
+              But more than anything — there was a desire for something real.
+            </p>
+
+            <p>And that stayed with me.</p>
+
+            <p>
+              Because on the other side, I also knew there are many Filipinas who are sincere, loyal, and genuinely looking for a meaningful relationship — but often get overlooked or lost in a sea of fake profiles and casual intentions.
+            </p>
+
+            <p className="text-foreground font-medium">That's when the idea for MyFilipinoMatch was born.</p>
+
+            <p>
+              A place built not from trends… but from real experiences.<br />
+              A platform created with one simple purpose:
+            </p>
+
+            <p className="text-lg text-foreground font-semibold">
+              To connect people who are serious about love.
+            </p>
+
+            <p>
+              MyFilipinoMatch is designed to bring together foreigners and Filipinas who are looking for something genuine — not games, not temporary connections, but something lasting.
+            </p>
+
+            <p>
+              A place where conversations mean something.<br />
+              Where intentions are clear.<br />
+              Where real connections can begin.
+            </p>
+
+            <p>Because we believe…</p>
+
+            <p className="text-base text-foreground italic border-l-4 border-primary pl-4">
+              The right connection doesn't just change your day — it can change your life.
+            </p>
           </div>
         </div>
       </main>
-      
     </div>
   );
 };
