@@ -1,5 +1,6 @@
 import Navbar from "@/components/Navbar";
 import SEO from "@/components/SEO";
+import camiguinIsland from "@/assets/camiguin-island.jpg";
 
 const About = () => {
   return (
@@ -28,13 +29,27 @@ const About = () => {
         <div className="mx-auto max-w-3xl">
           <h1 className="text-3xl font-bold mb-6" style={{ fontFamily: 'var(--font-display)' }}>About MyFilipinoMatch</h1>
 
+          <figure className="mb-8 overflow-hidden rounded-2xl shadow-lg">
+            <img
+              src={camiguinIsland}
+              alt="Aerial view of Camiguin Island in the Philippines with lush green volcanic peaks, white sand beaches, and turquoise waters"
+              width={1600}
+              height={1024}
+              loading="lazy"
+              className="w-full h-auto object-cover"
+            />
+            <figcaption className="text-xs text-muted-foreground mt-2 text-center italic">
+              Camiguin Island, Philippines — where our story began.
+            </figcaption>
+          </figure>
+
           <div className="prose prose-sm max-w-none text-muted-foreground space-y-5 leading-relaxed">
             <p className="text-base text-foreground">
               MyFilipinoMatch was created from real conversations, real experiences, and a genuine desire to solve a common problem.
             </p>
 
             <p>
-              Our journey began on a beautiful island in the Philippines — a place known not just for its scenery, but for the many foreigners who choose to settle there in search of a quieter, happier life. Many of them build meaningful relationships with Filipina partners and start a new chapter in life.
+              Our journey began on the beautiful island of Camiguin in the Philippines — a place known not just for its scenery, but for the many foreigners who choose to settle there in search of a quieter, happier life. Many of them build meaningful relationships with Filipina partners and start a new chapter in life.
             </p>
 
             <p>
