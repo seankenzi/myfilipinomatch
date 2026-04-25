@@ -434,6 +434,58 @@ const Landing = () => {
       </LazySection>
 
       <LazySection>
+      <Link
+        to="/about"
+        aria-label="Read our story — how MyFilipinoMatch began on Camiguin Island"
+        className="block group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+      >
+        <section className="relative py-12 md:py-20 overflow-hidden bg-background">
+          <div className="container relative z-10">
+            <div className="mx-auto max-w-5xl grid gap-8 md:gap-12 md:grid-cols-2 items-center">
+              <div className="relative rounded-3xl overflow-hidden shadow-elevated ring-4 ring-primary/10 aspect-[4/3]">
+                <img
+                  src={camiguinIsland}
+                  alt="Camiguin Island, Philippines — where MyFilipinoMatch began"
+                  className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                  loading="lazy"
+                  width={1600}
+                  height={1200}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-foreground/40 via-transparent to-transparent" />
+                <span className="absolute bottom-4 left-4 text-xs font-medium text-primary-foreground/90 italic">
+                  Camiguin Island, Philippines
+                </span>
+              </div>
+              <div>
+                <span className="mb-3 inline-block text-xs font-bold uppercase tracking-widest text-primary">
+                  Our Story
+                </span>
+                <h2 className="mb-4 text-3xl font-bold md:text-4xl" style={{ fontFamily: 'var(--font-display)' }}>
+                  How <span className="text-gradient">MyFilipinoMatch</span> Began
+                </h2>
+                <p className="mb-4 text-base text-muted-foreground leading-relaxed">
+                  It started on a small island in the Philippines — Camiguin —
+                  where a chance connection turned into something life-changing.
+                  We saw firsthand how hard it was to find genuine love online,
+                  surrounded by fake profiles and pay-per-message traps.
+                </p>
+                <p className="mb-6 text-base text-muted-foreground leading-relaxed">
+                  So we built the platform we wished existed: one rooted in
+                  trust, real verification, and respect for the people on both
+                  sides of every conversation.
+                </p>
+                <span className="inline-flex items-center gap-2 text-sm font-semibold text-primary group-hover:underline">
+                  Read our full story
+                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                </span>
+              </div>
+            </div>
+          </div>
+        </section>
+      </Link>
+      </LazySection>
+
+      <LazySection>
       <section className="relative py-12 md:py-20 overflow-hidden" style={{ background: 'linear-gradient(180deg, hsl(175 40% 40% / 0.05), hsl(350 65% 55% / 0.05))' }}>
         <div className="container relative z-10">
           <div className="mx-auto max-w-5xl">
