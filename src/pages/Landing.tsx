@@ -16,6 +16,7 @@ import heroCouple3Mobile from "@/assets/hero-couple-3-mobile.jpg";
 import coupleCafe from "@/assets/couple-cafe.jpg";
 import coupleBinondo from "@/assets/couple-binondo.jpg";
 import coupleMarket from "@/assets/couple-market.jpg";
+import camiguinIsland from "@/assets/camiguin-island.jpg";
 import mariaPhoto from "@/assets/test-profiles/maria.jpg";
 import jamesPhoto from "@/assets/test-profiles/james.jpg";
 import anaPhoto from "@/assets/test-profiles/ana.jpg";
