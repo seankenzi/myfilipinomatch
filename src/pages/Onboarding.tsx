@@ -3,6 +3,7 @@ import { getProvinceNames, getCitiesByProvince } from "@/data/philippineProvince
 import { hasStateDropdown, getStatesByCountry, getSubdivisionLabel } from "@/data/countryStates";
 import { detectContactInfo } from "@/lib/contactFilter";
 import { COUNTRIES, isCityLikeCountry } from "@/lib/cityValidation";
+import { validateName } from "@/lib/nameValidation";
 import { useNavigate } from "react-router-dom";
 import { Heart, Globe, MapPin, User, Camera, Shield, ArrowRight, ArrowLeft, Sparkles, CheckCircle, Users, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -128,6 +129,18 @@ const Onboarding = () => {
     try {
       if (photos.length < 3) {
         toast({ title: "Photos required", description: "Please upload at least 3 photos before completing your profile.", variant: "destructive" });
+        setSaving(false);
+        return;
+      }
+      const firstNameCheck = validateName(firstName, "First name");
+      if (!firstNameCheck.valid) {
+        toast({ title: "Invalid first name", description: firstNameCheck.error, variant: "destructive" });
+        setSaving(false);
+        return;
+      }
+      const lastNameCheck = validateName(lastName, "Last name");
+      if (!lastNameCheck.valid) {
+        toast({ title: "Invalid last name", description: lastNameCheck.error, variant: "destructive" });
         setSaving(false);
         return;
       }
