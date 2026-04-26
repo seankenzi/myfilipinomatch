@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { detectContactInfo } from "@/lib/contactFilter";
 import { isCityLikeCountry } from "@/lib/cityValidation";
+import { validateName } from "@/lib/nameValidation";
 import { Camera, Edit, Shield, MapPin, Heart, Globe, Settings, LogOut, Crown, Save } from "lucide-react";
 import ProfileBoostButton from "@/components/ProfileBoostButton";
 import ProfileCompletion from "@/components/ProfileCompletion";
@@ -81,6 +82,18 @@ const Profile = () => {
 
   const saveProfile = async () => {
     if (!user) return;
+    const firstNameCheck = validateName(profile.firstName, "First name");
+    if (!firstNameCheck.valid) {
+      toast({ title: "Invalid first name", description: firstNameCheck.error, variant: "destructive" });
+      setSaving(false);
+      return;
+    }
+    const lastNameCheck = validateName(profile.lastName, "Last name");
+    if (!lastNameCheck.valid) {
+      toast({ title: "Invalid last name", description: lastNameCheck.error, variant: "destructive" });
+      setSaving(false);
+      return;
+    }
     if (isCityLikeCountry(profile.city)) {
       toast({ title: "Invalid city", description: "Please enter a city name, not a country.", variant: "destructive" });
       setSaving(false);
