@@ -25,7 +25,7 @@ interface VideoAnomalyAlertProps {
 const VideoAnomalyAlertEmail = ({ anomalies = [], checkDate }: VideoAnomalyAlertProps) => (
   <Html lang="en" dir="ltr">
     <Head />
-    <Preview>🎥 {anomalies.length} anomalous video session(s) detected on {SITE_NAME}</Preview>
+    <Preview>{`🎥 ${anomalies.length} anomalous video session(s) detected on ${SITE_NAME}`}</Preview>
     <Body style={main}>
       <Container style={container}>
         <Img src={LOGO_URL} alt={SITE_NAME} width="48" height="48" style={logo} />

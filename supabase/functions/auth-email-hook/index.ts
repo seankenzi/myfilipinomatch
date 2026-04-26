@@ -75,7 +75,8 @@ const SAMPLE_DATA: Record<string, object> = {
   },
 }
 
-type ServiceSupabaseClient = ReturnType<typeof createClient>
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type ServiceSupabaseClient = any
 
 // Generate a cryptographically random 32-byte hex token
 function generateUnsubscribeToken(): string {
