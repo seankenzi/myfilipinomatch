@@ -212,18 +212,33 @@ const Landing = () => {
         <div className="container relative z-10 px-5 py-12 md:py-20">
           <div className="max-w-2xl animate-slide-up">
             <h1 className="mb-4 md:mb-6 text-3xl font-bold leading-tight text-primary-foreground md:text-6xl lg:text-7xl" style={{ fontFamily: 'var(--font-display)' }}>
-              MyFilipinoMatch — Meet Real, Verified Filipina Singles
-              <span className="block mt-1 md:mt-2 text-primary-foreground/90 text-xl md:text-4xl lg:text-5xl">No Fake Profiles, Free to Join</span>
+              Where Western Men Meet Verified Filipina Singles
+              <span className="block mt-1 md:mt-2 text-primary-foreground/90 text-xl md:text-4xl lg:text-5xl">Built for serious relationships — not hookups</span>
             </h1>
-            <p className="mb-6 md:mb-8 max-w-lg text-base text-primary-foreground/85 md:text-xl leading-relaxed">
-              Join a trusted platform where foreign men meet verified Filipinas ready for genuine, long-term connections.
+            <p className="mb-5 md:mb-7 max-w-lg text-base text-primary-foreground/85 md:text-xl leading-relaxed">
+              Trusted by men in the US, UK, Australia, Canada and across Europe to meet authentic Filipinas ready for marriage and long-term love.
             </p>
+
+            {/* Country flags trust strip */}
+            <div className="mb-6 md:mb-8 flex flex-wrap items-center gap-x-3 gap-y-2">
+              <span className="text-xs font-semibold uppercase tracking-wider text-primary-foreground/70">Members from</span>
+              <div className="flex items-center gap-1.5 text-xl md:text-2xl" aria-label="Countries our members come from">
+                <span title="United States">🇺🇸</span>
+                <span title="United Kingdom">🇬🇧</span>
+                <span title="Australia">🇦🇺</span>
+                <span title="Canada">🇨🇦</span>
+                <span title="Germany">🇩🇪</span>
+                <span title="France">🇫🇷</span>
+                <span title="Netherlands">🇳🇱</span>
+                <span title="Philippines">🇵🇭</span>
+              </div>
+            </div>
 
             <div className="mb-6 md:mb-10 flex flex-col gap-1.5 md:gap-2">
               {[
-                { icon: BadgeCheck, text: "Verified Filipina profiles (ID + selfie checked)" },
-                { icon: Ban, text: "No bots. No fake accounts." },
-                { icon: Users, text: "Real conversations with real people" },
+                { icon: BadgeCheck, text: "Every Filipina profile manually verified — no scams" },
+                { icon: Ban, text: "No bots. No fake operators. No pay-per-message." },
+                { icon: Users, text: "Real women seeking serious foreign partners" },
               ].map((item) => (
                 <div key={item.text} className="flex items-center gap-2.5">
                   <item.icon className="h-4.5 w-4.5 text-secondary flex-shrink-0" />
@@ -233,15 +248,15 @@ const Landing = () => {
             </div>
 
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
-              <Link to="/signup" className="w-full sm:w-auto">
+              <Link to="/signup?as=foreigner" className="w-full sm:w-auto">
                 <Button variant="hero" size="xl" className="w-full sm:w-auto min-h-[48px]">
-                  Create Free Account
+                  I'm a Foreigner — Join Free
                   <ArrowRight className="ml-1 h-5 w-5" />
                 </Button>
               </Link>
-              <Link to="/discover" className="w-full sm:w-auto">
+              <Link to="/signup?as=filipino" className="w-full sm:w-auto">
                 <Button variant="hero-outline" size="xl" className="w-full sm:w-auto min-h-[48px] border-primary-foreground/40 text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground">
-                  Browse Verified Profiles
+                  I'm Filipino — Join Free
                 </Button>
               </Link>
             </div>
@@ -262,8 +277,8 @@ const Landing = () => {
                 ))}
               </div>
               <div>
-                <p className="text-sm font-semibold text-primary-foreground">Join our growing community</p>
-                <p className="text-xs text-primary-foreground/70">Verified members looking for real connections</p>
+                <p className="text-sm font-semibold text-primary-foreground">Join our growing international community</p>
+                <p className="text-xs text-primary-foreground/70">Verified members across 4 continents</p>
               </div>
             </div>
           </div>
