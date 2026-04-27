@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import SEO from "@/components/SEO";
 import LazySection from "@/components/LazySection";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { trackEvent, setSignupSource } from "@/lib/analytics";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -248,13 +249,27 @@ const Landing = () => {
             </div>
 
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
-              <Link to="/signup?as=foreigner" className="w-full sm:w-auto">
+              <Link
+                to="/signup?as=foreigner"
+                className="w-full sm:w-auto"
+                onClick={() => {
+                  setSignupSource("foreigner");
+                  void trackEvent("signup_cta_click", { source: "foreigner", metadata: { location: "hero" } });
+                }}
+              >
                 <Button variant="hero" size="xl" className="w-full sm:w-auto min-h-[48px]">
                   I'm a Foreigner — Join Free
                   <ArrowRight className="ml-1 h-5 w-5" />
                 </Button>
               </Link>
-              <Link to="/signup?as=filipino" className="w-full sm:w-auto">
+              <Link
+                to="/signup?as=filipino"
+                className="w-full sm:w-auto"
+                onClick={() => {
+                  setSignupSource("filipino");
+                  void trackEvent("signup_cta_click", { source: "filipino", metadata: { location: "hero" } });
+                }}
+              >
                 <Button variant="hero-outline" size="xl" className="w-full sm:w-auto min-h-[48px] border-primary-foreground/40 text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground">
                   I'm Filipino — Join Free
                 </Button>
