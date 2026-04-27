@@ -92,6 +92,13 @@ const Onboarding = () => {
         setFirstName(parts[0] || "");
         setLastName(parts.slice(1).join(" ") || "");
       }
+
+      // Pre-select user_type from landing page choice (?as=foreigner|filipino)
+      const intendedUserType = sessionStorage.getItem("intended_user_type");
+      if (intendedUserType === "foreigner" || intendedUserType === "filipino") {
+        setUserType(intendedUserType);
+        sessionStorage.removeItem("intended_user_type");
+      }
     };
 
     void syncOnboardingStatus();
