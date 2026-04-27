@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import SEO from "@/components/SEO";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Mail, Lock, Eye, EyeOff, Shield, Heart, Users, ArrowLeft } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { lovable } from "@/integrations/lovable/index";
@@ -30,6 +30,15 @@ const Signup = () => {
   const { toast } = useToast();
   const { user, loading: authLoading, signUp } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+
+  // Persist intended user_type from landing page (?as=foreigner|filipino) so onboarding can pre-select it.
+  useEffect(() => {
+    const as = searchParams.get("as");
+    if (as === "foreigner" || as === "filipino") {
+      sessionStorage.setItem("intended_user_type", as);
+    }
+  }, [searchParams]);
 
   // Redirect already-authenticated users away from Signup
   useEffect(() => {
