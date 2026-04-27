@@ -21,6 +21,7 @@ import PhotoUpload from "@/components/PhotoUpload";
 import SEO from "@/components/SEO";
 import { motion, AnimatePresence } from "framer-motion";
 import { Slider } from "@/components/ui/slider";
+import { trackEvent, getSignupSource } from "@/lib/analytics";
 
 const TOTAL_STEPS = 8;
 
@@ -217,6 +218,10 @@ const Onboarding = () => {
         }
       }
 
+      void trackEvent("onboarding_completed", {
+        source: getSignupSource(),
+        metadata: { user_type: userType, country: userType === "foreigner" ? country : "Philippines" },
+      });
       toast({ title: "Profile complete! 🎉", description: "Welcome to MyFilipinoMatch." });
       navigate("/discover");
     } catch (err: any) {

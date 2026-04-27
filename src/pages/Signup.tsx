@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { trackEvent, setSignupSource, getSignupSource } from "@/lib/analytics";
 import logo from "@/assets/myfilipinomatch-logo.png";
 
 const TURNSTILE_SITE_KEY = "0x4AAAAAACy2sfcdM2WdoPnF";
@@ -37,7 +38,9 @@ const Signup = () => {
     const as = searchParams.get("as");
     if (as === "foreigner" || as === "filipino") {
       sessionStorage.setItem("intended_user_type", as);
+      setSignupSource(as);
     }
+    void trackEvent("signup_page_view", { source: as === "foreigner" || as === "filipino" ? as : undefined });
   }, [searchParams]);
 
   // Redirect already-authenticated users away from Signup
@@ -93,6 +96,7 @@ const Signup = () => {
 
   const handleGoogleSignIn = async () => {
     setGoogleLoading(true);
+    void trackEvent("signup_google_click", { source: getSignupSource() });
     const { error } = await lovable.auth.signInWithOAuth("google", {
       redirect_uri: window.location.origin,
     });
@@ -145,6 +149,7 @@ const Signup = () => {
           variant: "destructive",
         });
       } else {
+        void trackEvent("signup_completed", { source: getSignupSource(), metadata: { method: "email" } });
         toast({ title: "Check your email", description: "We sent you a confirmation link to verify your account." });
         navigate("/login");
       }
