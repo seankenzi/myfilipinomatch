@@ -218,6 +218,10 @@ const Onboarding = () => {
         }
       }
 
+      void trackEvent("onboarding_completed", {
+        source: getSignupSource(),
+        metadata: { user_type: userType, country: userType === "foreigner" ? country : "Philippines" },
+      });
       toast({ title: "Profile complete! 🎉", description: "Welcome to MyFilipinoMatch." });
       navigate("/discover");
     } catch (err: any) {
