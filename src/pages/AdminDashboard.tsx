@@ -4,7 +4,7 @@ import {
   Users, Heart, MessageSquare, Shield, CreditCard, TrendingUp,
   BarChart3, ArrowLeft, Search, Ban, CheckCircle, XCircle,
   Clock, Eye, Star, AlertTriangle, RefreshCw, ToggleLeft, ToggleRight,
-  Plus, Trash2, Bug, Video, Mail, Inbox, ExternalLink, Monitor, Smartphone, Tablet, Globe, Activity, Flag
+  Plus, Trash2, Bug, Video, Mail, Inbox, ExternalLink, Monitor, Smartphone, Tablet, Globe, Activity, Flag, UserMinus
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
