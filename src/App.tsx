@@ -100,6 +100,7 @@ const AppShell = () => {
       <MessageToastHandler />
       
       <div className={`flex flex-col ${isMessagesRoute ? "h-dvh overflow-hidden" : "min-h-screen"}`}>
+        <PendingDeletionBanner />
         <div className={isMessagesRoute ? "flex-1 overflow-hidden" : "flex-1 pb-16 md:pb-0"}>
           <ErrorBoundary>
             <Suspense fallback={<LazyFallback />}>
