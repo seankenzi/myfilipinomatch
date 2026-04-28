@@ -223,15 +223,28 @@ const Landing = () => {
             {/* Country flags trust strip */}
             <div className="mb-6 md:mb-8 flex flex-wrap items-center gap-x-3 gap-y-2">
               <span className="text-xs font-semibold uppercase tracking-wider text-primary-foreground/70">Members from</span>
-              <div className="flex items-center gap-1.5 text-xl md:text-2xl" aria-label="Countries our members come from">
-                <span title="United States">🇺🇸</span>
-                <span title="United Kingdom">🇬🇧</span>
-                <span title="Australia">🇦🇺</span>
-                <span title="Canada">🇨🇦</span>
-                <span title="Germany">🇩🇪</span>
-                <span title="France">🇫🇷</span>
-                <span title="Netherlands">🇳🇱</span>
-                <span title="Philippines">🇵🇭</span>
+              <div className="flex items-center gap-1.5" aria-label="Countries our members come from">
+                {[
+                  { code: "us", title: "United States" },
+                  { code: "gb", title: "United Kingdom" },
+                  { code: "au", title: "Australia" },
+                  { code: "ca", title: "Canada" },
+                  { code: "de", title: "Germany" },
+                  { code: "fr", title: "France" },
+                  { code: "nl", title: "Netherlands" },
+                  { code: "ph", title: "Philippines" },
+                ].map((c) => (
+                  <img
+                    key={c.code}
+                    src={`https://flagcdn.com/${c.code}.svg`}
+                    alt={c.title}
+                    title={c.title}
+                    width={24}
+                    height={18}
+                    loading="lazy"
+                    className="h-[18px] w-[24px] md:h-[21px] md:w-[28px] rounded-[2px] object-cover shadow-sm ring-1 ring-primary-foreground/20"
+                  />
+                ))}
               </div>
             </div>
 
