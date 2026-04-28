@@ -1925,6 +1925,181 @@ const FlaggedUsersTab = () => {
 
 
 // ─── Main Admin Dashboard ───
+// ─── Deletions Tab ───
+const DeletionsTab = () => {
+  const [rows, setRows] = useState<any[]>([]);
+  const [stats, setStats] = useState({ pending: 0, completed: 0, cancelled: 0 });
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
+
+  const load = async () => {
+    setLoading(true);
+    let query = supabase
+      .from("account_deletions" as any)
+      .select("id, user_id, status, created_at, scheduled_for, completed_at")
+      .order("created_at", { ascending: false })
+      .limit(200);
+    if (statusFilter !== "all") query = query.eq("status", statusFilter);
+
+    const [{ data: deletions }, pendingC, completedC, cancelledC] = await Promise.all([
+      query,
+      supabase.from("account_deletions" as any).select("id", { count: "exact", head: true }).eq("status", "pending"),
+      supabase.from("account_deletions" as any).select("id", { count: "exact", head: true }).eq("status", "completed"),
+      supabase.from("account_deletions" as any).select("id", { count: "exact", head: true }).eq("status", "cancelled"),
+    ]);
+
+    // Hydrate user emails/names from profiles (may be missing for completed deletions)
+    const userIds = (deletions || []).map((d: any) => d.user_id);
+    let profileMap: Record<string, { email: string | null; full_name: string | null }> = {};
+    if (userIds.length > 0) {
+      const { data: profs } = await supabase
+        .from("profiles")
+        .select("id, email, full_name")
+        .in("id", userIds);
+      (profs || []).forEach((p: any) => {
+        profileMap[p.id] = { email: p.email, full_name: p.full_name };
+      });
+    }
+
+    setRows((deletions || []).map((d: any) => ({
+      ...d,
+      email: profileMap[d.user_id]?.email || null,
+      full_name: profileMap[d.user_id]?.full_name || null,
+    })));
+    setStats({
+      pending: pendingC.count || 0,
+      completed: completedC.count || 0,
+      cancelled: cancelledC.count || 0,
+    });
+    setLoading(false);
+  };
+
+  useEffect(() => { load(); }, [statusFilter]);
+
+  const fmtPH = (iso: string | null) =>
+    iso ? new Date(iso).toLocaleString("en-PH", { timeZone: "Asia/Manila", dateStyle: "medium", timeStyle: "short" }) : "—";
+
+  const cancelDeletion = async (id: string) => {
+    if (!confirm("Cancel this scheduled deletion? The user's account will be restored.")) return;
+    const { error } = await supabase
+      .from("account_deletions" as any)
+      .update({ status: "cancelled" })
+      .eq("id", id);
+    if (error) {
+      toast({ title: "Failed to cancel", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Deletion cancelled" });
+      load();
+    }
+  };
+
+  const exportCsv = () => {
+    const header = ["Status", "Email", "Name", "User ID", "Requested (PHT)", "Scheduled (PHT)", "Completed (PHT)"];
+    const lines = rows.map((r) => [
+      r.status, r.email || "", r.full_name || "", r.user_id,
+      fmtPH(r.created_at), fmtPH(r.scheduled_for), fmtPH(r.completed_at),
+    ].map((v) => `"${String(v).replace(/"/g, '""')}"`).join(","));
+    const csv = [header.join(","), ...lines].join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `account-deletions-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="grid grid-cols-3 gap-3">
+        <div className="rounded-xl bg-card border border-border p-4">
+          <p className="text-xs text-muted-foreground">Pending</p>
+          <p className="text-2xl font-bold text-amber-600">{stats.pending}</p>
+        </div>
+        <div className="rounded-xl bg-card border border-border p-4">
+          <p className="text-xs text-muted-foreground">Completed</p>
+          <p className="text-2xl font-bold text-destructive">{stats.completed}</p>
+        </div>
+        <div className="rounded-xl bg-card border border-border p-4">
+          <p className="text-xs text-muted-foreground">Cancelled (Restored)</p>
+          <p className="text-2xl font-bold text-emerald-600">{stats.cancelled}</p>
+        </div>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-2">
+        <select
+          className="rounded-md border border-border bg-background px-3 py-2 text-sm"
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+        >
+          <option value="all">All statuses</option>
+          <option value="pending">Pending</option>
+          <option value="completed">Completed</option>
+          <option value="cancelled">Cancelled</option>
+        </select>
+        <Button size="sm" variant="outline" onClick={load} disabled={loading}>
+          <RefreshCw className={`h-4 w-4 mr-1 ${loading ? "animate-spin" : ""}`} /> Refresh
+        </Button>
+        <Button size="sm" variant="outline" onClick={exportCsv} disabled={!rows.length}>
+          Export CSV
+        </Button>
+      </div>
+
+      <div className="rounded-xl border border-border overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="bg-muted/50">
+              <tr>
+                <th className="text-left p-3 font-medium">Status</th>
+                <th className="text-left p-3 font-medium">User</th>
+                <th className="text-left p-3 font-medium">Requested</th>
+                <th className="text-left p-3 font-medium">Scheduled</th>
+                <th className="text-left p-3 font-medium">Completed</th>
+                <th className="text-right p-3 font-medium">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {loading ? (
+                <tr><td colSpan={6} className="p-6 text-center text-muted-foreground">Loading…</td></tr>
+              ) : rows.length === 0 ? (
+                <tr><td colSpan={6} className="p-6 text-center text-muted-foreground">No deletion records.</td></tr>
+              ) : rows.map((r) => (
+                <tr key={r.id} className="border-t border-border">
+                  <td className="p-3">
+                    <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${
+                      r.status === "pending" ? "bg-amber-500/15 text-amber-700" :
+                      r.status === "completed" ? "bg-destructive/15 text-destructive" :
+                      "bg-emerald-500/15 text-emerald-700"
+                    }`}>
+                      {r.status}
+                    </span>
+                  </td>
+                  <td className="p-3">
+                    <div className="font-medium">{r.full_name || <span className="text-muted-foreground italic">deleted</span>}</div>
+                    <div className="text-xs text-muted-foreground">{r.email || r.user_id.slice(0, 8) + "…"}</div>
+                  </td>
+                  <td className="p-3 text-xs">{fmtPH(r.created_at)}</td>
+                  <td className="p-3 text-xs">{fmtPH(r.scheduled_for)}</td>
+                  <td className="p-3 text-xs">{fmtPH(r.completed_at)}</td>
+                  <td className="p-3 text-right">
+                    {r.status === "pending" && (
+                      <Button size="sm" variant="outline" onClick={() => cancelDeletion(r.id)}>
+                        Restore
+                      </Button>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <p className="text-xs text-muted-foreground">All times in Philippine Time (GMT+8).</p>
+    </div>
+  );
+};
+
 const AdminDashboard = () => {
   const navigate = useNavigate();
   const [subsRefreshKey, setSubsRefreshKey] = useState(0);
