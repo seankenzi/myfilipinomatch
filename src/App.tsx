@@ -16,6 +16,7 @@ import ErrorBoundary from "@/components/ErrorBoundary";
 import ScrollToTop from "@/components/ScrollToTop";
 import IncomingCallHandler from "@/components/IncomingCallHandler";
 import MessageToastHandler from "@/components/MessageToastHandler";
+import PendingDeletionBanner from "@/components/PendingDeletionBanner";
 
 import CookieConsent from "@/components/CookieConsent";
 import { usePushSubscription } from "@/hooks/usePushSubscription";
