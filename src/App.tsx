@@ -16,6 +16,7 @@ import ErrorBoundary from "@/components/ErrorBoundary";
 import ScrollToTop from "@/components/ScrollToTop";
 import IncomingCallHandler from "@/components/IncomingCallHandler";
 import MessageToastHandler from "@/components/MessageToastHandler";
+import PendingDeletionBanner from "@/components/PendingDeletionBanner";
 
 import CookieConsent from "@/components/CookieConsent";
 import { usePushSubscription } from "@/hooks/usePushSubscription";
@@ -99,6 +100,7 @@ const AppShell = () => {
       <MessageToastHandler />
       
       <div className={`flex flex-col ${isMessagesRoute ? "h-dvh overflow-hidden" : "min-h-screen"}`}>
+        <PendingDeletionBanner />
         <div className={isMessagesRoute ? "flex-1 overflow-hidden" : "flex-1 pb-16 md:pb-0"}>
           <ErrorBoundary>
             <Suspense fallback={<LazyFallback />}>
