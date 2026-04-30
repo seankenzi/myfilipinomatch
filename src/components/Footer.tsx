@@ -1,6 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
 import { ShieldCheck } from "lucide-react";
 import logo from "@/assets/myfilipinomatch-logo.png";
+import studioLogo from "@/assets/9100-web-studio-logo.png";
 
 const Footer = () => {
   const { pathname } = useLocation();
