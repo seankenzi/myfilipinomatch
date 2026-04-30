@@ -7,7 +7,6 @@ Disallow: /messages
 Disallow: /settings
 Disallow: /verification
 Disallow: /admin
-Disallow: /premium
 Disallow: /notifications
 Disallow: /who-liked-me
 Disallow: /onboarding
