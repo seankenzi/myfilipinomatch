@@ -165,6 +165,19 @@ const Footer = () => {
             Made with care for genuine connections between foreigners and Filipino singles.
           </p>
         </div>
+
+        <div className="mt-4 flex items-center justify-center gap-2 text-xs text-muted-foreground">
+          <span>This Website is powered by:</span>
+          <a
+            href="https://9100webstudio.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="9100 Web Studio"
+            className="inline-flex items-center hover:opacity-80 transition-opacity"
+          >
+            <img src={studioLogo} alt="9100 Web Studio" className="h-5 w-auto" />
+          </a>
+        </div>
       </div>
 
       <div className="border-t border-border/50 bg-primary/5 py-3">
