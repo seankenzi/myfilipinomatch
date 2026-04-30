@@ -167,7 +167,7 @@ const Footer = () => {
         </div>
 
         <div className="mt-4 flex items-center justify-center gap-2 text-xs text-muted-foreground">
-          <span className="leading-none">This Website is powered by:</span>
+          <span className="leading-none">This website is powered by:</span>
           <a
             href="https://9100webstudio.ph"
             target="_blank"
