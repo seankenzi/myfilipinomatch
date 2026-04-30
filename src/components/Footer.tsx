@@ -1,6 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
 import { ShieldCheck } from "lucide-react";
 import logo from "@/assets/myfilipinomatch-logo.png";
+import studioLogo from "@/assets/9100-web-studio-logo.png";
 
 const Footer = () => {
   const { pathname } = useLocation();
@@ -163,6 +164,19 @@ const Footer = () => {
           <p className="text-xs text-muted-foreground">
             Made with care for genuine connections between foreigners and Filipino singles.
           </p>
+        </div>
+
+        <div className="mt-4 flex items-center justify-center gap-2 text-xs text-muted-foreground">
+          <span>This Website is powered by:</span>
+          <a
+            href="https://9100webstudio.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="9100 Web Studio"
+            className="inline-flex items-center hover:opacity-80 transition-opacity"
+          >
+            <img src={studioLogo} alt="9100 Web Studio" className="h-5 w-auto" />
+          </a>
         </div>
       </div>
 
