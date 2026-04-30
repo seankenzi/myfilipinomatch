@@ -207,6 +207,7 @@ const ProfileDetail = () => {
       <SEO
         title={profile ? `${profile.full_name}${profile.age ? `, ${profile.age}` : ""} | MyFilipinoMatch` : "Profile | MyFilipinoMatch"}
         description={profile?.bio ? profile.bio.slice(0, 155) : "View this profile on MyFilipinoMatch"}
+        noIndex
       />
       <Navbar />
       <main className="mx-auto max-w-2xl px-4 pb-24 pt-4">
