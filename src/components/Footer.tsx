@@ -175,7 +175,7 @@ const Footer = () => {
             aria-label="9100 Web Studio"
             className="inline-flex items-center leading-none hover:opacity-80 transition-opacity translate-y-[1px]"
           >
-            <img src={studioLogo} alt="9100 Web Studio" className="h-4 w-auto block" />
+            <img src={studioLogo} alt="9100 Web Studio" className="h-3 w-auto block" />
           </a>
         </div>
       </div>
