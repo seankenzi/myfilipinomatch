@@ -309,6 +309,9 @@ const UsersTab = () => {
                         <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => handlePremium(u.id, !u.is_premium)}>
                           {u.is_premium ? "Remove Premium" : "Grant Premium"}
                         </Button>
+                        <Button size="sm" variant="ghost" className="h-7 text-xs text-destructive hover:text-destructive" onClick={() => handleFlag(u.id, u.full_name)}>
+                          <Flag className="h-3 w-3 mr-1" /> Flag
+                        </Button>
                       </div>
                     </td>
                   </tr>
