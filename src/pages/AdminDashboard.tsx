@@ -140,6 +140,36 @@ const UsersTab = () => {
     fetchUsers();
   };
 
+  const handleFlag = async (userId: string, userName: string) => {
+    const reason = window.prompt(`Flag ${userName || "this user"} for admin review. Enter a reason:`);
+    if (!reason || !reason.trim()) return;
+
+    const { data: admins, error: adminsError } = await supabase
+      .from("user_roles")
+      .select("user_id")
+      .eq("role", "admin");
+
+    if (adminsError || !admins || admins.length === 0) {
+      toast({ title: "Could not load admins", description: adminsError?.message, variant: "destructive" });
+      return;
+    }
+
+    const rows = admins.map((a: any) => ({
+      user_id: a.user_id,
+      type: "flagged_user",
+      title: "User manually flagged 🚩",
+      body: reason.trim(),
+      related_user_id: userId,
+    }));
+
+    const { error } = await supabase.from("notifications").insert(rows);
+    if (error) {
+      toast({ title: "Could not flag user", description: error.message, variant: "destructive" });
+      return;
+    }
+    toast({ title: "User flagged 🚩", description: "Visible in the Flagged tab." });
+  };
+
   const handlePremium = async (userId: string, premium: boolean) => {
     const timestamp = new Date().toISOString();
     const periodEnd = premium ? new Date(Date.now() + 365 * 86400000).toISOString() : null;
@@ -278,6 +308,9 @@ const UsersTab = () => {
                         </Button>
                         <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => handlePremium(u.id, !u.is_premium)}>
                           {u.is_premium ? "Remove Premium" : "Grant Premium"}
+                        </Button>
+                        <Button size="sm" variant="ghost" className="h-7 text-xs text-destructive hover:text-destructive" onClick={() => handleFlag(u.id, u.full_name)}>
+                          <Flag className="h-3 w-3 mr-1" /> Flag
                         </Button>
                       </div>
                     </td>
