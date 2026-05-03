@@ -1896,7 +1896,7 @@ const FlaggedUsersTab = () => {
                     <Button size="sm" variant="outline" onClick={() => navigate(`/profile/${flag.related_user_id}`)}>
                       <Eye className="h-3.5 w-3.5 mr-1" /> View
                     </Button>
-                    <Button size="sm" variant="ghost" onClick={() => dismissFlag(flag.id)}>
+                    <Button size="sm" variant="ghost" onClick={() => dismissFlag(flag.id, flag.related_user_id)}>
                       <CheckCircle className="h-3.5 w-3.5 mr-1" /> Dismiss
                     </Button>
                   </div>
