@@ -1824,17 +1824,18 @@ const FlaggedUsersTab = () => {
 
   useEffect(() => { fetchFlags(); }, []);
 
-  const dismissFlag = async (notifId: string) => {
-    const { error } = await supabase
-      .from("notifications")
-      .update({ read: true })
-      .eq("id", notifId);
-    if (error) {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
+  const dismissFlag = async (notifId: string, userId: string | null) => {
+    if (userId) {
+      const { error } = await supabase.rpc("admin_unflag_user", { target_user_id: userId });
+      if (error) {
+        toast({ title: "Error", description: error.message, variant: "destructive" });
+        return;
+      }
     } else {
-      toast({ title: "Flag dismissed" });
-      setFlags(prev => prev.filter(f => f.id !== notifId));
+      await supabase.from("notifications").update({ read: true }).eq("id", notifId);
     }
+    toast({ title: "Flag cleared", description: "User can use Discover and messaging again." });
+    fetchFlags();
   };
 
   if (loading) {
@@ -1895,7 +1896,7 @@ const FlaggedUsersTab = () => {
                     <Button size="sm" variant="outline" onClick={() => navigate(`/profile/${flag.related_user_id}`)}>
                       <Eye className="h-3.5 w-3.5 mr-1" /> View
                     </Button>
-                    <Button size="sm" variant="ghost" onClick={() => dismissFlag(flag.id)}>
+                    <Button size="sm" variant="ghost" onClick={() => dismissFlag(flag.id, flag.related_user_id)}>
                       <CheckCircle className="h-3.5 w-3.5 mr-1" /> Dismiss
                     </Button>
                   </div>

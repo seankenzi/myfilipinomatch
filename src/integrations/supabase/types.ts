@@ -580,6 +580,7 @@ export type Database = {
           id: string
           interests: string[] | null
           international_preference: boolean | null
+          is_flagged: boolean
           is_premium: boolean | null
           is_verified: boolean | null
           language: string | null
@@ -614,6 +615,7 @@ export type Database = {
           id: string
           interests?: string[] | null
           international_preference?: boolean | null
+          is_flagged?: boolean
           is_premium?: boolean | null
           is_verified?: boolean | null
           language?: string | null
@@ -648,6 +650,7 @@ export type Database = {
           id?: string
           interests?: string[] | null
           international_preference?: boolean | null
+          is_flagged?: boolean
           is_premium?: boolean | null
           is_verified?: boolean | null
           language?: string | null
@@ -997,6 +1000,10 @@ export type Database = {
       admin_flag_user: {
         Args: { reason: string; target_user_id: string }
         Returns: number
+      }
+      admin_unflag_user: {
+        Args: { target_user_id: string }
+        Returns: undefined
       }
       browse_profiles: {
         Args: {
