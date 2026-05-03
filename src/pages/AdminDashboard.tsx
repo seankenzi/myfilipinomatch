@@ -2143,7 +2143,7 @@ const AdminDashboard = () => {
           </div>
 
           <Tabs defaultValue="dashboard" className="space-y-6" onValueChange={(v) => { if (v === "subscriptions") setSubsRefreshKey(k => k + 1); }}>
-            <TabsList className="grid w-full grid-cols-12 lg:grid-cols-12 max-w-6xl">
+            <TabsList className="flex flex-wrap w-full max-w-6xl h-auto">
               <TabsTrigger value="dashboard" className="text-xs"><TrendingUp className="h-3.5 w-3.5 mr-1" /> Overview</TabsTrigger>
               <TabsTrigger value="users" className="text-xs"><Users className="h-3.5 w-3.5 mr-1" /> Users</TabsTrigger>
               <TabsTrigger value="flagged" className="text-xs"><Flag className="h-3.5 w-3.5 mr-1" /> Flagged</TabsTrigger>
