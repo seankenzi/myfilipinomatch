@@ -2156,6 +2156,7 @@ const AdminDashboard = () => {
               <TabsTrigger value="video" className="text-xs"><Video className="h-3.5 w-3.5 mr-1" /> Video</TabsTrigger>
               <TabsTrigger value="crashes" className="text-xs"><Bug className="h-3.5 w-3.5 mr-1" /> Crashes</TabsTrigger>
               <TabsTrigger value="deletions" className="text-xs"><UserMinus className="h-3.5 w-3.5 mr-1" /> Deletions</TabsTrigger>
+              <TabsTrigger value="flag-audit" className="text-xs"><History className="h-3.5 w-3.5 mr-1" /> Audit</TabsTrigger>
             </TabsList>
 
             <TabsContent value="dashboard"><DashboardTab /></TabsContent>
