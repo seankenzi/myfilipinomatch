@@ -385,6 +385,33 @@ export type Database = {
         }
         Relationships: []
       }
+      flag_audit_log: {
+        Row: {
+          action: string
+          admin_id: string
+          created_at: string
+          id: string
+          reason: string | null
+          target_user_id: string
+        }
+        Insert: {
+          action: string
+          admin_id: string
+          created_at?: string
+          id?: string
+          reason?: string | null
+          target_user_id: string
+        }
+        Update: {
+          action?: string
+          admin_id?: string
+          created_at?: string
+          id?: string
+          reason?: string | null
+          target_user_id?: string
+        }
+        Relationships: []
+      }
       likes: {
         Row: {
           created_at: string
@@ -1001,10 +1028,12 @@ export type Database = {
         Args: { reason: string; target_user_id: string }
         Returns: number
       }
-      admin_unflag_user: {
-        Args: { target_user_id: string }
-        Returns: undefined
-      }
+      admin_unflag_user:
+        | { Args: { target_user_id: string }; Returns: undefined }
+        | {
+            Args: { reason?: string; target_user_id: string }
+            Returns: undefined
+          }
       browse_profiles: {
         Args: {
           exclude_ids?: string[]
