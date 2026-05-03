@@ -1945,6 +1945,156 @@ const FlaggedUsersTab = () => {
 
 // ─── Main Admin Dashboard ───
 // ─── Deletions Tab ───
+// ─── Flag Audit Log Tab ───
+const FlagAuditTab = () => {
+  const { toast } = useToast();
+  const navigate = useNavigate();
+  const [rows, setRows] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [actionFilter, setActionFilter] = useState<"all" | "flag" | "unflag">("all");
+  const [search, setSearch] = useState("");
+  const [profiles, setProfiles] = useState<Record<string, { full_name: string | null; email: string | null }>>({});
+
+  const load = async () => {
+    setLoading(true);
+    let query = supabase
+      .from("flag_audit_log" as any)
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(500);
+    if (actionFilter !== "all") query = query.eq("action", actionFilter);
+
+    const { data, error } = await query;
+    if (error) {
+      toast({ title: "Error loading audit log", description: error.message, variant: "destructive" });
+      setLoading(false);
+      return;
+    }
+    const list = (data as any[]) || [];
+    setRows(list);
+
+    const ids = Array.from(new Set(list.flatMap((r: any) => [r.admin_id, r.target_user_id]).filter(Boolean)));
+    if (ids.length > 0) {
+      const { data: profs } = await supabase
+        .from("profiles")
+        .select("id, full_name, email")
+        .in("id", ids);
+      const map: Record<string, any> = {};
+      (profs || []).forEach((p: any) => { map[p.id] = { full_name: p.full_name, email: p.email }; });
+      setProfiles(map);
+    }
+    setLoading(false);
+  };
+
+  useEffect(() => { load(); }, [actionFilter]);
+
+  const filtered = rows.filter((r: any) => {
+    if (!search.trim()) return true;
+    const q = search.toLowerCase();
+    const t = profiles[r.target_user_id];
+    const a = profiles[r.admin_id];
+    return (
+      (t?.full_name || "").toLowerCase().includes(q) ||
+      (t?.email || "").toLowerCase().includes(q) ||
+      (a?.full_name || "").toLowerCase().includes(q) ||
+      (a?.email || "").toLowerCase().includes(q) ||
+      (r.reason || "").toLowerCase().includes(q)
+    );
+  });
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <h2 className="text-lg font-semibold flex items-center gap-2">
+          <History className="h-5 w-5 text-primary" /> Flag Audit Log
+        </h2>
+        <div className="flex items-center gap-2 flex-wrap">
+          <Input
+            placeholder="Search admin, user, reason…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="h-9 w-64"
+          />
+          <div className="flex rounded-md border bg-background overflow-hidden text-xs">
+            {(["all", "flag", "unflag"] as const).map((a) => (
+              <button
+                key={a}
+                onClick={() => setActionFilter(a)}
+                className={`px-3 py-1.5 capitalize ${actionFilter === a ? "bg-primary text-primary-foreground" : "hover:bg-muted"}`}
+              >
+                {a}
+              </button>
+            ))}
+          </div>
+          <Button variant="outline" size="sm" onClick={load}>
+            <RefreshCw className="h-3.5 w-3.5 mr-1" /> Refresh
+          </Button>
+        </div>
+      </div>
+
+      {loading ? (
+        <div className="flex justify-center py-20">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+        </div>
+      ) : filtered.length === 0 ? (
+        <div className="text-center py-16 text-muted-foreground">
+          <History className="h-12 w-12 mx-auto mb-3 opacity-30" />
+          <p className="font-medium">No audit entries</p>
+          <p className="text-sm">Flag and unflag actions will appear here.</p>
+        </div>
+      ) : (
+        <div className="rounded-lg border overflow-hidden">
+          <table className="w-full text-sm">
+            <thead className="bg-muted/50 text-xs uppercase text-muted-foreground">
+              <tr>
+                <th className="text-left px-3 py-2">When</th>
+                <th className="text-left px-3 py-2">Action</th>
+                <th className="text-left px-3 py-2">Target user</th>
+                <th className="text-left px-3 py-2">Admin</th>
+                <th className="text-left px-3 py-2">Reason</th>
+                <th className="px-3 py-2"></th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map((r: any) => {
+                const target = profiles[r.target_user_id];
+                const admin = profiles[r.admin_id];
+                return (
+                  <tr key={r.id} className="border-t hover:bg-muted/30">
+                    <td className="px-3 py-2 text-xs whitespace-nowrap text-muted-foreground">
+                      {format(new Date(r.created_at), "MMM d, yyyy hh:mm a")}
+                    </td>
+                    <td className="px-3 py-2">
+                      <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${r.action === "flag" ? "bg-destructive/10 text-destructive" : "bg-emerald-500/10 text-emerald-600"}`}>
+                        {r.action === "flag" ? <Flag className="h-3 w-3" /> : <CheckCircle className="h-3 w-3" />}
+                        {r.action}
+                      </span>
+                    </td>
+                    <td className="px-3 py-2">
+                      <div className="font-medium">{target?.full_name || "Unknown"}</div>
+                      <div className="text-xs text-muted-foreground">{target?.email || r.target_user_id.slice(0, 8)}</div>
+                    </td>
+                    <td className="px-3 py-2">
+                      <div className="font-medium">{admin?.full_name || "Unknown"}</div>
+                      <div className="text-xs text-muted-foreground">{admin?.email || r.admin_id.slice(0, 8)}</div>
+                    </td>
+                    <td className="px-3 py-2 max-w-md text-xs text-muted-foreground">{r.reason || "—"}</td>
+                    <td className="px-3 py-2">
+                      <Button size="sm" variant="ghost" onClick={() => navigate(`/profile/${r.target_user_id}`)}>
+                        <Eye className="h-3.5 w-3.5" />
+                      </Button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+};
+
 const DeletionsTab = () => {
   const [rows, setRows] = useState<any[]>([]);
   const [stats, setStats] = useState({ pending: 0, completed: 0, cancelled: 0 });
