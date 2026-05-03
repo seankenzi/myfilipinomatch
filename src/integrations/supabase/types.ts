@@ -994,6 +994,10 @@ export type Database = {
       }
     }
     Functions: {
+      admin_flag_user: {
+        Args: { reason: string; target_user_id: string }
+        Returns: number
+      }
       browse_profiles: {
         Args: {
           exclude_ids?: string[]

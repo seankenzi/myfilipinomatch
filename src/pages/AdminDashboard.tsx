@@ -144,25 +144,10 @@ const UsersTab = () => {
     const reason = window.prompt(`Flag ${userName || "this user"} for admin review. Enter a reason:`);
     if (!reason || !reason.trim()) return;
 
-    const { data: admins, error: adminsError } = await supabase
-      .from("user_roles")
-      .select("user_id")
-      .eq("role", "admin");
-
-    if (adminsError || !admins || admins.length === 0) {
-      toast({ title: "Could not load admins", description: adminsError?.message, variant: "destructive" });
-      return;
-    }
-
-    const rows = admins.map((a: any) => ({
-      user_id: a.user_id,
-      type: "flagged_user",
-      title: "User manually flagged 🚩",
-      body: reason.trim(),
-      related_user_id: userId,
-    }));
-
-    const { error } = await supabase.from("notifications").insert(rows);
+    const { error } = await supabase.rpc("admin_flag_user", {
+      target_user_id: userId,
+      reason: reason.trim(),
+    });
     if (error) {
       toast({ title: "Could not flag user", description: error.message, variant: "destructive" });
       return;
