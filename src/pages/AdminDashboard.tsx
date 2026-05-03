@@ -2171,6 +2171,7 @@ const AdminDashboard = () => {
             <TabsContent value="video"><VideoUsageTab /></TabsContent>
             <TabsContent value="crashes"><CrashLogsTab /></TabsContent>
             <TabsContent value="deletions"><DeletionsTab /></TabsContent>
+            <TabsContent value="flag-audit"><FlagAuditTab /></TabsContent>
           </Tabs>
         </div>
       </main>
