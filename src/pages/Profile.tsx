@@ -197,7 +197,7 @@ const Profile = () => {
           {/* Photos */}
           <div className="mb-6 rounded-2xl border border-border bg-card p-5 shadow-card">
             <h2 className="mb-3 font-semibold">My Photos</h2>
-            <PhotoUpload photos={profile.photos} onPhotosChange={(photos) => setProfile({ ...profile, photos, avatar_url: photos[0] || "" })} />
+            <PhotoUpload photos={profile.photos} onPhotosChange={(photos) => setProfile({ ...profile, photos, avatar_url: photos[0] || "" })} minPhotos={3} />
           </div>
 
           {/* Quick Stats */}
