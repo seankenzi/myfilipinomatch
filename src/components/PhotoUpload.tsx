@@ -10,6 +10,7 @@ interface PhotoUploadProps {
   photos: string[];
   onPhotosChange: (photos: string[]) => void;
   maxPhotos?: number;
+  minPhotos?: number;
 }
 
 /** Compute a simple hash string from a File's contents for duplicate detection. */
@@ -36,7 +37,7 @@ async function ensureJpg(file: File): Promise<File> {
   return new File([result], newName, { type: "image/jpeg" });
 }
 
-const PhotoUpload = ({ photos, onPhotosChange, maxPhotos = 6 }: PhotoUploadProps) => {
+const PhotoUpload = ({ photos, onPhotosChange, maxPhotos = 6, minPhotos = 0 }: PhotoUploadProps) => {
   const [uploading, setUploading] = useState(false);
   const [knownHashes, setKnownHashes] = useState<Set<string>>(new Set());
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -125,6 +126,15 @@ const PhotoUpload = ({ photos, onPhotosChange, maxPhotos = 6 }: PhotoUploadProps
   };
 
   const removePhoto = async (index: number) => {
+    if (photos.length <= minPhotos) {
+      toast({
+        title: `${minPhotos} photos required`,
+        description: "Add another photo before removing this one.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     const path = photos[index];
     const updated = photos.filter((_, i) => i !== index);
     onPhotosChange(updated);
