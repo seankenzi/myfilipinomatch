@@ -39,6 +39,8 @@ interface Profile {
   relationship_status: string | null;
   created_at: string;
   last_seen: string | null;
+  onboarding_completed?: boolean | null;
+  is_flagged?: boolean | null;
 }
 
 const getFlagEmoji = (country: string) => {
@@ -83,14 +85,19 @@ const ProfileDetail = () => {
       const { data } = await supabase.rpc("get_profile_by_id", { profile_id: id });
       let profileData = data && data.length > 0 ? data[0] : null;
 
-      // Admin fallback: if profile not found via RPC, query directly (admins can see all profiles via RLS)
+      // Admin fallback is still constrained to public-profile eligibility so admins
+      // don't accidentally see incomplete/no-photo/flagged accounts as normal profiles.
       if (!profileData && isAdmin) {
         const { data: directData } = await supabase
           .from("profiles")
-          .select("id, full_name, age, gender, country, city, province, bio, interests, relationship_intent, relocation_intent, photos, avatar_url, is_verified, is_premium, user_type, international_preference, education, language, want_children, height_cm, weight_kg, relationship_status, created_at, last_seen")
+          .select("id, full_name, age, gender, country, city, province, bio, interests, relationship_intent, relocation_intent, photos, avatar_url, is_verified, is_premium, user_type, international_preference, education, language, want_children, height_cm, weight_kg, relationship_status, created_at, last_seen, onboarding_completed, is_flagged")
           .eq("id", id)
           .maybeSingle();
-        profileData = directData;
+
+        const directPhotos = directData?.photos || [];
+        profileData = directData?.onboarding_completed && !directData?.is_flagged && directPhotos.length >= 3
+          ? directData
+          : null;
       }
 
       setProfile(profileData as Profile | null);
