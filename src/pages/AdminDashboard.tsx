@@ -1942,6 +1942,244 @@ const FlaggedUsersTab = () => {
   );
 };
 
+// ─── User Activity Tab ───
+const UserActivityTab = () => {
+  const [search, setSearch] = useState("");
+  const [results, setResults] = useState<any[]>([]);
+  const [searching, setSearching] = useState(false);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [activity, setActivity] = useState<any | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [section, setSection] = useState<string>("overview");
+  const { toast } = useToast();
+
+  const fmt = (iso: string | null) =>
+    iso ? new Date(iso).toLocaleString("en-PH", { timeZone: "Asia/Manila", dateStyle: "medium", timeStyle: "short" }) : "—";
+
+  const runSearch = async () => {
+    if (!search.trim()) return;
+    setSearching(true);
+    const term = `%${search.trim()}%`;
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("id, full_name, email, is_premium, is_verified, is_flagged")
+      .or(`full_name.ilike.${term},email.ilike.${term}`)
+      .limit(20);
+    if (error) toast({ title: "Search failed", description: error.message, variant: "destructive" });
+    setResults(data || []);
+    setSearching(false);
+  };
+
+  const loadActivity = async (userId: string) => {
+    setSelectedId(userId);
+    setLoading(true);
+    setActivity(null);
+    const { data, error } = await supabase.rpc("admin_get_user_activity" as any, { target_user_id: userId });
+    if (error) {
+      toast({ title: "Failed to load activity", description: error.message, variant: "destructive" });
+      setLoading(false);
+      return;
+    }
+    setActivity(data);
+    setSection("overview");
+    setLoading(false);
+  };
+
+  const NameLink = ({ id, name, email }: { id: string; name?: string | null; email?: string | null }) => (
+    <button
+      onClick={() => loadActivity(id)}
+      className="text-primary hover:underline text-left"
+    >
+      {name || email || id.slice(0, 8) + "…"}
+    </button>
+  );
+
+  const renderList = (items: any[], render: (item: any) => React.ReactNode, empty: string) => {
+    if (!items || items.length === 0) {
+      return <p className="text-sm text-muted-foreground p-4">{empty}</p>;
+    }
+    return (
+      <div className="divide-y divide-border">
+        {items.map((it: any) => (
+          <div key={it.id} className="p-3 text-sm">{render(it)}</div>
+        ))}
+      </div>
+    );
+  };
+
+  const sections = activity ? [
+    { key: "overview", label: "Overview" },
+    { key: "likes_sent", label: `Likes Sent (${activity.counts?.likes_sent || 0})` },
+    { key: "likes_received", label: `Likes Received (${activity.counts?.likes_received || 0})` },
+    { key: "matches", label: `Matches (${activity.counts?.matches || 0})` },
+    { key: "messages_sent", label: `Messages (${activity.counts?.messages_sent || 0})` },
+    { key: "dm_sent", label: `Direct Messages (${activity.counts?.dm_sent || 0})` },
+    { key: "video_calls", label: `Video Calls (${activity.counts?.video_calls || 0})` },
+    { key: "reports_filed", label: `Reports Filed (${activity.counts?.reports_filed || 0})` },
+    { key: "reports_received", label: `Reports Received (${activity.counts?.reports_received || 0})` },
+    { key: "flag_history", label: `Flag History (${activity.flag_history?.length || 0})` },
+  ] : [];
+
+  return (
+    <div className="space-y-4">
+      <div className="rounded-xl border border-border bg-card p-4 space-y-3">
+        <p className="text-sm font-medium">Search a user by name or email</p>
+        <div className="flex gap-2">
+          <Input
+            placeholder="e.g. Maria or maria@example.com"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && runSearch()}
+          />
+          <Button onClick={runSearch} disabled={searching}>
+            <Search className="h-4 w-4 mr-1" />Search
+          </Button>
+        </div>
+        {results.length > 0 && (
+          <div className="rounded-md border border-border divide-y divide-border max-h-60 overflow-y-auto">
+            {results.map((r) => (
+              <button
+                key={r.id}
+                onClick={() => { setResults([]); loadActivity(r.id); }}
+                className="w-full text-left p-3 hover:bg-muted/40 flex items-center justify-between text-sm"
+              >
+                <span>
+                  <span className="font-medium">{r.full_name || "(no name)"}</span>
+                  <span className="text-muted-foreground ml-2">{r.email}</span>
+                </span>
+                <span className="flex gap-1">
+                  {r.is_premium && <span className="text-xs px-1.5 py-0.5 rounded bg-accent/15 text-accent">Premium</span>}
+                  {r.is_verified && <span className="text-xs px-1.5 py-0.5 rounded bg-secondary/15 text-secondary">Verified</span>}
+                  {r.is_flagged && <span className="text-xs px-1.5 py-0.5 rounded bg-destructive/15 text-destructive">Flagged</span>}
+                </span>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {loading && (
+        <div className="flex justify-center py-12">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+        </div>
+      )}
+
+      {activity && !loading && (
+        <div className="rounded-xl border border-border bg-card overflow-hidden">
+          <div className="p-4 border-b border-border bg-muted/30">
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <div>
+                <p className="font-semibold text-lg">{activity.profile?.full_name || "(no name)"}</p>
+                <p className="text-xs text-muted-foreground">{activity.profile?.email} · {activity.profile?.country || "—"}{activity.profile?.city ? `, ${activity.profile.city}` : ""}</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Joined {fmt(activity.profile?.created_at)} · Last seen {fmt(activity.profile?.last_seen)}
+                </p>
+              </div>
+              <div className="flex gap-1.5 text-xs">
+                {activity.profile?.is_premium && <span className="px-2 py-0.5 rounded-full bg-accent/15 text-accent">Premium</span>}
+                {activity.profile?.is_verified && <span className="px-2 py-0.5 rounded-full bg-secondary/15 text-secondary">Verified</span>}
+                {activity.profile?.is_flagged && <span className="px-2 py-0.5 rounded-full bg-destructive/15 text-destructive">Flagged</span>}
+              </div>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap gap-1 p-2 border-b border-border bg-muted/10">
+            {sections.map((s) => (
+              <button
+                key={s.key}
+                onClick={() => setSection(s.key)}
+                className={`text-xs px-3 py-1.5 rounded-md transition-colors ${
+                  section === s.key ? "bg-primary text-primary-foreground" : "hover:bg-muted"
+                }`}
+              >
+                {s.label}
+              </button>
+            ))}
+          </div>
+
+          <div className="max-h-[600px] overflow-y-auto">
+            {section === "overview" && (
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 p-4">
+                {Object.entries(activity.counts || {}).map(([k, v]) => (
+                  <div key={k} className="rounded-lg border border-border p-3">
+                    <p className="text-xs text-muted-foreground capitalize">{k.replace(/_/g, " ")}</p>
+                    <p className="text-2xl font-bold text-primary">{String(v)}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+            {section === "likes_sent" && renderList(activity.likes_sent, (l) => (
+              <div className="flex justify-between"><NameLink id={l.other_user_id} name={l.other_user_name} email={l.other_user_email} /><span className="text-xs text-muted-foreground">{fmt(l.created_at)}</span></div>
+            ), "No likes sent.")}
+            {section === "likes_received" && renderList(activity.likes_received, (l) => (
+              <div className="flex justify-between"><NameLink id={l.other_user_id} name={l.other_user_name} email={l.other_user_email} /><span className="text-xs text-muted-foreground">{fmt(l.created_at)}</span></div>
+            ), "No likes received.")}
+            {section === "matches" && renderList(activity.matches, (m) => (
+              <div className="flex justify-between"><NameLink id={m.other_user_id} name={m.other_user_name} email={m.other_user_email} /><span className="text-xs text-muted-foreground">{fmt(m.created_at)}</span></div>
+            ), "No matches.")}
+            {section === "messages_sent" && renderList(activity.messages_sent, (m) => (
+              <div className="space-y-1">
+                <div className="flex justify-between text-xs">
+                  <span>To <NameLink id={m.recipient_id} name={m.recipient_name} email={m.recipient_email} /></span>
+                  <span className="text-muted-foreground">{fmt(m.created_at)}</span>
+                </div>
+                <p className="text-sm bg-muted/30 rounded px-2 py-1 whitespace-pre-wrap break-words">{m.content}</p>
+              </div>
+            ), "No messages sent.")}
+            {section === "dm_sent" && renderList(activity.dm_sent, (m) => (
+              <div className="space-y-1">
+                <div className="flex justify-between text-xs">
+                  <span>To <NameLink id={m.recipient_id} name={m.recipient_name} email={m.recipient_email} /></span>
+                  <span className="text-muted-foreground">{fmt(m.created_at)}</span>
+                </div>
+                <p className="text-sm bg-muted/30 rounded px-2 py-1 whitespace-pre-wrap break-words">{m.content}</p>
+              </div>
+            ), "No direct messages sent.")}
+            {section === "video_calls" && renderList(activity.video_calls, (v) => (
+              <div className="flex justify-between text-xs">
+                <span>With {v.other_user_id ? <NameLink id={v.other_user_id} name={v.other_user_name} email={v.other_user_email} /> : "—"}</span>
+                <span className="text-muted-foreground">{fmt(v.started_at)} · {v.duration_seconds ? `${Math.round(v.duration_seconds / 60)} min` : "no duration"}</span>
+              </div>
+            ), "No video calls.")}
+            {section === "reports_filed" && renderList(activity.reports_filed, (r) => (
+              <div className="space-y-1">
+                <div className="flex justify-between text-xs">
+                  <span>Against <NameLink id={r.other_user_id} name={r.other_user_name} email={r.other_user_email} /> · <span className="font-medium">{r.reason}</span> · {r.status}</span>
+                  <span className="text-muted-foreground">{fmt(r.created_at)}</span>
+                </div>
+                {r.details && <p className="text-sm bg-muted/30 rounded px-2 py-1">{r.details}</p>}
+              </div>
+            ), "No reports filed.")}
+            {section === "reports_received" && renderList(activity.reports_received, (r) => (
+              <div className="space-y-1">
+                <div className="flex justify-between text-xs">
+                  <span>By <NameLink id={r.other_user_id} name={r.other_user_name} email={r.other_user_email} /> · <span className="font-medium">{r.reason}</span> · {r.status}</span>
+                  <span className="text-muted-foreground">{fmt(r.created_at)}</span>
+                </div>
+                {r.details && <p className="text-sm bg-muted/30 rounded px-2 py-1">{r.details}</p>}
+              </div>
+            ), "No reports received.")}
+            {section === "flag_history" && renderList(activity.flag_history, (f) => (
+              <div className="flex justify-between text-xs">
+                <span>
+                  <span className={`font-medium ${f.action === "flag" ? "text-destructive" : "text-emerald-600"}`}>{f.action.toUpperCase()}</span>
+                  {" by "}<NameLink id={f.admin_id} name={f.admin_name} email={f.admin_email} />
+                  {f.reason && <span className="text-muted-foreground"> · {f.reason}</span>}
+                </span>
+                <span className="text-muted-foreground">{fmt(f.created_at)}</span>
+              </div>
+            ), "No flag history.")}
+          </div>
+        </div>
+      )}
+
+      {!activity && !loading && !searching && (
+        <p className="text-sm text-muted-foreground text-center py-8">Search for a user above to see their activity.</p>
+      )}
+    </div>
+  );
+};
+
 
 // ─── Main Admin Dashboard ───
 // ─── Deletions Tab ───
@@ -2296,6 +2534,7 @@ const AdminDashboard = () => {
             <TabsList className="flex flex-wrap w-full max-w-6xl h-auto">
               <TabsTrigger value="dashboard" className="text-xs"><TrendingUp className="h-3.5 w-3.5 mr-1" /> Overview</TabsTrigger>
               <TabsTrigger value="users" className="text-xs"><Users className="h-3.5 w-3.5 mr-1" /> Users</TabsTrigger>
+              <TabsTrigger value="activity" className="text-xs"><Activity className="h-3.5 w-3.5 mr-1" /> Activity</TabsTrigger>
               <TabsTrigger value="flagged" className="text-xs"><Flag className="h-3.5 w-3.5 mr-1" /> Flagged</TabsTrigger>
               <TabsTrigger value="analytics" className="text-xs"><Activity className="h-3.5 w-3.5 mr-1" /> Analytics</TabsTrigger>
               <TabsTrigger value="moderation" className="text-xs"><Shield className="h-3.5 w-3.5 mr-1" /> Moderation</TabsTrigger>
@@ -2311,6 +2550,7 @@ const AdminDashboard = () => {
 
             <TabsContent value="dashboard"><DashboardTab /></TabsContent>
             <TabsContent value="users"><UsersTab /></TabsContent>
+            <TabsContent value="activity"><UserActivityTab /></TabsContent>
             <TabsContent value="flagged"><FlaggedUsersTab /></TabsContent>
             <TabsContent value="analytics"><AnalyticsTab /></TabsContent>
             <TabsContent value="moderation"><ModerationTab /></TabsContent>
