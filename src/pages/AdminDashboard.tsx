@@ -2243,7 +2243,7 @@ const UserActivityTab = () => {
                         {a.activity_type.replace("_", " ")}
                       </span>
                       <button
-                        onClick={() => loadActivity(a.actor_id)}
+                        onClick={() => navigate(`/profile/${a.actor_id}`)}
                         className="text-primary hover:underline font-medium"
                       >
                         {a.actor_name || a.actor_email || a.actor_id?.slice(0, 8) + "…"}
