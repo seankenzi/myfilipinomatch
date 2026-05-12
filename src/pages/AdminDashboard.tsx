@@ -2106,7 +2106,7 @@ const DeletionsTab = () => {
     setLoading(true);
     let query = supabase
       .from("account_deletions" as any)
-      .select("id, user_id, status, created_at, scheduled_for, completed_at")
+      .select("id, user_id, status, created_at, scheduled_for, completed_at, user_email, user_full_name")
       .order("created_at", { ascending: false })
       .limit(200);
     if (statusFilter !== "all") query = query.eq("status", statusFilter);
