@@ -2296,6 +2296,7 @@ const AdminDashboard = () => {
             <TabsList className="flex flex-wrap w-full max-w-6xl h-auto">
               <TabsTrigger value="dashboard" className="text-xs"><TrendingUp className="h-3.5 w-3.5 mr-1" /> Overview</TabsTrigger>
               <TabsTrigger value="users" className="text-xs"><Users className="h-3.5 w-3.5 mr-1" /> Users</TabsTrigger>
+              <TabsTrigger value="activity" className="text-xs"><Activity className="h-3.5 w-3.5 mr-1" /> Activity</TabsTrigger>
               <TabsTrigger value="flagged" className="text-xs"><Flag className="h-3.5 w-3.5 mr-1" /> Flagged</TabsTrigger>
               <TabsTrigger value="analytics" className="text-xs"><Activity className="h-3.5 w-3.5 mr-1" /> Analytics</TabsTrigger>
               <TabsTrigger value="moderation" className="text-xs"><Shield className="h-3.5 w-3.5 mr-1" /> Moderation</TabsTrigger>
@@ -2311,6 +2312,7 @@ const AdminDashboard = () => {
 
             <TabsContent value="dashboard"><DashboardTab /></TabsContent>
             <TabsContent value="users"><UsersTab /></TabsContent>
+            <TabsContent value="activity"><UserActivityTab /></TabsContent>
             <TabsContent value="flagged"><FlaggedUsersTab /></TabsContent>
             <TabsContent value="analytics"><AnalyticsTab /></TabsContent>
             <TabsContent value="moderation"><ModerationTab /></TabsContent>
