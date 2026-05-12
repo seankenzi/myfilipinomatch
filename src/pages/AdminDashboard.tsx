@@ -1944,6 +1944,7 @@ const FlaggedUsersTab = () => {
 
 // ─── User Activity Tab ───
 const UserActivityTab = () => {
+  const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [results, setResults] = useState<any[]>([]);
   const [searching, setSearching] = useState(false);
@@ -2003,7 +2004,7 @@ const UserActivityTab = () => {
 
   const NameLink = ({ id, name, email }: { id: string; name?: string | null; email?: string | null }) => (
     <button
-      onClick={() => loadActivity(id)}
+      onClick={() => navigate(`/profile/${id}`)}
       className="text-primary hover:underline text-left"
     >
       {name || email || id.slice(0, 8) + "…"}
@@ -2056,7 +2057,7 @@ const UserActivityTab = () => {
             {results.map((r) => (
               <button
                 key={r.id}
-                onClick={() => { setResults([]); loadActivity(r.id); }}
+                onClick={() => { setResults([]); navigate(`/profile/${r.id}`); }}
                 className="w-full text-left p-3 hover:bg-muted/40 flex items-center justify-between text-sm"
               >
                 <span>
@@ -2242,7 +2243,7 @@ const UserActivityTab = () => {
                         {a.activity_type.replace("_", " ")}
                       </span>
                       <button
-                        onClick={() => loadActivity(a.actor_id)}
+                        onClick={() => navigate(`/profile/${a.actor_id}`)}
                         className="text-primary hover:underline font-medium"
                       >
                         {a.actor_name || a.actor_email || a.actor_id?.slice(0, 8) + "…"}
@@ -2250,7 +2251,7 @@ const UserActivityTab = () => {
                       <span className="text-muted-foreground"> {verb[a.activity_type]} </span>
                       {a.target_id ? (
                         <button
-                          onClick={() => loadActivity(a.target_id)}
+                          onClick={() => navigate(`/profile/${a.target_id}`)}
                           className="text-primary hover:underline font-medium"
                         >
                           {a.target_name || a.target_email || a.target_id.slice(0, 8) + "…"}
