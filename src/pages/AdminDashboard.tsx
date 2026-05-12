@@ -1951,10 +1951,26 @@ const UserActivityTab = () => {
   const [activity, setActivity] = useState<any | null>(null);
   const [loading, setLoading] = useState(false);
   const [section, setSection] = useState<string>("overview");
+  const [feed, setFeed] = useState<any[]>([]);
+  const [feedLoading, setFeedLoading] = useState(true);
+  const [feedFilter, setFeedFilter] = useState<string>("all");
   const { toast } = useToast();
 
   const fmt = (iso: string | null) =>
     iso ? new Date(iso).toLocaleString("en-PH", { timeZone: "Asia/Manila", dateStyle: "medium", timeStyle: "short" }) : "—";
+
+  const loadFeed = async (type: string) => {
+    setFeedLoading(true);
+    const { data, error } = await supabase.rpc("admin_get_recent_activity" as any, {
+      filter_type: type === "all" ? null : type,
+      result_limit: 150,
+    });
+    if (error) toast({ title: "Failed to load activity", description: error.message, variant: "destructive" });
+    setFeed((data as any[]) || []);
+    setFeedLoading(false);
+  };
+
+  useEffect(() => { loadFeed(feedFilter); }, [feedFilter]);
 
   const runSearch = async () => {
     if (!search.trim()) return;
@@ -2173,8 +2189,88 @@ const UserActivityTab = () => {
         </div>
       )}
 
-      {!activity && !loading && !searching && (
-        <p className="text-sm text-muted-foreground text-center py-8">Search for a user above to see their activity.</p>
+      {!activity && !loading && (
+        <div className="rounded-xl border border-border bg-card overflow-hidden">
+          <div className="flex items-center justify-between gap-2 p-3 border-b border-border bg-muted/30 flex-wrap">
+            <p className="text-sm font-semibold">Recent Activity (all users)</p>
+            <div className="flex items-center gap-2 flex-wrap">
+              <select
+                className="rounded-md border border-border bg-background px-2 py-1 text-xs"
+                value={feedFilter}
+                onChange={(e) => setFeedFilter(e.target.value)}
+              >
+                <option value="all">All types</option>
+                <option value="like">Likes</option>
+                <option value="match">Matches</option>
+                <option value="message">Messages</option>
+                <option value="dm">Direct Messages</option>
+                <option value="video_call">Video Calls</option>
+                <option value="report">Reports</option>
+              </select>
+              <Button size="sm" variant="outline" onClick={() => loadFeed(feedFilter)} disabled={feedLoading}>
+                <RefreshCw className={`h-3.5 w-3.5 ${feedLoading ? "animate-spin" : ""}`} />
+              </Button>
+            </div>
+          </div>
+          <div className="max-h-[600px] overflow-y-auto divide-y divide-border">
+            {feedLoading ? (
+              <div className="p-8 text-center text-sm text-muted-foreground">Loading…</div>
+            ) : feed.length === 0 ? (
+              <div className="p-8 text-center text-sm text-muted-foreground">No activity yet.</div>
+            ) : feed.map((a) => {
+              const typeColor: Record<string, string> = {
+                like: "bg-pink-500/15 text-pink-600",
+                match: "bg-primary/15 text-primary",
+                message: "bg-secondary/15 text-secondary",
+                dm: "bg-accent/15 text-accent",
+                video_call: "bg-violet-500/15 text-violet-600",
+                report: "bg-destructive/15 text-destructive",
+              };
+              const verb: Record<string, string> = {
+                like: "liked",
+                match: "matched with",
+                message: "messaged",
+                dm: "sent a DM to",
+                video_call: "called",
+                report: "reported",
+              };
+              return (
+                <div key={`${a.activity_type}-${a.activity_id}`} className="p-3 text-sm">
+                  <div className="flex items-start justify-between gap-2 flex-wrap">
+                    <div className="flex-1 min-w-0">
+                      <span className={`inline-block text-[10px] px-1.5 py-0.5 rounded mr-2 font-medium uppercase ${typeColor[a.activity_type] || "bg-muted"}`}>
+                        {a.activity_type.replace("_", " ")}
+                      </span>
+                      <button
+                        onClick={() => loadActivity(a.actor_id)}
+                        className="text-primary hover:underline font-medium"
+                      >
+                        {a.actor_name || a.actor_email || a.actor_id?.slice(0, 8) + "…"}
+                      </button>
+                      <span className="text-muted-foreground"> {verb[a.activity_type]} </span>
+                      {a.target_id ? (
+                        <button
+                          onClick={() => loadActivity(a.target_id)}
+                          className="text-primary hover:underline font-medium"
+                        >
+                          {a.target_name || a.target_email || a.target_id.slice(0, 8) + "…"}
+                        </button>
+                      ) : <span className="text-muted-foreground italic">unknown</span>}
+                      {a.meta?.reason && <span className="text-muted-foreground"> · {a.meta.reason}</span>}
+                      {a.meta?.duration_seconds != null && (
+                        <span className="text-muted-foreground"> · {Math.round(a.meta.duration_seconds / 60)} min</span>
+                      )}
+                    </div>
+                    <span className="text-xs text-muted-foreground whitespace-nowrap">{fmt(a.created_at)}</span>
+                  </div>
+                  {a.content && (
+                    <p className="mt-1 text-sm bg-muted/30 rounded px-2 py-1 whitespace-pre-wrap break-words">{a.content}</p>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
       )}
     </div>
   );
