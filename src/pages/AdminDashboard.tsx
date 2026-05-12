@@ -2251,7 +2251,7 @@ const UserActivityTab = () => {
                       <span className="text-muted-foreground"> {verb[a.activity_type]} </span>
                       {a.target_id ? (
                         <button
-                          onClick={() => loadActivity(a.target_id)}
+                          onClick={() => navigate(`/profile/${a.target_id}`)}
                           className="text-primary hover:underline font-medium"
                         >
                           {a.target_name || a.target_email || a.target_id.slice(0, 8) + "…"}
