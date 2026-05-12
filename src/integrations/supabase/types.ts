@@ -1034,6 +1034,10 @@ export type Database = {
         Args: { reason: string; target_user_id: string }
         Returns: number
       }
+      admin_get_user_activity: {
+        Args: { target_user_id: string }
+        Returns: Json
+      }
       admin_unflag_user:
         | { Args: { target_user_id: string }; Returns: undefined }
         | {
