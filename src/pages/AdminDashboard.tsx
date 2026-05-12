@@ -2133,8 +2133,8 @@ const DeletionsTab = () => {
 
     setRows((deletions || []).map((d: any) => ({
       ...d,
-      email: profileMap[d.user_id]?.email || null,
-      full_name: profileMap[d.user_id]?.full_name || null,
+      email: profileMap[d.user_id]?.email || d.user_email || null,
+      full_name: profileMap[d.user_id]?.full_name || d.user_full_name || null,
     })));
     setStats({
       pending: pendingC.count || 0,
