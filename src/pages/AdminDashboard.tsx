@@ -2057,7 +2057,7 @@ const UserActivityTab = () => {
             {results.map((r) => (
               <button
                 key={r.id}
-                onClick={() => { setResults([]); loadActivity(r.id); }}
+                onClick={() => { setResults([]); navigate(`/profile/${r.id}`); }}
                 className="w-full text-left p-3 hover:bg-muted/40 flex items-center justify-between text-sm"
               >
                 <span>
