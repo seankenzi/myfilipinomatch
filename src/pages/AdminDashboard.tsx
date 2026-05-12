@@ -1951,10 +1951,26 @@ const UserActivityTab = () => {
   const [activity, setActivity] = useState<any | null>(null);
   const [loading, setLoading] = useState(false);
   const [section, setSection] = useState<string>("overview");
+  const [feed, setFeed] = useState<any[]>([]);
+  const [feedLoading, setFeedLoading] = useState(true);
+  const [feedFilter, setFeedFilter] = useState<string>("all");
   const { toast } = useToast();
 
   const fmt = (iso: string | null) =>
     iso ? new Date(iso).toLocaleString("en-PH", { timeZone: "Asia/Manila", dateStyle: "medium", timeStyle: "short" }) : "—";
+
+  const loadFeed = async (type: string) => {
+    setFeedLoading(true);
+    const { data, error } = await supabase.rpc("admin_get_recent_activity" as any, {
+      filter_type: type === "all" ? null : type,
+      result_limit: 150,
+    });
+    if (error) toast({ title: "Failed to load activity", description: error.message, variant: "destructive" });
+    setFeed((data as any[]) || []);
+    setFeedLoading(false);
+  };
+
+  useEffect(() => { loadFeed(feedFilter); }, [feedFilter]);
 
   const runSearch = async () => {
     if (!search.trim()) return;
