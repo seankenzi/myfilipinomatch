@@ -2004,7 +2004,7 @@ const UserActivityTab = () => {
 
   const NameLink = ({ id, name, email }: { id: string; name?: string | null; email?: string | null }) => (
     <button
-      onClick={() => loadActivity(id)}
+      onClick={() => navigate(`/profile/${id}`)}
       className="text-primary hover:underline text-left"
     >
       {name || email || id.slice(0, 8) + "…"}
