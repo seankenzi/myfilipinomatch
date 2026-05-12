@@ -1034,6 +1034,22 @@ export type Database = {
         Args: { reason: string; target_user_id: string }
         Returns: number
       }
+      admin_get_recent_activity: {
+        Args: { filter_type?: string; result_limit?: number }
+        Returns: {
+          activity_id: string
+          activity_type: string
+          actor_email: string
+          actor_id: string
+          actor_name: string
+          content: string
+          created_at: string
+          meta: Json
+          target_email: string
+          target_id: string
+          target_name: string
+        }[]
+      }
       admin_get_user_activity: {
         Args: { target_user_id: string }
         Returns: Json
