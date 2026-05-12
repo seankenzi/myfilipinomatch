@@ -1944,6 +1944,7 @@ const FlaggedUsersTab = () => {
 
 // ─── User Activity Tab ───
 const UserActivityTab = () => {
+  const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [results, setResults] = useState<any[]>([]);
   const [searching, setSearching] = useState(false);
