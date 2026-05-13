@@ -237,7 +237,7 @@ const Landing = () => {
                   <img
                     key={c.code}
                     src={`https://flagcdn.com/${c.code}.svg`}
-                    alt={c.title}
+                    alt={`Flag of ${c.title}`}
                     title={c.title}
                     width={24}
                     height={18}
@@ -451,7 +451,7 @@ const Landing = () => {
                   <div className="flex items-center gap-3 mb-4">
                     <img
                       src={t.photo}
-                      alt={t.name}
+                      alt={`Verified MyFilipinoMatch member ${t.name}`}
                       className={`h-12 w-12 rounded-full object-cover ring-2 ${t.ring}`}
                       loading="lazy"
                       width={48}

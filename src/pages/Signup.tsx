@@ -172,7 +172,7 @@ const Signup = () => {
         {/* Logo & Header */}
         <div className="mb-6 md:mb-8 text-center">
           <Link to="/" className="inline-flex items-center gap-2 mb-4">
-            <img src={logo} alt="MyFilipinoMatch" className="h-10 w-10" />
+            <img src={logo} alt="MyFilipinoMatch logo" className="h-10 w-10" />
             <span className="text-2xl font-display font-bold">MyFilipinoMatch</span>
           </Link>
           <h1 className="text-2xl font-bold font-display">Find Your Filipino Match</h1>

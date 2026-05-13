@@ -27,7 +27,7 @@ const NotFound = () => {
         <div className="w-full max-w-2xl">
           {/* Branding */}
           <div className="flex items-center justify-center gap-2 mb-8">
-            <img src={logo} alt="MyFilipinoMatch" className="h-10 w-10" />
+            <img src={logo} alt="MyFilipinoMatch logo" className="h-10 w-10" />
             <span
               className="text-2xl font-bold text-foreground"
               style={{ fontFamily: "var(--font-display)" }}
