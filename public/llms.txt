@@ -1,0 +1,17 @@
+# MyFilipinoMatch
+
+> MyFilipinoMatch is a dating platform connecting foreigners with Filipino singles for serious, long-term relationships. Verified profiles, secure messaging, video calls, and trust-and-safety tools help members build genuine connections.
+
+## Pages
+
+- [Home](/): Overview of MyFilipinoMatch and how it works.
+- [About](/about): Our mission, story, and approach to meaningful matchmaking.
+- [Premium](/premium): Subscription plans, pricing, and premium benefits.
+- [Safety](/safety): Trust and safety guidelines for members.
+- [Support](/support): Help center and contact options.
+- [Blog](/blog): Dating advice, success stories, and cultural insights.
+- [Privacy](/privacy): Privacy policy and data handling practices.
+- [Terms](/terms): Terms of service.
+- [Cookie Policy](/cookie-policy): How we use cookies and tracking.
+- [Login](/login): Sign in to your account.
+- [Sign Up](/signup): Create a new MyFilipinoMatch account.
