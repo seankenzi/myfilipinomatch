@@ -79,16 +79,18 @@ function NotificationItem({
             onClick={() => onRead(notification.id)}
             className="p-1 rounded hover:bg-muted text-muted-foreground hover:text-foreground"
             title="Mark as read"
+            aria-label="Mark notification as read"
           >
-            <Check className="h-3.5 w-3.5" />
+            <Check className="h-3.5 w-3.5" aria-hidden="true" />
           </button>
         )}
         <button
           onClick={() => onDelete(notification.id)}
           className="p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive"
           title="Delete"
+          aria-label="Delete notification"
         >
-          <Trash2 className="h-3.5 w-3.5" />
+          <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
         </button>
       </div>
     </div>
@@ -102,8 +104,8 @@ export default function NotificationBell() {
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button variant="ghost" size="sm" className="relative">
-          <Bell className="h-5 w-5" />
+        <Button variant="ghost" size="sm" className="relative" aria-label={unreadCount > 0 ? `Notifications, ${unreadCount} unread` : "Notifications"}>
+          <Bell className="h-5 w-5" aria-hidden="true" />
           {unreadCount > 0 && (
             <span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground">
               {unreadCount > 99 ? "99+" : unreadCount}

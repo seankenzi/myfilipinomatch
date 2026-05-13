@@ -82,7 +82,7 @@ const Login = () => {
       <div className="w-full max-w-md animate-scale-in">
         <div className="mb-8 text-center">
           <Link to="/" className="inline-flex items-center gap-2 mb-6">
-            <img src={logo} alt="MyFilipinoMatch" className="h-10 w-10" />
+            <img src={logo} alt="MyFilipinoMatch logo" className="h-10 w-10" />
             <span className="text-2xl font-display font-bold">MyFilipinoMatch</span>
           </Link>
           <h1 className="text-2xl font-bold">Welcome back</h1>
