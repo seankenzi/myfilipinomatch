@@ -222,6 +222,14 @@ const Onboarding = () => {
         source: getSignupSource(),
         metadata: { user_type: userType, country: userType === "foreigner" ? country : "Philippines" },
       });
+
+      // Notify existing members whose preferences match this new signup (1:1, throttled)
+      void supabase.functions.invoke("notify-new-member-suggestions", {
+        body: { newUserId: user.id },
+      }).catch((err) => {
+        console.warn("notify-new-member-suggestions failed (non-blocking)", err);
+      });
+
       toast({ title: "Profile complete! 🎉", description: "Welcome to MyFilipinoMatch." });
       navigate("/discover");
     } catch (err: any) {
