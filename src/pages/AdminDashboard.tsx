@@ -210,6 +210,32 @@ const UsersTab = () => {
     fetchUsers();
   };
 
+  const handleDelete = async (userId: string, userName: string, userEmail: string) => {
+    const label = userName || userEmail || "this user";
+    const first = window.confirm(
+      `⚠️ Permanently delete ${label}?\n\nThis removes their profile, photos, matches, messages, likes, subscriptions and auth account. This cannot be undone.`
+    );
+    if (!first) return;
+    const confirmText = window.prompt(`Type DELETE to confirm permanent deletion of ${label}:`);
+    if (confirmText !== "DELETE") {
+      toast({ title: "Deletion cancelled" });
+      return;
+    }
+    const { data, error } = await supabase.functions.invoke("admin-delete-user", {
+      body: { user_id: userId },
+    });
+    if (error || (data as any)?.error) {
+      toast({
+        title: "Could not delete user",
+        description: error?.message || (data as any)?.error || "Unknown error",
+        variant: "destructive",
+      });
+      return;
+    }
+    toast({ title: "User deleted 🗑️", description: `${label} has been permanently removed.` });
+    fetchUsers();
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex flex-col sm:flex-row gap-2">
@@ -296,6 +322,9 @@ const UsersTab = () => {
                         </Button>
                         <Button size="sm" variant="ghost" className="h-7 text-xs text-destructive hover:text-destructive" onClick={() => handleFlag(u.id, u.full_name)}>
                           <Flag className="h-3 w-3 mr-1" /> Flag
+                        </Button>
+                        <Button size="sm" variant="ghost" className="h-7 text-xs text-destructive hover:text-destructive" onClick={() => handleDelete(u.id, u.full_name, u.email)}>
+                          <Trash2 className="h-3 w-3 mr-1" /> Delete
                         </Button>
                       </div>
                     </td>
