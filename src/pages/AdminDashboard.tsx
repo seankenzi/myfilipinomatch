@@ -9,6 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
@@ -210,20 +211,22 @@ const UsersTab = () => {
     fetchUsers();
   };
 
-  const handleDelete = async (userId: string, userName: string, userEmail: string) => {
-    const label = userName || userEmail || "this user";
-    const first = window.confirm(
-      `⚠️ Permanently delete ${label}?\n\nThis removes their profile, photos, matches, messages, likes, subscriptions and auth account. This cannot be undone.`
-    );
-    if (!first) return;
-    const confirmText = window.prompt(`Type DELETE to confirm permanent deletion of ${label}:`);
-    if (confirmText !== "DELETE") {
-      toast({ title: "Deletion cancelled" });
-      return;
-    }
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; label: string } | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState("");
+  const [deleting, setDeleting] = useState(false);
+
+  const openDelete = (userId: string, userName: string, userEmail: string) => {
+    setDeleteConfirm("");
+    setDeleteTarget({ id: userId, label: userName || userEmail || "this user" });
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
     const { data, error } = await supabase.functions.invoke("admin-delete-user", {
-      body: { user_id: userId },
+      body: { user_id: deleteTarget.id },
     });
+    setDeleting(false);
     if (error || (data as any)?.error) {
       toast({
         title: "Could not delete user",
@@ -232,7 +235,8 @@ const UsersTab = () => {
       });
       return;
     }
-    toast({ title: "User deleted 🗑️", description: `${label} has been permanently removed.` });
+    toast({ title: "User deleted 🗑️", description: `${deleteTarget.label} has been permanently removed.` });
+    setDeleteTarget(null);
     fetchUsers();
   };
 
@@ -323,7 +327,7 @@ const UsersTab = () => {
                         <Button size="sm" variant="ghost" className="h-7 text-xs text-destructive hover:text-destructive" onClick={() => handleFlag(u.id, u.full_name)}>
                           <Flag className="h-3 w-3 mr-1" /> Flag
                         </Button>
-                        <Button size="sm" variant="ghost" className="h-7 text-xs text-destructive hover:text-destructive" onClick={() => handleDelete(u.id, u.full_name, u.email)}>
+                        <Button size="sm" variant="ghost" className="h-7 text-xs text-destructive hover:text-destructive" onClick={() => openDelete(u.id, u.full_name, u.email)}>
                           <Trash2 className="h-3 w-3 mr-1" /> Delete
                         </Button>
                       </div>
@@ -338,6 +342,35 @@ const UsersTab = () => {
           )}
         </div>
       )}
+
+      <AlertDialog open={!!deleteTarget} onOpenChange={(o) => !o && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Permanently delete {deleteTarget?.label}?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This removes their profile, photos, matches, messages, likes, subscriptions and auth account. This cannot be undone.
+              <br /><br />
+              Type <strong>DELETE</strong> below to confirm.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <Input
+            value={deleteConfirm}
+            onChange={(e) => setDeleteConfirm(e.target.value)}
+            placeholder="DELETE"
+            autoFocus
+          />
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={deleteConfirm !== "DELETE" || deleting}
+              onClick={(e) => { e.preventDefault(); confirmDelete(); }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleting ? "Deleting…" : "Delete user"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
