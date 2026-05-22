@@ -323,6 +323,9 @@ const UsersTab = () => {
                         <Button size="sm" variant="ghost" className="h-7 text-xs text-destructive hover:text-destructive" onClick={() => handleFlag(u.id, u.full_name)}>
                           <Flag className="h-3 w-3 mr-1" /> Flag
                         </Button>
+                        <Button size="sm" variant="ghost" className="h-7 text-xs text-destructive hover:text-destructive" onClick={() => handleDelete(u.id, u.full_name, u.email)}>
+                          <Trash2 className="h-3 w-3 mr-1" /> Delete
+                        </Button>
                       </div>
                     </td>
                   </tr>
