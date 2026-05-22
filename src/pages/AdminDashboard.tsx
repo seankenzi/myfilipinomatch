@@ -212,11 +212,9 @@ const UsersTab = () => {
   };
 
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; label: string } | null>(null);
-  const [deleteConfirm, setDeleteConfirm] = useState("");
   const [deleting, setDeleting] = useState(false);
 
   const openDelete = (userId: string, userName: string, userEmail: string) => {
-    setDeleteConfirm("");
     setDeleteTarget({ id: userId, label: userName || userEmail || "this user" });
   };
 
@@ -349,20 +347,12 @@ const UsersTab = () => {
             <AlertDialogTitle>Permanently delete {deleteTarget?.label}?</AlertDialogTitle>
             <AlertDialogDescription>
               This removes their profile, photos, matches, messages, likes, subscriptions and auth account. This cannot be undone.
-              <br /><br />
-              Type <strong>DELETE</strong> below to confirm.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <Input
-            value={deleteConfirm}
-            onChange={(e) => setDeleteConfirm(e.target.value)}
-            placeholder="DELETE"
-            autoFocus
-          />
           <AlertDialogFooter>
             <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
             <AlertDialogAction
-              disabled={deleteConfirm !== "DELETE" || deleting}
+              disabled={deleting}
               onClick={(e) => { e.preventDefault(); confirmDelete(); }}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
