@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { detectContactInfo } from "@/lib/contactFilter";
 import { isCityLikeCountry } from "@/lib/cityValidation";
 import { validateName } from "@/lib/nameValidation";
+import { validateBio, bioCharCount, bioWordCount, MIN_BIO_CHARS, MIN_BIO_WORDS } from "@/lib/bioValidation";
 import { Camera, Edit, Shield, MapPin, Heart, Globe, Settings, LogOut, Crown, Save } from "lucide-react";
 import ProfileBoostButton from "@/components/ProfileBoostButton";
 import ProfileCompletion from "@/components/ProfileCompletion";
@@ -96,6 +97,12 @@ const Profile = () => {
     }
     if (isCityLikeCountry(profile.city)) {
       toast({ title: "Invalid city", description: "Please enter a city name, not a country.", variant: "destructive" });
+      setSaving(false);
+      return;
+    }
+    const bioCheck = validateBio(profile.bio);
+    if (!bioCheck.valid) {
+      toast({ title: "Bio too short", description: bioCheck.error, variant: "destructive" });
       setSaving(false);
       return;
     }
@@ -325,7 +332,23 @@ const Profile = () => {
 
                 <div>
                   <Label className="text-xs">Bio</Label>
-                  <Textarea value={profile.bio} onChange={(e) => setProfile({ ...profile, bio: e.target.value })} rows={3} />
+                  <Textarea value={profile.bio} onChange={(e) => setProfile({ ...profile, bio: e.target.value })} rows={3} maxLength={300} />
+                  {(() => {
+                    const chars = bioCharCount(profile.bio);
+                    const words = bioWordCount(profile.bio);
+                    const needsChars = chars < MIN_BIO_CHARS;
+                    const needsWords = words < MIN_BIO_WORDS;
+                    const ok = !needsChars && !needsWords;
+                    return (
+                      <p className={`text-xs text-right mt-1 ${ok ? 'text-muted-foreground' : 'text-destructive'}`}>
+                        {ok
+                          ? `${words} words · ${chars} chars`
+                          : needsChars
+                            ? `${MIN_BIO_CHARS - chars} more characters needed (spaces don't count)`
+                            : `${MIN_BIO_WORDS - words} more words needed`}
+                      </p>
+                    );
+                  })()}
                 </div>
 
                 <div>
