@@ -4,6 +4,7 @@ import { Progress } from "@/components/ui/progress";
 import {
   Camera, FileText, Heart, MapPin, Globe, GraduationCap, Shield, Sparkles,
 } from "lucide-react";
+import { validateBio } from "@/lib/bioValidation";
 
 interface ProfileData {
   firstName: string;
@@ -50,7 +51,7 @@ const ProfileCompletion = ({ profile, onEditClick }: ProfileCompletionProps) => 
       label: "Write a bio",
       prompt: "Tell others what makes you unique",
       icon: FileText,
-      done: profile.bio.length >= 150,
+      done: validateBio(profile.bio).valid,
       action: onEditClick,
     },
     {
