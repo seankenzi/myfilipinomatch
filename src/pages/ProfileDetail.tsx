@@ -13,6 +13,16 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAdmin } from "@/hooks/useAdmin";
 import { useToast } from "@/hooks/use-toast";
 import { useSignedPhotos } from "@/hooks/useSignedPhotos";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface Profile {
   id: string;
@@ -77,6 +87,8 @@ const ProfileDetail = () => {
   useEffect(() => { setActivePhoto(0); }, [id]);
   const [matchId, setMatchId] = useState<string | null>(null);
   const [isPremium, setIsPremium] = useState(false);
+  const [flagDialogOpen, setFlagDialogOpen] = useState(false);
+  const [flagging, setFlagging] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -192,6 +204,30 @@ const ProfileDetail = () => {
     }
   };
 
+  const submitPhotoFlag = async () => {
+    if (!user || !profile) return;
+    setFlagging(true);
+    const photoUrl = rawPhotos[activePhoto] || rawPhotos[0] || "";
+    const { error } = await supabase.from("reports").insert({
+      reporter_id: user.id,
+      reported_id: profile.id,
+      reason: "inappropriate_photo",
+      details: `Reported photo #${activePhoto + 1}: ${photoUrl}`,
+    });
+    setFlagging(false);
+    setFlagDialogOpen(false);
+    if (error) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } else {
+      toast({
+        title: "Photo reported",
+        description: "Thanks — our team will review this photo shortly.",
+      });
+    }
+  };
+
+
+
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
@@ -277,6 +313,16 @@ const ProfileDetail = () => {
                     <ArrowLeft className="h-4 w-4 text-foreground" />
                   </button>
                 </>
+              )}
+              {user && profile && user.id !== profile.id && (
+                <button
+                  onClick={() => setFlagDialogOpen(true)}
+                  aria-label="Report this photo as inappropriate"
+                  title="Report photo"
+                  className="absolute top-3 right-3 z-30 flex items-center gap-1 rounded-full bg-black/55 px-2.5 py-1.5 text-xs font-medium text-white backdrop-blur-sm transition-colors hover:bg-destructive/90"
+                >
+                  <Flag className="h-3.5 w-3.5" /> Report
+                </button>
               )}
             </div>
           ) : (
@@ -429,6 +475,33 @@ const ProfileDetail = () => {
         </motion.div>
       </main>
       <BottomNav />
+
+      <AlertDialog open={flagDialogOpen} onOpenChange={setFlagDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Report this photo?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Use this to report photo #{activePhoto + 1} as pornographic, nude,
+              sexually suggestive, or otherwise inappropriate. Our moderation
+              team will review it and take action if it violates our guidelines.
+              False reports may affect your own account.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={flagging}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={flagging}
+              onClick={(e) => {
+                e.preventDefault();
+                submitPhotoFlag();
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {flagging ? "Reporting..." : "Report photo"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
