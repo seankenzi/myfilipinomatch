@@ -146,15 +146,39 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Log to account_deletions for audit
-    await admin.from("account_deletions").insert({
-      user_id: userId,
-      user_email: targetProfile?.email ?? null,
-      user_full_name: targetProfile?.full_name ?? null,
-      status: "completed",
-      scheduled_for: new Date().toISOString(),
-      completed_at: new Date().toISOString(),
-    });
+    // Log to account_deletions for audit. If the user already had a pending
+    // self-requested deletion, mark THAT row completed instead of inserting a
+    // duplicate so the admin dashboard shows a single clean audit entry.
+    const { data: existingPending } = await admin
+      .from("account_deletions")
+      .select("id")
+      .eq("user_id", userId)
+      .eq("status", "pending")
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (existingPending?.id) {
+      await admin
+        .from("account_deletions")
+        .update({
+          status: "completed",
+          completed_at: new Date().toISOString(),
+          user_email: targetProfile?.email ?? null,
+          user_full_name: targetProfile?.full_name ?? null,
+        })
+        .eq("id", existingPending.id);
+    } else {
+      await admin.from("account_deletions").insert({
+        user_id: userId,
+        user_email: targetProfile?.email ?? null,
+        user_full_name: targetProfile?.full_name ?? null,
+        status: "completed",
+        scheduled_for: new Date().toISOString(),
+        completed_at: new Date().toISOString(),
+      });
+    }
+
 
     return new Response(JSON.stringify({ success: true }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

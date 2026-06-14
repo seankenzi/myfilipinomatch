@@ -90,21 +90,22 @@ const Settings = () => {
   const handleDeleteAccount = async () => {
     if (!user) return;
     const confirmed = confirm(
-      "Are you sure you want to delete your account? All your data will be permanently removed within 24 hours. This cannot be undone."
+      "Request to delete your account? Your request will be submitted to an admin for review. You will be signed out and your account will remain inactive until an admin approves or declines the request."
     );
     if (!confirmed) return;
 
     try {
-      // Create a pending deletion record
+      // Create a pending deletion record (awaits admin approval).
       const { error } = await supabase.from("account_deletions" as any).insert({
         user_id: user.id,
       });
       if (error) throw error;
 
       toast({
-        title: "Account deletion scheduled",
-        description: "Your account and all data will be permanently deleted within 24 hours.",
+        title: "Deletion request submitted",
+        description: "An admin will review and complete your account deletion. You can cancel anytime before then.",
       });
+
       await signOut();
       navigate("/");
     } catch {
@@ -322,15 +323,17 @@ const Settings = () => {
                 <div className="flex items-start gap-3 rounded-xl bg-destructive/5 border border-destructive/15 p-4">
                   <AlertCircle className="h-5 w-5 text-destructive flex-shrink-0 mt-0.5" />
                   <div>
-                    <p className="text-sm font-medium text-destructive">Deletion scheduled</p>
+                    <p className="text-sm font-medium text-destructive">Awaiting admin approval</p>
                     <p className="text-xs text-muted-foreground mt-1">
-                      Your account and all data will be permanently deleted on{" "}
+                      Your deletion request was submitted on{" "}
                       <strong className="text-foreground">
                         {format(new Date(pendingDeletion.scheduled_for), "MMMM d, yyyy 'at' h:mm a")}
-                      </strong>.
+                      </strong>{" "}
+                      and is awaiting admin review. You can cancel the request below until it is approved.
                     </p>
                   </div>
                 </div>
+
                 <Button
                   variant="outline"
                   size="sm"

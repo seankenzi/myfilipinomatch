@@ -2537,7 +2537,7 @@ const DeletionsTab = () => {
     iso ? new Date(iso).toLocaleString("en-PH", { timeZone: "Asia/Manila", dateStyle: "medium", timeStyle: "short" }) : "—";
 
   const cancelDeletion = async (id: string) => {
-    if (!confirm("Cancel this scheduled deletion? The user's account will be restored.")) return;
+    if (!confirm("Cancel this deletion request? The user's account will be restored.")) return;
     const { error } = await supabase
       .from("account_deletions" as any)
       .update({ status: "cancelled" })
@@ -2549,6 +2549,21 @@ const DeletionsTab = () => {
       load();
     }
   };
+
+  const approveDeletion = async (row: any) => {
+    const label = row.email || row.full_name || row.user_id;
+    if (!confirm(`Approve and PERMANENTLY DELETE ${label}? This cannot be undone.`)) return;
+    const { error } = await supabase.functions.invoke("admin-delete-user", {
+      body: { user_id: row.user_id },
+    });
+    if (error) {
+      toast({ title: "Deletion failed", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Account deleted", description: `${label} has been permanently removed.` });
+      load();
+    }
+  };
+
 
   const exportCsv = () => {
     const header = ["Status", "Email", "Name", "User ID", "Requested (PHT)", "Scheduled (PHT)", "Completed (PHT)"];
@@ -2640,11 +2655,17 @@ const DeletionsTab = () => {
                   <td className="p-3 text-xs">{fmtPH(r.completed_at)}</td>
                   <td className="p-3 text-right">
                     {r.status === "pending" && (
-                      <Button size="sm" variant="outline" onClick={() => cancelDeletion(r.id)}>
-                        Restore
-                      </Button>
+                      <div className="flex justify-end gap-2">
+                        <Button size="sm" variant="outline" onClick={() => cancelDeletion(r.id)}>
+                          Restore
+                        </Button>
+                        <Button size="sm" variant="destructive" onClick={() => approveDeletion(r)}>
+                          Approve & Delete
+                        </Button>
+                      </div>
                     )}
                   </td>
+
                 </tr>
               ))}
             </tbody>
