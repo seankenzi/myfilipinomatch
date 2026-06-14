@@ -87,6 +87,8 @@ const ProfileDetail = () => {
   useEffect(() => { setActivePhoto(0); }, [id]);
   const [matchId, setMatchId] = useState<string | null>(null);
   const [isPremium, setIsPremium] = useState(false);
+  const [flagDialogOpen, setFlagDialogOpen] = useState(false);
+  const [flagging, setFlagging] = useState(false);
 
   useEffect(() => {
     if (!id) return;
