@@ -90,7 +90,7 @@ const Settings = () => {
   const handleDeleteAccount = async () => {
     if (!user) return;
     const confirmed = confirm(
-      "Request to delete your account? Your request will be submitted to an admin for review. You will be signed out and your account will remain inactive until an admin approves or declines the request."
+      "Request to delete your account? Your request will be submitted to an admin for review. Your account stays active and visible to others until an admin approves the request. You can cancel anytime before then."
     );
     if (!confirmed) return;
 
@@ -103,15 +103,12 @@ const Settings = () => {
 
       toast({
         title: "Deletion request submitted",
-        description: "An admin will review and complete your account deletion. You can cancel anytime before then.",
+        description: "Your account stays active until an admin approves. You can cancel anytime before then.",
       });
-
-      await signOut();
-      navigate("/");
     } catch {
       toast({
         title: "Error",
-        description: "Failed to schedule deletion. Please contact support.",
+        description: "Failed to submit deletion request. Please contact support.",
         variant: "destructive",
       });
     }
