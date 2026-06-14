@@ -67,16 +67,14 @@ const PendingDeletionBanner = () => {
 
   if (!pending) return null;
 
-  const timeLeft = formatDistanceToNow(new Date(pending.scheduled_for), { addSuffix: false });
-
   return (
     <div className="sticky top-0 z-50 w-full bg-destructive text-destructive-foreground shadow-md">
       <div className="mx-auto flex max-w-6xl flex-col gap-2 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-start gap-2 text-sm">
           <AlertCircle className="h-5 w-5 flex-shrink-0 mt-0.5" />
           <p>
-            <strong>Your account is scheduled for deletion</strong> in {timeLeft}.
-            Restore now to keep your profile and matches.
+            <strong>Your account deletion is awaiting admin approval.</strong>{" "}
+            Cancel now to keep your profile and matches.
           </p>
         </div>
         <Button
@@ -86,7 +84,7 @@ const PendingDeletionBanner = () => {
           disabled={restoring}
           onClick={handleRestore}
         >
-          {restoring ? "Restoring..." : "Restore Account"}
+          {restoring ? "Cancelling..." : "Cancel Request"}
         </Button>
       </div>
     </div>
@@ -94,3 +92,4 @@ const PendingDeletionBanner = () => {
 };
 
 export default PendingDeletionBanner;
+
