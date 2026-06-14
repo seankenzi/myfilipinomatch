@@ -236,7 +236,7 @@ const ProfileDetail = () => {
     const { error } = await supabase.rpc("admin_remove_photo", {
       target_user_id: profile.id,
       photo_url: photoUrl,
-      reason: "Admin removed inappropriate photo from ProfileDetail",
+      p_reason: "Admin removed inappropriate photo from ProfileDetail",
     });
     setRemovingPhoto(false);
     setAdminRemoveOpen(false);

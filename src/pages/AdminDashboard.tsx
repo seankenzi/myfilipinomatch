@@ -460,7 +460,7 @@ const ModerationTab = () => {
     const { error } = await supabase.rpc("admin_remove_photo", {
       target_user_id: reportedId,
       photo_url: photoUrl,
-      reason: `Removed via report ${reportId}`,
+      p_reason: `Removed via report ${reportId}`,
     });
     if (error) {
       toast({ title: "Could not remove photo", description: error.message, variant: "destructive" });
