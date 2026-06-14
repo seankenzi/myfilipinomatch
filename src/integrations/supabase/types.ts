@@ -1054,6 +1054,10 @@ export type Database = {
         Args: { target_user_id: string }
         Returns: Json
       }
+      admin_remove_photo: {
+        Args: { photo_url: string; reason?: string; target_user_id: string }
+        Returns: undefined
+      }
       admin_unflag_user:
         | { Args: { target_user_id: string }; Returns: undefined }
         | {
