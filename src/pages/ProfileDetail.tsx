@@ -89,6 +89,8 @@ const ProfileDetail = () => {
   const [isPremium, setIsPremium] = useState(false);
   const [flagDialogOpen, setFlagDialogOpen] = useState(false);
   const [flagging, setFlagging] = useState(false);
+  const [adminRemoveOpen, setAdminRemoveOpen] = useState(false);
+  const [removingPhoto, setRemovingPhoto] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -224,6 +226,35 @@ const ProfileDetail = () => {
         description: "Thanks — our team will review this photo shortly.",
       });
     }
+  };
+
+  const adminRemovePhoto = async () => {
+    if (!profile) return;
+    const photoUrl = rawPhotos[activePhoto];
+    if (!photoUrl) return;
+    setRemovingPhoto(true);
+    const { error } = await supabase.rpc("admin_remove_photo", {
+      target_user_id: profile.id,
+      photo_url: photoUrl,
+      reason: "Admin removed inappropriate photo from ProfileDetail",
+    });
+    setRemovingPhoto(false);
+    setAdminRemoveOpen(false);
+    if (error) {
+      toast({ title: "Could not remove photo", description: error.message, variant: "destructive" });
+      return;
+    }
+    toast({ title: "Photo removed 🗑️", description: "The photo has been deleted from this profile." });
+    setProfile((prev) =>
+      prev
+        ? {
+            ...prev,
+            photos: (prev.photos || []).filter((p) => p !== photoUrl),
+            avatar_url: prev.avatar_url === photoUrl ? null : prev.avatar_url,
+          }
+        : prev
+    );
+    setActivePhoto(0);
   };
 
 
