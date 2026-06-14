@@ -1,0 +1,2 @@
+ALTER TABLE public.flag_audit_log DROP CONSTRAINT flag_audit_log_action_check;
+ALTER TABLE public.flag_audit_log ADD CONSTRAINT flag_audit_log_action_check CHECK (action = ANY (ARRAY['flag'::text, 'unflag'::text, 'remove_photo'::text]));
