@@ -345,16 +345,28 @@ const ProfileDetail = () => {
                   </button>
                 </>
               )}
-              {user && profile && user.id !== profile.id && (
-                <button
-                  onClick={() => setFlagDialogOpen(true)}
-                  aria-label="Report this photo as inappropriate"
-                  title="Report photo"
-                  className="absolute top-3 right-3 z-30 flex items-center gap-1 rounded-full bg-black/55 px-2.5 py-1.5 text-xs font-medium text-white backdrop-blur-sm transition-colors hover:bg-destructive/90"
-                >
-                  <Flag className="h-3.5 w-3.5" /> Report
-                </button>
-              )}
+              <div className="absolute top-3 right-3 z-30 flex gap-2">
+                {user && profile && user.id !== profile.id && (
+                  <button
+                    onClick={() => setFlagDialogOpen(true)}
+                    aria-label="Report this photo as inappropriate"
+                    title="Report photo"
+                    className="flex items-center gap-1 rounded-full bg-black/55 px-2.5 py-1.5 text-xs font-medium text-white backdrop-blur-sm transition-colors hover:bg-destructive/90"
+                  >
+                    <Flag className="h-3.5 w-3.5" /> Report
+                  </button>
+                )}
+                {isAdmin && profile && (
+                  <button
+                    onClick={() => setAdminRemoveOpen(true)}
+                    aria-label="Admin: remove this photo"
+                    title="Admin: remove photo"
+                    className="flex items-center gap-1 rounded-full bg-destructive/85 px-2.5 py-1.5 text-xs font-semibold text-destructive-foreground backdrop-blur-sm transition-colors hover:bg-destructive"
+                  >
+                    <Flag className="h-3.5 w-3.5" /> Remove
+                  </button>
+                )}
+              </div>
             </div>
           ) : (
             <div className="flex items-center justify-center rounded-2xl aspect-[3/4] max-w-sm mx-auto bg-muted text-6xl">👤</div>
@@ -529,6 +541,33 @@ const ProfileDetail = () => {
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               {flagging ? "Reporting..." : "Report photo"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={adminRemoveOpen} onOpenChange={setAdminRemoveOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove photo #{activePhoto + 1}?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This permanently removes the photo from this user's profile. If
+              it's their avatar, the avatar will also be cleared. Any pending
+              "inappropriate photo" reports for this image will be marked
+              resolved. This action is logged in the flag audit log.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={removingPhoto}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={removingPhoto}
+              onClick={(e) => {
+                e.preventDefault();
+                adminRemovePhoto();
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {removingPhoto ? "Removing..." : "Remove photo"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
