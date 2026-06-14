@@ -314,6 +314,16 @@ const ProfileDetail = () => {
                   </button>
                 </>
               )}
+              {user && profile && user.id !== profile.id && (
+                <button
+                  onClick={() => setFlagDialogOpen(true)}
+                  aria-label="Report this photo as inappropriate"
+                  title="Report photo"
+                  className="absolute top-3 right-3 z-30 flex items-center gap-1 rounded-full bg-black/55 px-2.5 py-1.5 text-xs font-medium text-white backdrop-blur-sm transition-colors hover:bg-destructive/90"
+                >
+                  <Flag className="h-3.5 w-3.5" /> Report
+                </button>
+              )}
             </div>
           ) : (
             <div className="flex items-center justify-center rounded-2xl aspect-[3/4] max-w-sm mx-auto bg-muted text-6xl">👤</div>
