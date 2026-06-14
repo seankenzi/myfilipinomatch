@@ -361,8 +361,9 @@ const Settings = () => {
             ) : (
               <>
                 <p className="text-sm text-muted-foreground mb-4">
-                  Permanently delete your account and all associated data. You'll have 24 hours to change your mind.
+                  Request to permanently delete your account and all associated data. Your request will be reviewed by an admin before it is completed, and you can cancel anytime before approval.
                 </p>
+
                 <Button variant="destructive" size="sm" onClick={handleDeleteAccount}>
                   Delete Account
                 </Button>
