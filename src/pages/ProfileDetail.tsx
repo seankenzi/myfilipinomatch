@@ -204,6 +204,30 @@ const ProfileDetail = () => {
     }
   };
 
+  const submitPhotoFlag = async () => {
+    if (!user || !profile) return;
+    setFlagging(true);
+    const photoUrl = rawPhotos[activePhoto] || rawPhotos[0] || "";
+    const { error } = await supabase.from("reports").insert({
+      reporter_id: user.id,
+      reported_id: profile.id,
+      reason: "inappropriate_photo",
+      details: `Reported photo #${activePhoto + 1}: ${photoUrl}`,
+    });
+    setFlagging(false);
+    setFlagDialogOpen(false);
+    if (error) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } else {
+      toast({
+        title: "Photo reported",
+        description: "Thanks — our team will review this photo shortly.",
+      });
+    }
+  };
+
+
+
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
