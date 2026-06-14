@@ -74,7 +74,7 @@ const PendingDeletionBanner = () => {
           <AlertCircle className="h-5 w-5 flex-shrink-0 mt-0.5" />
           <p>
             <strong>Your account deletion is awaiting admin approval.</strong>{" "}
-            Cancel now to keep your profile and matches.
+            Your profile stays active and visible to others until then. Cancel anytime to keep your account.
           </p>
         </div>
         <Button
