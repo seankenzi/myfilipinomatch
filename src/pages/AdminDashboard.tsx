@@ -442,6 +442,34 @@ const ModerationTab = () => {
     fetchData();
   };
 
+  const extractPhotoUrl = (details: string | null): string | null => {
+    if (!details) return null;
+    // Pattern from ProfileDetail: "Reported photo #N: <url>"
+    const match = details.match(/Reported photo #\d+:\s*(.+)$/);
+    return match ? match[1].trim() : null;
+  };
+
+  const handleRemovePhoto = async (reportId: string, reportedId: string, details: string | null) => {
+    const photoUrl = extractPhotoUrl(details);
+    if (!photoUrl) {
+      toast({ title: "Could not parse photo URL from report.", variant: "destructive" });
+      return;
+    }
+    if (!window.confirm(`Permanently remove this photo from the user's profile?\n\n${photoUrl}`)) return;
+
+    const { error } = await supabase.rpc("admin_remove_photo", {
+      target_user_id: reportedId,
+      photo_url: photoUrl,
+      reason: `Removed via report ${reportId}`,
+    });
+    if (error) {
+      toast({ title: "Could not remove photo", description: error.message, variant: "destructive" });
+      return;
+    }
+    toast({ title: "Photo removed 🗑️", description: "Report marked as resolved." });
+    fetchData();
+  };
+
   const handleVerification = async (id: string, userId: string, action: "approved" | "rejected") => {
     await supabase.from("verifications").update({ status: action, reviewed_at: new Date().toISOString() }).eq("id", id);
     if (action === "approved") {
@@ -511,6 +539,11 @@ const ModerationTab = () => {
                     }`}>{r.status}</span>
                     {r.status === "pending" && (
                       <>
+                        {r.reason === "inappropriate_photo" && (
+                          <Button size="sm" variant="ghost" className="h-7 text-xs text-destructive" onClick={() => handleRemovePhoto(r.id, r.reported_id, r.details)}>
+                            <Trash2 className="h-3 w-3 mr-1" /> Remove Photo
+                          </Button>
+                        )}
                         <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => handleReport(r.id, "resolved")}>Resolve</Button>
                         <Button size="sm" variant="ghost" className="h-7 text-xs text-destructive" onClick={() => handleReport(r.id, "dismissed")}>Dismiss</Button>
                       </>
