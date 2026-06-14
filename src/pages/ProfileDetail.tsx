@@ -475,6 +475,33 @@ const ProfileDetail = () => {
         </motion.div>
       </main>
       <BottomNav />
+
+      <AlertDialog open={flagDialogOpen} onOpenChange={setFlagDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Report this photo?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Use this to report photo #{activePhoto + 1} as pornographic, nude,
+              sexually suggestive, or otherwise inappropriate. Our moderation
+              team will review it and take action if it violates our guidelines.
+              False reports may affect your own account.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={flagging}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={flagging}
+              onClick={(e) => {
+                e.preventDefault();
+                submitPhotoFlag();
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {flagging ? "Reporting..." : "Report photo"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
