@@ -89,6 +89,8 @@ const ProfileDetail = () => {
   const [isPremium, setIsPremium] = useState(false);
   const [flagDialogOpen, setFlagDialogOpen] = useState(false);
   const [flagging, setFlagging] = useState(false);
+  const [adminRemoveOpen, setAdminRemoveOpen] = useState(false);
+  const [removingPhoto, setRemovingPhoto] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -226,6 +228,35 @@ const ProfileDetail = () => {
     }
   };
 
+  const adminRemovePhoto = async () => {
+    if (!profile) return;
+    const photoUrl = rawPhotos[activePhoto];
+    if (!photoUrl) return;
+    setRemovingPhoto(true);
+    const { error } = await supabase.rpc("admin_remove_photo", {
+      target_user_id: profile.id,
+      photo_url: photoUrl,
+      reason: "Admin removed inappropriate photo from ProfileDetail",
+    });
+    setRemovingPhoto(false);
+    setAdminRemoveOpen(false);
+    if (error) {
+      toast({ title: "Could not remove photo", description: error.message, variant: "destructive" });
+      return;
+    }
+    toast({ title: "Photo removed 🗑️", description: "The photo has been deleted from this profile." });
+    setProfile((prev) =>
+      prev
+        ? {
+            ...prev,
+            photos: (prev.photos || []).filter((p) => p !== photoUrl),
+            avatar_url: prev.avatar_url === photoUrl ? null : prev.avatar_url,
+          }
+        : prev
+    );
+    setActivePhoto(0);
+  };
+
 
 
   if (loading) {
@@ -314,16 +345,28 @@ const ProfileDetail = () => {
                   </button>
                 </>
               )}
-              {user && profile && user.id !== profile.id && (
-                <button
-                  onClick={() => setFlagDialogOpen(true)}
-                  aria-label="Report this photo as inappropriate"
-                  title="Report photo"
-                  className="absolute top-3 right-3 z-30 flex items-center gap-1 rounded-full bg-black/55 px-2.5 py-1.5 text-xs font-medium text-white backdrop-blur-sm transition-colors hover:bg-destructive/90"
-                >
-                  <Flag className="h-3.5 w-3.5" /> Report
-                </button>
-              )}
+              <div className="absolute top-3 right-3 z-30 flex gap-2">
+                {user && profile && user.id !== profile.id && (
+                  <button
+                    onClick={() => setFlagDialogOpen(true)}
+                    aria-label="Report this photo as inappropriate"
+                    title="Report photo"
+                    className="flex items-center gap-1 rounded-full bg-black/55 px-2.5 py-1.5 text-xs font-medium text-white backdrop-blur-sm transition-colors hover:bg-destructive/90"
+                  >
+                    <Flag className="h-3.5 w-3.5" /> Report
+                  </button>
+                )}
+                {isAdmin && profile && (
+                  <button
+                    onClick={() => setAdminRemoveOpen(true)}
+                    aria-label="Admin: remove this photo"
+                    title="Admin: remove photo"
+                    className="flex items-center gap-1 rounded-full bg-destructive/85 px-2.5 py-1.5 text-xs font-semibold text-destructive-foreground backdrop-blur-sm transition-colors hover:bg-destructive"
+                  >
+                    <Flag className="h-3.5 w-3.5" /> Remove
+                  </button>
+                )}
+              </div>
             </div>
           ) : (
             <div className="flex items-center justify-center rounded-2xl aspect-[3/4] max-w-sm mx-auto bg-muted text-6xl">👤</div>
@@ -498,6 +541,33 @@ const ProfileDetail = () => {
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               {flagging ? "Reporting..." : "Report photo"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={adminRemoveOpen} onOpenChange={setAdminRemoveOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove photo #{activePhoto + 1}?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This permanently removes the photo from this user's profile. If
+              it's their avatar, the avatar will also be cleared. Any pending
+              "inappropriate photo" reports for this image will be marked
+              resolved. This action is logged in the flag audit log.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={removingPhoto}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={removingPhoto}
+              onClick={(e) => {
+                e.preventDefault();
+                adminRemovePhoto();
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {removingPhoto ? "Removing..." : "Remove photo"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
