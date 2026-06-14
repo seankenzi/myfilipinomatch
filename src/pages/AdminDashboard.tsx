@@ -652,7 +652,7 @@ const SubscriptionsTab = ({ refreshKey }: { refreshKey: number }) => {
 
   const fetchSubs = async () => {
     setLoading(true);
-    const { data, error } = await supabase.from("subscriptions").select("*").order("created_at", { ascending: false }).limit(100);
+    const { data, error } = await supabase.from("subscriptions").select("id, user_id, plan, status, current_period_end, created_at, updated_at").order("created_at", { ascending: false }).limit(100);
 
     if (error) {
       console.error("Error fetching subscriptions:", error);
