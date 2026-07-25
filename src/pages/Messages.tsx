@@ -33,6 +33,7 @@ import { format, isToday, isYesterday } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
 
 const FREE_DAILY_MESSAGE_LIMIT = 10;
+const MESSAGES_PAGE_SIZE = 30;
 
 const getInvokeStatus = (error: unknown) => {
   const responseContext = (error as { context?: Response | { status?: number } } | null)?.context;
