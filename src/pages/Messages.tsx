@@ -850,6 +850,12 @@ const Messages = () => {
                     </p>
                   </div>
 
+                  {loadingOlder && (
+                    <div className="flex justify-center py-3">
+                      <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                    </div>
+                  )}
+
                   {messages.length === 0 && (
                     <div className="text-center py-16">
                       <div className="h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
