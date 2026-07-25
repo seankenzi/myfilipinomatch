@@ -313,16 +313,25 @@ const Messages = () => {
     const table = isDm ? "dm_messages" : "messages";
     const filterCol = isDm ? "conversation_id" : "match_id";
 
-    const { data, error } = await supabase
+    // Load only the most recent page; order desc + reverse to keep newest at bottom
+    const { data, error } = await (supabase
       .from(table as any)
       .select("*")
       .eq(filterCol, selectedMatch.id)
-      .order("created_at", { ascending: true }) as any;
+      .order("created_at", { ascending: false })
+      .limit(MESSAGES_PAGE_SIZE + 1) as any);
 
     if (!error && data) {
-      setMessages(data as Message[]);
+      const rows = data as Message[];
+      const hasMore = rows.length > MESSAGES_PAGE_SIZE;
+      const trimmed = hasMore ? rows.slice(0, MESSAGES_PAGE_SIZE) : rows;
+      const ordered = [...trimmed].reverse();
+      shouldScrollToBottomRef.current = true;
+      setMessages(ordered);
+      setHasMoreOlder(hasMore);
+
       // Mark unread messages as read in the DB
-      const unreadIds = data.filter((m: any) => m.sender_id !== user.id && !m.read).map((m: any) => m.id);
+      const unreadIds = ordered.filter((m: any) => m.sender_id !== user.id && !m.read).map((m: any) => m.id);
       if (unreadIds.length > 0) {
         await (supabase
           .from(table as any)
@@ -339,13 +348,66 @@ const Messages = () => {
     }
   }, [selectedMatch, user]);
 
+  const loadOlderMessages = useCallback(async () => {
+    if (!selectedMatch || !user || loadingOlder || !hasMoreOlder || messages.length === 0) return;
+    setLoadingOlder(true);
+
+    const isDm = selectedMatch.source === 'dm';
+    const table = isDm ? "dm_messages" : "messages";
+    const filterCol = isDm ? "conversation_id" : "match_id";
+    const oldest = messages[0];
+
+    const container = scrollContainerRef.current;
+    const prevScrollHeight = container?.scrollHeight ?? 0;
+    const prevScrollTop = container?.scrollTop ?? 0;
+
+    const { data, error } = await (supabase
+      .from(table as any)
+      .select("*")
+      .eq(filterCol, selectedMatch.id)
+      .lt("created_at", oldest.created_at)
+      .order("created_at", { ascending: false })
+      .limit(MESSAGES_PAGE_SIZE + 1) as any);
+
+    if (!error && data) {
+      const rows = data as Message[];
+      const hasMore = rows.length > MESSAGES_PAGE_SIZE;
+      const trimmed = hasMore ? rows.slice(0, MESSAGES_PAGE_SIZE) : rows;
+      const older = [...trimmed].reverse();
+
+      shouldScrollToBottomRef.current = false;
+      setMessages((prev) => {
+        const existing = new Set(prev.map((m) => m.id));
+        const deduped = older.filter((m) => !existing.has(m.id));
+        return [...deduped, ...prev];
+      });
+      setHasMoreOlder(hasMore);
+
+      // Preserve scroll position after prepend
+      requestAnimationFrame(() => {
+        if (container) {
+          container.scrollTop = container.scrollHeight - prevScrollHeight + prevScrollTop;
+        }
+      });
+    }
+    setLoadingOlder(false);
+  }, [selectedMatch, user, loadingOlder, hasMoreOlder, messages]);
+
   useEffect(() => {
     fetchMessages();
   }, [fetchMessages]);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (shouldScrollToBottomRef.current) {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
   }, [messages]);
+
+  const handleMessagesScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
+    if (e.currentTarget.scrollTop <= 0 && hasMoreOlder && !loadingOlder) {
+      loadOlderMessages();
+    }
+  }, [hasMoreOlder, loadingOlder, loadOlderMessages]);
 
   // Realtime: new messages, read updates, and typing indicators
   useEffect(() => {
