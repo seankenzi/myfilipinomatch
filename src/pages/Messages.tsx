@@ -348,11 +348,15 @@ const Messages = () => {
           .update({ read: true } as any)
           .in("id", unreadIds) as any);
 
-        // Update the sidebar unread count immediately
-        setMatches((prev) =>
-          prev.map((m) =>
-            m.id === selectedMatch.id && m.source === selectedMatch.source ? { ...m, unread_count: 0 } : m
-          )
+        // Update the sidebar unread count immediately in the cached query
+        queryClient.setQueryData<Match[]>(conversationsQueryKey, (prev) =>
+          prev
+            ? prev.map((m) =>
+                m.id === selectedMatch.id && m.source === selectedMatch.source
+                  ? { ...m, unread_count: 0 }
+                  : m
+              )
+            : prev
         );
       }
     }
@@ -441,7 +445,29 @@ const Messages = () => {
           shouldScrollToBottomRef.current = true;
           return [...prev, newMsg];
         });
-        if (newMsg.sender_id !== user?.id) {
+
+        // Patch cached conversation list: bump last_message + unread_count
+        const incomingFromOther = newMsg.sender_id !== user?.id;
+        queryClient.setQueryData<Match[]>(conversationsQueryKey, (prev) => {
+          if (!prev) return prev;
+          const updated = prev.map((m) => {
+            if (m.id !== selectedMatch.id || m.source !== selectedMatch.source) return m;
+            return {
+              ...m,
+              last_message: {
+                content: newMsg.content,
+                created_at: newMsg.created_at,
+                sender_id: newMsg.sender_id,
+                read: incomingFromOther ? true : (newMsg.read ?? false),
+              },
+              // Viewing this conversation, so incoming messages are auto-read → keep 0
+              unread_count: 0,
+            };
+          });
+          return sortMatches(updated);
+        });
+
+        if (incomingFromOther) {
           (supabase.from(table as any).update({ read: true } as any).eq("id", newMsg.id) as any);
           setIsOtherTyping(false);
         }
@@ -591,7 +617,7 @@ const Messages = () => {
     } else {
       toast({ title: "User blocked", description: `${selectedMatch.other_user.full_name} has been blocked.` });
       setSelectedMatch(null);
-      fetchMatches();
+      refetchMatches();
     }
   };
 
@@ -657,7 +683,7 @@ const Messages = () => {
 
           {/* Conversation List */}
           <div className="flex-1 overflow-y-auto scrollbar-thin">
-            {loading ? (
+            {matchesLoading ? (
               <div className="flex items-center justify-center py-20">
                 <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
               </div>
