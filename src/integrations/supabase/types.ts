@@ -1112,6 +1112,7 @@ export type Database = {
         Args: { message_id: number; queue_name: string }
         Returns: boolean
       }
+      email_queue_dispatch: { Args: never; Returns: undefined }
       enqueue_email: {
         Args: { payload: Json; queue_name: string }
         Returns: number
@@ -1120,6 +1121,30 @@ export type Database = {
         Args: never
         Returns: {
           email: string
+        }[]
+      }
+      get_conversation_list: {
+        Args: { p_user_id: string }
+        Returns: {
+          activity_at: string
+          conversation_id: string
+          last_message_content: string
+          last_message_created_at: string
+          last_message_read: boolean
+          last_message_sender_id: string
+          match_type: string
+          other_age: number
+          other_avatar_url: string
+          other_city: string
+          other_country: string
+          other_full_name: string
+          other_is_premium: boolean
+          other_is_verified: boolean
+          other_last_seen: string
+          other_photo: string
+          other_user_id: string
+          source: string
+          unread_count: number
         }[]
       }
       get_monthly_video_usage: { Args: { p_user_id: string }; Returns: number }

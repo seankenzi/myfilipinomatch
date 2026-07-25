@@ -178,16 +178,9 @@ const Messages = () => {
     if (!user) return;
     setLoading(true);
 
-    // Fetch blocked users, matches, and DM conversations in parallel
-    const [{ data: blockedData }, { data: matchesData, error }, { data: dmData }] = await Promise.all([
-      supabase.from("blocked_users").select("blocked_id").eq("blocker_id", user.id),
-      supabase.from("matches").select("*")
-        .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`)
-        .order("created_at", { ascending: false }),
-      supabase.from("dm_conversations" as any).select("*")
-        .or(`initiator_id.eq.${user.id},recipient_id.eq.${user.id}`)
-        .order("updated_at", { ascending: false }) as any,
-    ]);
+    const { data, error } = await (supabase as any).rpc("get_conversation_list", {
+      p_user_id: user.id,
+    });
 
     if (error) {
       toast({ title: "Error loading matches", variant: "destructive" });
@@ -195,121 +188,47 @@ const Messages = () => {
       return;
     }
 
-    const blockedIds = new Set((blockedData || []).map((b: any) => b.blocked_id));
+    const rows = (data || []) as any[];
 
-    // Process mutual matches
-    const filteredMatches = (matchesData || []).filter((m: any) => {
-      const otherId = m.user1_id === user.id ? m.user2_id : m.user1_id;
-      return !blockedIds.has(otherId);
-    });
-
-    const matchEntries = await Promise.all(
-      filteredMatches.map(async (m: any) => {
-        const otherId = m.user1_id === user.id ? m.user2_id : m.user1_id;
-
-        const [{ data: profileData }, { data: lastMsg }, { count }] = await Promise.all([
-          supabase.rpc("get_profile_by_id", { profile_id: otherId }),
-          supabase.from("messages")
-            .select("content, created_at, sender_id, read")
-            .eq("match_id", m.id)
-            .order("created_at", { ascending: false })
-            .limit(1)
-            .maybeSingle(),
-          supabase.from("messages")
-            .select("id", { count: "exact", head: true })
-            .eq("match_id", m.id)
-            .eq("read", false)
-            .neq("sender_id", user.id),
-        ]);
-
-        const profile = profileData && profileData.length > 0 ? profileData[0] : null;
-        if (!profile) return null;
-
-        return {
-          matchId: m.id,
-          matchType: (m as any).type || 'mutual',
-          source: 'match' as const,
-          profile,
-          photoPath: getPhoto(profile),
-          lastMsg: lastMsg || undefined,
-          unreadCount: count || 0,
-        };
-      })
-    );
-
-    // Process DM conversations
-    const filteredDMs = (dmData || []).filter((dm: any) => {
-      const otherId = dm.initiator_id === user.id ? dm.recipient_id : dm.initiator_id;
-      return !blockedIds.has(otherId);
-    });
-
-    const dmEntries = await Promise.all(
-      filteredDMs.map(async (dm: any) => {
-        const otherId = dm.initiator_id === user.id ? dm.recipient_id : dm.initiator_id;
-
-        const [{ data: profileData }, { data: lastMsg }, { count }] = await Promise.all([
-          supabase.rpc("get_profile_by_id", { profile_id: otherId }),
-          supabase.from("dm_messages" as any)
-            .select("content, created_at, sender_id, read")
-            .eq("conversation_id", dm.id)
-            .order("created_at", { ascending: false })
-            .limit(1)
-            .maybeSingle() as any,
-          supabase.from("dm_messages" as any)
-            .select("id", { count: "exact", head: true })
-            .eq("conversation_id", dm.id)
-            .eq("read", false)
-            .neq("sender_id", user.id) as any,
-        ]);
-
-        const profile = profileData && profileData.length > 0 ? profileData[0] : null;
-        if (!profile) return null;
-
-        return {
-          matchId: dm.id,
-          matchType: 'direct_message',
-          source: 'dm' as const,
-          profile,
-          photoPath: getPhoto(profile),
-          lastMsg: lastMsg || undefined,
-          unreadCount: count || 0,
-        };
-      })
-    );
-
-    const allEntries = [...matchEntries, ...dmEntries].filter((e): e is NonNullable<typeof e> => e !== null);
-
-    if (allEntries.length === 0) {
+    if (rows.length === 0) {
       setMatches([]);
       setLoading(false);
       return;
     }
 
     // Batch sign all photos in a single request
-    const photoPaths = allEntries.map((e) => e.photoPath).filter((p): p is string => !!p);
+    const photoPaths = rows.map((r) => r.other_photo).filter((p): p is string => !!p);
     const signedPhotos = photoPaths.length > 0 ? await getSignedPhotoUrls(photoPaths) : [];
     const photoMap = new Map(photoPaths.map((p, i) => [p, signedPhotos[i]]));
 
-    const matchList: Match[] = allEntries.map((e) => {
-      const signedPhoto = e.photoPath ? (photoMap.get(e.photoPath) || null) : null;
+    const matchList: Match[] = rows.map((r) => {
+      const signedPhoto = r.other_photo ? (photoMap.get(r.other_photo) || null) : null;
+      const lastMsg = r.last_message_created_at
+        ? {
+            content: r.last_message_content as string,
+            created_at: r.last_message_created_at as string,
+            sender_id: r.last_message_sender_id as string,
+            read: r.last_message_read as boolean | null,
+          }
+        : undefined;
       return {
-        id: e.matchId,
+        id: r.conversation_id,
         other_user: {
-          id: e.profile.id,
-          full_name: e.profile.full_name,
+          id: r.other_user_id,
+          full_name: r.other_full_name,
           avatar_url: signedPhoto,
           photos: signedPhoto ? [signedPhoto] : null,
-          is_verified: e.profile.is_verified,
-          age: e.profile.age,
-          city: e.profile.city,
-          country: e.profile.country,
-          is_premium: e.profile.is_premium,
-          last_seen: e.profile.last_seen,
+          is_verified: r.other_is_verified,
+          age: r.other_age,
+          city: r.other_city,
+          country: r.other_country,
+          is_premium: r.other_is_premium,
+          last_seen: r.other_last_seen,
         },
-        last_message: e.lastMsg,
-        unread_count: e.unreadCount,
-        type: e.matchType,
-        source: e.source,
+        last_message: lastMsg,
+        unread_count: r.unread_count || 0,
+        type: r.match_type,
+        source: r.source as 'match' | 'dm',
       };
     });
 
@@ -324,6 +243,7 @@ const Messages = () => {
     setMatches(matchList);
     setLoading(false);
   }, [user, toast]);
+
 
   useEffect(() => {
     fetchMatches();
