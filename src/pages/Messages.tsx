@@ -428,6 +428,7 @@ const Messages = () => {
         const newMsg = payload.new as Message;
         setMessages((prev) => {
           if (prev.find((m) => m.id === newMsg.id)) return prev;
+          shouldScrollToBottomRef.current = true;
           return [...prev, newMsg];
         });
         if (newMsg.sender_id !== user?.id) {
