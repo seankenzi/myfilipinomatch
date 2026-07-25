@@ -464,10 +464,6 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl, preAcqu
     const videoTrack = preAcquiredStream?.getVideoTracks()[0] ?? true;
     const audioTrack = preAcquiredStream?.getAudioTracks()[0] ?? true;
 
-    console.log("[VideoCall DEBUG] isNativeCapacitor:", isNativeCapacitor);
-    console.log("[VideoCall DEBUG] preAcquiredStream:", !!preAcquiredStream, "video tracks:", preAcquiredStream?.getVideoTracks().length, "audio tracks:", preAcquiredStream?.getAudioTracks().length);
-    console.log("[VideoCall DEBUG] videoSource:", videoTrack === true ? "true" : "track", "audioSource:", audioTrack === true ? "true" : "track");
-    console.log("[VideoCall DEBUG] roomUrl:", url, "hasToken:", !!token);
 
     const callFrame = Daily.createCallObject({
       videoSource: videoTrack,
@@ -497,7 +493,7 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl, preAcqu
     const startEstablishedState = () => {
       if (remoteParticipantConnected) return;
       remoteParticipantConnected = true;
-      console.log("[VideoCall DEBUG] >>> startEstablishedState called — call is now established");
+      
       setCallEstablished(true);
       callStartTimeRef.current = Date.now();
       setElapsedSeconds(0);
@@ -534,7 +530,7 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl, preAcqu
     const syncExistingRemoteParticipants = () => {
       const participants = Object.values(callFrame.participants() ?? {});
       const remoteParticipants = participants.filter((participant) => !participant.local);
-      console.log("[VideoCall DEBUG] syncExistingRemoteParticipants: found", remoteParticipants.length, "remote participants");
+      
 
       if (remoteParticipants.length === 0) return;
 
@@ -543,7 +539,7 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl, preAcqu
     };
 
     callFrame.on("joined-meeting", () => {
-      console.log("[VideoCall DEBUG] >>> joined-meeting event fired");
+      
       // Run all quality settings in parallel (non-blocking)
       void Promise.allSettled([
         callFrame.updateInputSettings({
@@ -581,7 +577,7 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl, preAcqu
     // Track start/stop events — attach/detach media
     callFrame.on("track-started", (event) => {
       if (!event?.participant) return;
-      console.log("[VideoCall DEBUG] track-started:", event.participant.local ? "local" : "remote", "tracks:", JSON.stringify({ video: !!event.participant.video, audio: !!event.participant.audio }));
+      
       syncTracks(event.participant);
       if (!event.participant.local) startEstablishedState();
     });
@@ -592,7 +588,7 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl, preAcqu
 
     // Handle remote participant joining -> start timer
     callFrame.on("participant-joined", (event) => {
-      console.log("[VideoCall DEBUG] participant-joined:", event?.participant?.local ? "local" : "remote", event?.participant?.session_id);
+      
       if (event?.participant?.local) return;
       startEstablishedState();
       syncTracks(event.participant);
@@ -609,7 +605,7 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl, preAcqu
     // Sync local media state when it changes
     callFrame.on("participant-updated", (event) => {
       if (!event?.participant) return;
-      console.log("[VideoCall DEBUG] participant-updated:", event.participant.local ? "local" : "remote", "video:", event.participant.video, "audio:", event.participant.audio);
+      
       syncTracks(event.participant);
 
       if (event.participant.local) {
@@ -705,7 +701,7 @@ const VideoCall = ({ matchId, otherUserName, open, onClose, joinRoomUrl, preAcqu
         joinOpts.userName = localDisplayNameRef.current;
 
         await callFrame.join(joinOpts);
-        console.log("[VideoCall DEBUG] >>> callFrame.join() resolved successfully");
+        
       } catch (err: any) {
         if (err?.message?.includes("postMessage") || callFrame.isDestroyed()) return;
         console.error("Daily join error:", err);
