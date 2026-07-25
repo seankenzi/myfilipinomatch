@@ -1,0 +1,2 @@
+CREATE INDEX IF NOT EXISTS idx_messages_match_id_created_at_desc ON public.messages (match_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_messages_match_id_unread ON public.messages (match_id) WHERE read = false;
