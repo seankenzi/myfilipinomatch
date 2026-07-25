@@ -840,7 +840,7 @@ const Messages = () => {
               </div>
 
               {/* ──── Messages ──── */}
-              <div className="flex-1 overflow-y-auto" style={{ background: 'linear-gradient(180deg, hsl(var(--muted) / 0.3) 0%, hsl(var(--background)) 100%)' }}>
+              <div ref={scrollContainerRef} onScroll={handleMessagesScroll} className="flex-1 overflow-y-auto" style={{ background: 'linear-gradient(180deg, hsl(var(--muted) / 0.3) 0%, hsl(var(--background)) 100%)' }}>
                 <div className="px-4 py-4 mx-auto max-w-2xl">
                   {/* Safety notice */}
                   <div className="flex items-start gap-2.5 rounded-xl bg-accent/5 border border-accent/15 p-3.5 mb-5">
