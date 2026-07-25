@@ -100,6 +100,10 @@ const Messages = () => {
   const requestedProfileId = searchParams.get("profile");
   const shouldAutoOpenVideo = searchParams.get("openVideo") === "1";
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const shouldScrollToBottomRef = useRef(true);
+  const [hasMoreOlder, setHasMoreOlder] = useState(false);
+  const [loadingOlder, setLoadingOlder] = useState(false);
 
   const [matches, setMatches] = useState<Match[]>([]);
   const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
