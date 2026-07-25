@@ -69,7 +69,14 @@ const Blog = lazyRetry(() => import("./pages/Blog.tsx"));
 const BlogPost = lazyRetry(() => import("./pages/BlogPost.tsx"));
 const CookiePolicy = lazyRetry(() => import("./pages/CookiePolicy.tsx"));
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 30_000,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 const LazyFallback = () => (
   <div className="flex min-h-[50vh] items-center justify-center">

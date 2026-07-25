@@ -31,6 +31,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAdmin } from "@/hooks/useAdmin";
 import { format, isToday, isYesterday } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 const FREE_DAILY_MESSAGE_LIMIT = 10;
 const MESSAGES_PAGE_SIZE = 30;
@@ -106,11 +107,12 @@ const Messages = () => {
   const [hasMoreOlder, setHasMoreOlder] = useState(false);
   const [loadingOlder, setLoadingOlder] = useState(false);
 
-  const [matches, setMatches] = useState<Match[]>([]);
+  const queryClient = useQueryClient();
+  const conversationsQueryKey = ["conversation-list", user?.id] as const;
   const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
-  const [loading, setLoading] = useState(true);
+  
   const [sending, setSending] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const emojiPickerRef = useRef<HTMLDivElement>(null);
@@ -179,80 +181,88 @@ const Messages = () => {
       });
   }, [user]);
 
-  const fetchMatches = useCallback(async () => {
-    if (!user) return;
-    setLoading(true);
+  const {
+    data: matches = [],
+    isLoading: matchesLoading,
+    refetch: refetchMatches,
+  } = useQuery<Match[]>({
+    queryKey: conversationsQueryKey,
+    enabled: !!user,
+    staleTime: 30_000,
+    queryFn: async () => {
+      if (!user) return [];
 
-    const { data, error } = await (supabase as any).rpc("get_conversation_list", {
-      p_user_id: user.id,
-    });
+      const { data, error } = await (supabase as any).rpc("get_conversation_list", {
+        p_user_id: user.id,
+      });
 
-    if (error) {
-      toast({ title: "Error loading matches", variant: "destructive" });
-      setLoading(false);
-      return;
-    }
+      if (error) {
+        toast({ title: "Error loading matches", variant: "destructive" });
+        throw error;
+      }
 
-    const rows = (data || []) as any[];
+      const rows = (data || []) as any[];
+      if (rows.length === 0) return [];
 
-    if (rows.length === 0) {
-      setMatches([]);
-      setLoading(false);
-      return;
-    }
+      // Batch sign all photos in a single request
+      const photoPaths = rows.map((r) => r.other_photo).filter((p): p is string => !!p);
+      const signedPhotos = photoPaths.length > 0 ? await getSignedPhotoUrls(photoPaths) : [];
+      const photoMap = new Map(photoPaths.map((p, i) => [p, signedPhotos[i]]));
 
-    // Batch sign all photos in a single request
-    const photoPaths = rows.map((r) => r.other_photo).filter((p): p is string => !!p);
-    const signedPhotos = photoPaths.length > 0 ? await getSignedPhotoUrls(photoPaths) : [];
-    const photoMap = new Map(photoPaths.map((p, i) => [p, signedPhotos[i]]));
+      const matchList: Match[] = rows.map((r) => {
+        const signedPhoto = r.other_photo ? (photoMap.get(r.other_photo) || null) : null;
+        const lastMsg = r.last_message_created_at
+          ? {
+              content: r.last_message_content as string,
+              created_at: r.last_message_created_at as string,
+              sender_id: r.last_message_sender_id as string,
+              read: r.last_message_read as boolean | null,
+            }
+          : undefined;
+        return {
+          id: r.conversation_id,
+          other_user: {
+            id: r.other_user_id,
+            full_name: r.other_full_name,
+            avatar_url: signedPhoto,
+            photos: signedPhoto ? [signedPhoto] : null,
+            is_verified: r.other_is_verified,
+            age: r.other_age,
+            city: r.other_city,
+            country: r.other_country,
+            is_premium: r.other_is_premium,
+            last_seen: r.other_last_seen,
+          },
+          last_message: lastMsg,
+          unread_count: r.unread_count || 0,
+          type: r.match_type,
+          source: r.source as 'match' | 'dm',
+        };
+      });
 
-    const matchList: Match[] = rows.map((r) => {
-      const signedPhoto = r.other_photo ? (photoMap.get(r.other_photo) || null) : null;
-      const lastMsg = r.last_message_created_at
-        ? {
-            content: r.last_message_content as string,
-            created_at: r.last_message_created_at as string,
-            sender_id: r.last_message_sender_id as string,
-            read: r.last_message_read as boolean | null,
-          }
-        : undefined;
-      return {
-        id: r.conversation_id,
-        other_user: {
-          id: r.other_user_id,
-          full_name: r.other_full_name,
-          avatar_url: signedPhoto,
-          photos: signedPhoto ? [signedPhoto] : null,
-          is_verified: r.other_is_verified,
-          age: r.other_age,
-          city: r.other_city,
-          country: r.other_country,
-          is_premium: r.other_is_premium,
-          last_seen: r.other_last_seen,
-        },
-        last_message: lastMsg,
-        unread_count: r.unread_count || 0,
-        type: r.match_type,
-        source: r.source as 'match' | 'dm',
-      };
-    });
+      matchList.sort((a, b) => {
+        if (a.unread_count > 0 && b.unread_count === 0) return -1;
+        if (b.unread_count > 0 && a.unread_count === 0) return 1;
+        const aTime = a.last_message?.created_at || "0";
+        const bTime = b.last_message?.created_at || "0";
+        return bTime.localeCompare(aTime);
+      });
 
-    matchList.sort((a, b) => {
+      return matchList;
+    },
+  });
+
+  // Helper to sort the conversation list the same way the query does
+  const sortMatches = useCallback((list: Match[]) => {
+    return [...list].sort((a, b) => {
       if (a.unread_count > 0 && b.unread_count === 0) return -1;
       if (b.unread_count > 0 && a.unread_count === 0) return 1;
       const aTime = a.last_message?.created_at || "0";
       const bTime = b.last_message?.created_at || "0";
       return bTime.localeCompare(aTime);
     });
+  }, []);
 
-    setMatches(matchList);
-    setLoading(false);
-  }, [user, toast]);
-
-
-  useEffect(() => {
-    fetchMatches();
-  }, [fetchMatches]);
 
   useEffect(() => {
     setPendingVideoOpen(shouldAutoOpenVideo);
@@ -338,11 +348,15 @@ const Messages = () => {
           .update({ read: true } as any)
           .in("id", unreadIds) as any);
 
-        // Update the sidebar unread count immediately
-        setMatches((prev) =>
-          prev.map((m) =>
-            m.id === selectedMatch.id && m.source === selectedMatch.source ? { ...m, unread_count: 0 } : m
-          )
+        // Update the sidebar unread count immediately in the cached query
+        queryClient.setQueryData<Match[]>(conversationsQueryKey, (prev) =>
+          prev
+            ? prev.map((m) =>
+                m.id === selectedMatch.id && m.source === selectedMatch.source
+                  ? { ...m, unread_count: 0 }
+                  : m
+              )
+            : prev
         );
       }
     }
@@ -431,7 +445,29 @@ const Messages = () => {
           shouldScrollToBottomRef.current = true;
           return [...prev, newMsg];
         });
-        if (newMsg.sender_id !== user?.id) {
+
+        // Patch cached conversation list: bump last_message + unread_count
+        const incomingFromOther = newMsg.sender_id !== user?.id;
+        queryClient.setQueryData<Match[]>(conversationsQueryKey, (prev) => {
+          if (!prev) return prev;
+          const updated = prev.map((m) => {
+            if (m.id !== selectedMatch.id || m.source !== selectedMatch.source) return m;
+            return {
+              ...m,
+              last_message: {
+                content: newMsg.content,
+                created_at: newMsg.created_at,
+                sender_id: newMsg.sender_id,
+                read: incomingFromOther ? true : (newMsg.read ?? false),
+              },
+              // Viewing this conversation, so incoming messages are auto-read → keep 0
+              unread_count: 0,
+            };
+          });
+          return sortMatches(updated);
+        });
+
+        if (incomingFromOther) {
           (supabase.from(table as any).update({ read: true } as any).eq("id", newMsg.id) as any);
           setIsOtherTyping(false);
         }
@@ -581,7 +617,7 @@ const Messages = () => {
     } else {
       toast({ title: "User blocked", description: `${selectedMatch.other_user.full_name} has been blocked.` });
       setSelectedMatch(null);
-      fetchMatches();
+      refetchMatches();
     }
   };
 
@@ -647,7 +683,7 @@ const Messages = () => {
 
           {/* Conversation List */}
           <div className="flex-1 overflow-y-auto scrollbar-thin">
-            {loading ? (
+            {matchesLoading ? (
               <div className="flex items-center justify-center py-20">
                 <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
               </div>
