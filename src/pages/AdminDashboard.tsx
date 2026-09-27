@@ -1502,6 +1502,7 @@ const EmailsTab = () => {
 
 // ─── Analytics Tab ───
 const AnalyticsTab = () => {
+  const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [range, setRange] = useState<"7d" | "30d" | "all">("7d");
   const [deviceData, setDeviceData] = useState<{ label: string; count: number; icon: typeof Monitor; color: string; bg: string }[]>([]);
