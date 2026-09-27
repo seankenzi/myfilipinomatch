@@ -132,38 +132,38 @@ const Onboarding = () => {
     );
   };
 
-  const saveProfile = async () => {
-    if (!user) return;
+  const saveProfile = async (redirectTo: string = "/discover"): Promise<boolean> => {
+    if (!user) return false;
     setSaving(true);
     try {
       if (photos.length < 3) {
         toast({ title: "Photos required", description: "Please upload at least 3 photos before completing your profile.", variant: "destructive" });
         setSaving(false);
-        return;
+        return false;
       }
       const firstNameCheck = validateName(firstName, "First name");
       if (!firstNameCheck.valid) {
         toast({ title: "Invalid first name", description: firstNameCheck.error, variant: "destructive" });
         setSaving(false);
-        return;
+        return false;
       }
       const lastNameCheck = validateName(lastName, "Last name");
       if (!lastNameCheck.valid) {
         toast({ title: "Invalid last name", description: lastNameCheck.error, variant: "destructive" });
         setSaving(false);
-        return;
+        return false;
       }
       const bioCheck = validateBio(bio);
       if (!bioCheck.valid) {
         toast({ title: "Bio too short", description: bioCheck.error, variant: "destructive" });
         setSaving(false);
-        return;
+        return false;
       }
       const bioContact = detectContactInfo(bio.trim());
       if (bioContact) {
         toast({ title: "Contact info not allowed", description: `Your bio contains ${bioContact}. Please remove it.`, variant: "destructive" });
         setSaving(false);
-        return;
+        return false;
       }
       const profileData: Record<string, unknown> = {
         user_type: userType,
@@ -238,9 +238,11 @@ const Onboarding = () => {
       });
 
       toast({ title: "Profile complete! 🎉", description: "Welcome to MyFilipinoMatch." });
-      navigate("/discover");
+      navigate(redirectTo);
+      return true;
     } catch (err: any) {
       toast({ title: "Error saving profile", description: err.message, variant: "destructive" });
+      return false;
     } finally {
       setSaving(false);
     }
@@ -271,8 +273,7 @@ const Onboarding = () => {
   };
 
   const handleVerifyNow = async () => {
-    await saveProfile();
-    navigate("/verification");
+    await saveProfile("/verification");
   };
 
   const stepLabels = ["Identity", "Intent", "Location", "Profile", "Bio", "Interests", "Photos", "Verify"];

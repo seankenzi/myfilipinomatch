@@ -8,6 +8,13 @@
       "when": 1790525308693,
       "tag": "0000_admin_profile_functions",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1790527063570,
+      "tag": "0001_replace_profile_guard_policy_with_trigger",
+      "breakpoints": true
     }
   ]
 }
