@@ -104,7 +104,7 @@ export const useIncomingCall = () => {
     if (!user) return;
 
     const channel = supabase
-      .channel("incoming-call-signals")
+      .channel(`incoming-call-signals-${user.id}-${crypto.randomUUID()}`)
       .on(
         "postgres_changes",
         {

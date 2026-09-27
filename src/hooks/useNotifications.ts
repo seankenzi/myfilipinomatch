@@ -40,7 +40,7 @@ export function useNotifications() {
   useEffect(() => {
     if (!user) return;
     const channel = supabase
-      .channel("notifications-realtime")
+      .channel(`notifications-${user.id}-${crypto.randomUUID()}`)
       .on(
         "postgres_changes",
         {
