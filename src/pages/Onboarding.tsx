@@ -187,7 +187,7 @@ const Onboarding = () => {
 
       const { error } = await supabase
         .from("profiles")
-        .update(profileData)
+        .update(profileData as never)
         .eq("id", user.id);
 
       if (error) throw error;

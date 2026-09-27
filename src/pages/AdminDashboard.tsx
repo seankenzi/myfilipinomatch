@@ -109,16 +109,11 @@ const UsersTab = () => {
 
   const fetchUsers = async () => {
     setLoading(true);
-    let query = supabase.from("profiles").select("*").order("created_at", { ascending: false }).limit(100);
-    if (search.trim()) {
-      query = query.or(`full_name.ilike.%${search}%,email.ilike.%${search}%`);
-    }
-    if (onboardingFilter === "completed") {
-      query = query.eq("onboarding_completed", true);
-    } else if (onboardingFilter === "incomplete") {
-      query = query.or("onboarding_completed.is.null,onboarding_completed.eq.false");
-    }
-    const { data } = await query;
+    const { data, error } = await supabase.rpc("admin_list_users", {
+      search: search.trim() || null,
+      onboarding_filter: onboardingFilter,
+    });
+    if (error) toast({ title: "Could not load users", description: error.message, variant: "destructive" });
     // Resolve signed URLs for avatars
     const usersWithSignedUrls = await Promise.all(
       (data || []).map(async (u: any) => {
@@ -392,7 +387,8 @@ const ModerationTab = () => {
       ])
     ];
 
-    const { data: profiles } = await supabase.from("profiles").select("id, full_name, email").in("id", allUserIds);
+    const { data: profiles, error: profilesError } = await supabase.rpc("admin_get_profiles", { user_ids: allUserIds });
+    if (profilesError) toast({ title: "Could not load user details", description: profilesError.message, variant: "destructive" });
     const profileMap = new Map((profiles || []).map(p => [p.id, p]));
 
     setReports((reportsRes.data || []).map(r => ({
@@ -663,7 +659,8 @@ const SubscriptionsTab = ({ refreshKey }: { refreshKey: number }) => {
 
     if (data && data.length > 0) {
       const userIds = [...new Set(data.map(s => s.user_id))];
-      const { data: profiles } = await supabase.from("profiles").select("id, full_name, email").in("id", userIds);
+      const { data: profiles, error: profilesError } = await supabase.rpc("admin_get_profiles", { user_ids: userIds });
+      if (profilesError) toast({ title: "Could not load user details", description: profilesError.message, variant: "destructive" });
       const profileMap = new Map((profiles || []).map(p => [p.id, p]));
 
       setSubs(data.map(s => ({
@@ -681,8 +678,8 @@ const SubscriptionsTab = ({ refreshKey }: { refreshKey: number }) => {
 
   const searchUsers = async (term: string) => {
     if (!term.trim()) { setSearchResults([]); return; }
-    const { data } = await supabase.from("profiles").select("id, full_name, email")
-      .or(`full_name.ilike.%${term}%,email.ilike.%${term}%`).limit(5);
+    const { data, error } = await supabase.rpc("admin_search_users", { term: term.trim() });
+    if (error) toast({ title: "User search failed", description: error.message, variant: "destructive" });
     setSearchResults(data || []);
   };
 
@@ -883,7 +880,8 @@ const FeatureFlagsTab = () => {
 
     if (data && data.length > 0) {
       const userIds = [...new Set(data.map(f => f.user_id))];
-      const { data: profiles } = await supabase.from("profiles").select("id, full_name, email").in("id", userIds);
+      const { data: profiles, error: profilesError } = await supabase.rpc("admin_get_profiles", { user_ids: userIds });
+      if (profilesError) toast({ title: "Could not load user details", description: profilesError.message, variant: "destructive" });
       const profileMap = new Map((profiles || []).map(p => [p.id, p]));
       setFlags(data.map(f => ({
         ...f,
@@ -898,8 +896,8 @@ const FeatureFlagsTab = () => {
 
   const searchUsers = async (term: string) => {
     if (!term.trim()) { setUsers([]); return; }
-    const { data } = await supabase.from("profiles").select("id, full_name, email")
-      .or(`full_name.ilike.%${term}%,email.ilike.%${term}%`).limit(5);
+    const { data, error } = await supabase.rpc("admin_search_users", { term: term.trim() });
+    if (error) toast({ title: "User search failed", description: error.message, variant: "destructive" });
     setUsers(data || []);
   };
 
@@ -1504,6 +1502,7 @@ const EmailsTab = () => {
 
 // ─── Analytics Tab ───
 const AnalyticsTab = () => {
+  const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [range, setRange] = useState<"7d" | "30d" | "all">("7d");
   const [deviceData, setDeviceData] = useState<{ label: string; count: number; icon: typeof Monitor; color: string; bg: string }[]>([]);
@@ -1588,10 +1587,8 @@ const AnalyticsTab = () => {
       const userIds = [...new Set(visits.filter((v: any) => v.user_id).map((v: any) => v.user_id))] as string[];
       let profileMap = new Map<string, { full_name: string; email: string }>();
       if (userIds.length > 0) {
-        const { data: profiles } = await supabase
-          .from("profiles")
-          .select("id, full_name, email")
-          .in("id", userIds.slice(0, 100));
+        const { data: profiles, error: profilesError } = await supabase.rpc("admin_get_profiles", { user_ids: userIds.slice(0, 100) });
+        if (profilesError) toast({ title: "Could not load user details", description: profilesError.message, variant: "destructive" });
         (profiles || []).forEach((p: any) => profileMap.set(p.id, { full_name: p.full_name || "Unknown", email: p.email || "" }));
       }
 
@@ -2061,14 +2058,9 @@ const UserActivityTab = () => {
   const runSearch = async () => {
     if (!search.trim()) return;
     setSearching(true);
-    const term = `%${search.trim()}%`;
-    const { data, error } = await supabase
-      .from("profiles")
-      .select("id, full_name, email, is_premium, is_verified, is_flagged")
-      .or(`full_name.ilike.${term},email.ilike.${term}`)
-      .limit(20);
+        const { data, error } = await supabase.rpc("admin_list_users", { search: search.trim(), onboarding_filter: "all" });
     if (error) toast({ title: "Search failed", description: error.message, variant: "destructive" });
-    setResults(data || []);
+    setResults((data || []).slice(0, 20));
     setSearching(false);
   };
 
@@ -2395,10 +2387,8 @@ const FlagAuditTab = () => {
 
     const ids = Array.from(new Set(list.flatMap((r: any) => [r.admin_id, r.target_user_id]).filter(Boolean)));
     if (ids.length > 0) {
-      const { data: profs } = await supabase
-        .from("profiles")
-        .select("id, full_name, email")
-        .in("id", ids);
+      const { data: profs, error: profsError } = await supabase.rpc("admin_get_profiles", { user_ids: ids as string[] });
+      if (profsError) toast({ title: "Could not load user details", description: profsError.message, variant: "destructive" });
       const map: Record<string, any> = {};
       (profs || []).forEach((p: any) => { map[p.id] = { full_name: p.full_name, email: p.email }; });
       setProfiles(map);
@@ -2542,10 +2532,8 @@ const DeletionsTab = () => {
     const userIds = (deletions || []).map((d: any) => d.user_id);
     let profileMap: Record<string, { email: string | null; full_name: string | null }> = {};
     if (userIds.length > 0) {
-      const { data: profs } = await supabase
-        .from("profiles")
-        .select("id, email, full_name")
-        .in("id", userIds);
+      const { data: profs, error: profsError } = await supabase.rpc("admin_get_profiles", { user_ids: userIds });
+      if (profsError) toast({ title: "Could not load user details", description: profsError.message, variant: "destructive" });
       (profs || []).forEach((p: any) => {
         profileMap[p.id] = { email: p.email, full_name: p.full_name };
       });

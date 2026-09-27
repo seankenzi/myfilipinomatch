@@ -1034,6 +1034,17 @@ export type Database = {
         Args: { reason: string; target_user_id: string }
         Returns: number
       }
+      admin_get_profiles: {
+        Args: { user_ids: string[] }
+        Returns: {
+          email: string
+          full_name: string
+          id: string
+          is_flagged: boolean
+          is_premium: boolean
+          is_verified: boolean
+        }[]
+      }
       admin_get_recent_activity: {
         Args: { filter_type?: string; result_limit?: number }
         Returns: {
@@ -1054,9 +1065,38 @@ export type Database = {
         Args: { target_user_id: string }
         Returns: Json
       }
+      admin_list_users: {
+        Args: { onboarding_filter?: string; search?: string }
+        Returns: {
+          age: number
+          avatar_url: string
+          city: string
+          country: string
+          created_at: string
+          email: string
+          full_name: string
+          gender: string
+          id: string
+          is_flagged: boolean
+          is_premium: boolean
+          is_verified: boolean
+          last_seen: string
+          onboarding_completed: boolean
+          onboarding_step: number
+          user_type: string
+        }[]
+      }
       admin_remove_photo: {
         Args: { p_reason?: string; photo_url: string; target_user_id: string }
         Returns: undefined
+      }
+      admin_search_users: {
+        Args: { term: string }
+        Returns: {
+          email: string
+          full_name: string
+          id: string
+        }[]
       }
       admin_unflag_user:
         | { Args: { target_user_id: string }; Returns: undefined }
