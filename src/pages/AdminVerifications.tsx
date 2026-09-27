@@ -75,10 +75,21 @@ const AdminVerifications = () => {
 
     // Fetch profiles for each user
     const userIds = [...new Set(data.map((v) => v.user_id))];
-    const { data: profiles } = await supabase
-      .from("profiles")
-      .select("id, full_name, avatar_url, photos, email")
-      .in("id", userIds);
+    const [{ data: basics, error: basicsError }, { data: photoRows, error: photosError }] = await Promise.all([
+      supabase.rpc("admin_get_profiles", { user_ids: userIds }),
+      supabase.from("profiles").select("id, avatar_url, photos").in("id", userIds),
+    ]);
+    if (basicsError || photosError) {
+      toast({ title: "Could not load user details", description: (basicsError || photosError)!.message, variant: "destructive" });
+    }
+    const photoMap = new Map((photoRows || []).map((r) => [r.id, r]));
+    const profiles = (basics || []).map((b) => ({
+      id: b.id,
+      full_name: b.full_name,
+      email: b.email,
+      avatar_url: photoMap.get(b.id)?.avatar_url ?? null,
+      photos: photoMap.get(b.id)?.photos ?? null,
+    }));
 
     // Resolve signed URLs for profile photos and document URLs
     const resolvedProfiles = await Promise.all(

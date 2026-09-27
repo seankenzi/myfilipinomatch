@@ -57,7 +57,8 @@ const Profile = () => {
 
   const fetchProfile = async () => {
     if (!user) return;
-    const { data, error } = await supabase.from("profiles").select("*").eq("id", user.id).single();
+    const { data, error } = await supabase.from("profiles").select("full_name, age, gender, country, province, city, bio, interests, relationship_intent, relocation_intent, photos, avatar_url, is_verified, is_premium").eq("id", user.id).single();
+    if (error) toast({ title: "Could not load your profile", description: error.message, variant: "destructive" });
     if (data) {
       const nameParts = (data.full_name || "").trim().split(/\s+/);
       setProfile({
