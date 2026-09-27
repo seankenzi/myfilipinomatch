@@ -109,7 +109,7 @@ const MessageToastHandler = () => {
 
     // ---- Mutual match messages ----
     const matchChannel = supabase
-      .channel(`toast-messages-${user.id}`)
+      .channel(`toast-messages-${user.id}-${crypto.randomUUID()}`)
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "messages" },
@@ -143,7 +143,7 @@ const MessageToastHandler = () => {
 
     // ---- Direct messages ----
     const dmChannel = supabase
-      .channel(`toast-dm-messages-${user.id}`)
+      .channel(`toast-dm-messages-${user.id}-${crypto.randomUUID()}`)
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "dm_messages" },

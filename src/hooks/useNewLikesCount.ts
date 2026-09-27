@@ -38,7 +38,7 @@ export function useNewLikesCount() {
   useEffect(() => {
     if (!user) return;
     const channel = supabase
-      .channel("new-likes-count")
+      .channel(`new-likes-count-${user.id}-${crypto.randomUUID()}`)
       .on(
         "postgres_changes",
         {
