@@ -25,7 +25,7 @@ import { useToast } from "@/hooks/use-toast";
 import VideoBanner from "@/components/VideoBanner";
 import VideoCallModal from "@/components/VideoCallModal";
 import VideoCall from "@/components/VideoCall";
-import { getSignedPhotoUrls } from "@/lib/storage";
+import { getSignedPhotoUrl, getCachedSignedPhotoUrl } from "@/lib/storage";
 import { getMediaStreamWithTimeout } from "@/lib/media";
 import NotificationPermissionPrompt from "@/components/NotificationPermissionPrompt";
 
@@ -174,6 +174,26 @@ LazyCard.displayName = "LazyCard";
 // Photo gallery component for swipe cards
 const PhotoGallery = ({ photos, name }: { photos: string[]; name: string }) => {
   const [photoIndex, setPhotoIndex] = useState(0);
+  const [signed, setSigned] = useState<Record<string, string>>({});
+  const photosKey = photos.join("|");
+
+  useEffect(() => { setPhotoIndex(0); }, [photosKey]);
+
+  // Sign the current photo (and the next one, so the next swipe is instant) on demand.
+  useEffect(() => {
+    let cancelled = false;
+    [photoIndex, photoIndex + 1].forEach((i) => {
+      const raw = photos[i];
+      if (!raw || raw.startsWith("http") || signed[raw]) return;
+      const cached = getCachedSignedPhotoUrl(raw, "grid");
+      if (cached) { setSigned((s) => ({ ...s, [raw]: cached })); return; }
+      getSignedPhotoUrl(raw, "grid").then((url) => {
+        if (!cancelled && url.startsWith("http")) setSigned((s) => ({ ...s, [raw]: url }));
+      });
+    });
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [photoIndex, photosKey]);
 
   if (photos.length === 0) {
     return (
@@ -183,10 +203,14 @@ const PhotoGallery = ({ photos, name }: { photos: string[]; name: string }) => {
     );
   }
 
+  const current = photos[photoIndex] ?? photos[0];
+  const currentSrc = current.startsWith("http") ? current : (signed[current] ?? getCachedSignedPhotoUrl(current, "grid") ?? current);
+
   return (
     <div className="relative h-full w-full group">
       <SkeletonImage
-        src={photos[photoIndex]}
+        key={currentSrc}
+        src={currentSrc}
         alt={`${name} photo ${photoIndex + 1}`}
         className="h-full w-full"
         loading="eager"
@@ -372,42 +396,28 @@ const Discover = () => {
 
   const PAGE_SIZE = 20;
 
+  // Sign only each profile's cover photo, in on-screen order, and update each
+  // card as soon as its own URL is ready. Other photos are signed on demand.
   const signAndApplyPhotos = useCallback((newProfiles: Profile[]) => {
-    const allPaths: string[] = [];
-    const pathSet = new Set<string>();
-    newProfiles.forEach((p) => {
-      const photos = p.photos?.length ? p.photos : p.avatar_url ? [p.avatar_url] : [];
-      photos.forEach((photo) => {
-        if (photo && !pathSet.has(photo)) {
-          pathSet.add(photo);
-          allPaths.push(photo);
-        }
-      });
-    });
-    if (allPaths.length === 0) return;
-    const BATCH = 50;
-    const applySignedBatch = (batch: string[], signed: string[]) => {
-      const map = new Map<string, string>();
-      batch.forEach((p, idx) => { if (signed[idx]) map.set(p, signed[idx]); });
-      if (map.size === 0) return;
+    const applyCover = (raw: string, url: string) => {
       setProfiles((prev) => prev.map((profile) => {
         let changed = false;
-        const newPhotos = profile.photos?.map((ph) => {
-          const signedUrl = map.get(ph);
-          if (signedUrl) { changed = true; return signedUrl; }
-          return ph;
-        }).filter(Boolean) || null;
-        const newAvatar = profile.avatar_url && map.has(profile.avatar_url)
-          ? (changed = true, map.get(profile.avatar_url)!)
-          : profile.avatar_url;
-        const finalAvatar = newAvatar || null;
-        return changed ? { ...profile, photos: newPhotos && newPhotos.length > 0 ? newPhotos : null, avatar_url: finalAvatar } : profile;
+        let photos = profile.photos;
+        if (photos?.[0] === raw) { photos = [url, ...photos.slice(1)]; changed = true; }
+        let avatar = profile.avatar_url;
+        if (!profile.photos?.length && avatar === raw) { avatar = url; changed = true; }
+        return changed ? { ...profile, photos, avatar_url: avatar } : profile;
       }));
     };
-    for (let i = 0; i < allPaths.length; i += BATCH) {
-      const batch = allPaths.slice(i, i + BATCH);
-      getSignedPhotoUrls(batch, "grid").then((signed) => applySignedBatch(batch, signed));
-    }
+    const seen = new Set<string>();
+    newProfiles.forEach((p) => {
+      const cover = p.photos?.length ? p.photos[0] : p.avatar_url;
+      if (!cover || cover.startsWith("http") || seen.has(cover)) return;
+      seen.add(cover);
+      getSignedPhotoUrl(cover, "grid").then((url) => {
+        if (url.startsWith("http")) applyCover(cover, url);
+      });
+    });
   }, []);
 
   const applyClientFilters = useCallback((data: Profile[]): Profile[] => {
@@ -433,21 +443,19 @@ const Discover = () => {
     setHasMore(true);
     setPageOffset(0);
 
-    const { data: likesData } = await supabase
-      .from("likes")
-      .select("liked_id")
-      .eq("liker_id", user.id);
-
-    const alreadyLiked = new Set((likesData || []).map((l) => l.liked_id));
-    setLikedIds(alreadyLiked);
-
     const rpcParams: Record<string, any> = { result_limit: PAGE_SIZE, result_offset: 0 };
     if (filterCountry !== "all") rpcParams.filter_country = filterCountry;
     if (filterGender !== "all") rpcParams.filter_gender = filterGender;
     if (filterAgeRange[0] > 18) rpcParams.filter_min_age = filterAgeRange[0];
     if (filterAgeRange[1] < 65) rpcParams.filter_max_age = filterAgeRange[1];
 
-    const { data, error } = await supabase.rpc("browse_profiles", rpcParams);
+    const [{ data: likesData }, { data, error }] = await Promise.all([
+      supabase.from("likes").select("liked_id").eq("liker_id", user.id),
+      supabase.rpc("browse_profiles", rpcParams),
+    ]);
+
+    const alreadyLiked = new Set((likesData || []).map((l) => l.liked_id));
+    setLikedIds(alreadyLiked);
 
     if (error) {
       toast({ title: "Error loading profiles", description: error.message, variant: "destructive" });

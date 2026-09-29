@@ -32,15 +32,70 @@ type TransformOptions = {
   resize?: "cover" | "contain" | "fill";
 };
 
-// Module-level signed URL cache. Keyed by `path|width|quality|resize`
-// so the same path at different sizes is cached separately.
-const signedUrlCache = new Map<string, { url: string; expires: number }>();
-const CACHE_TTL = 50 * 60 * 1000; // 50 min
+// Signed URL cache. Keyed by `path|width|quality|resize` so the same path at
+// different sizes is cached separately. Mirrored to sessionStorage so reloads
+// and navigations reuse identical URLs (letting the browser reuse its image cache).
+type CacheEntry = { url: string; expires: number };
+const CACHE_TTL = 50 * 60 * 1000; // 50 min (URLs are signed for 60)
+const SESSION_KEY = "signed-photo-urls-v1";
+const signedUrlCache = new Map<string, CacheEntry>();
+
+function loadSessionCache() {
+  try {
+    const raw = sessionStorage.getItem(SESSION_KEY);
+    if (!raw) return;
+    const now = Date.now();
+    const obj = JSON.parse(raw) as Record<string, CacheEntry>;
+    for (const [k, v] of Object.entries(obj)) {
+      if (v && typeof v.url === "string" && v.expires > now) signedUrlCache.set(k, v);
+    }
+  } catch { /* ignore */ }
+}
+loadSessionCache();
+
+let persistTimer: ReturnType<typeof setTimeout> | null = null;
+function persistSessionCache() {
+  if (persistTimer) return;
+  persistTimer = setTimeout(() => {
+    persistTimer = null;
+    try {
+      const now = Date.now();
+      const obj: Record<string, CacheEntry> = {};
+      for (const [k, v] of signedUrlCache) {
+        if (v.expires > now) obj[k] = v;
+        else signedUrlCache.delete(k);
+      }
+      sessionStorage.setItem(SESSION_KEY, JSON.stringify(obj));
+    } catch { /* quota or unavailable */ }
+  }, 200);
+}
+
+function readCache(key: string): string | null {
+  const entry = signedUrlCache.get(key);
+  if (!entry) return null;
+  if (entry.expires <= Date.now()) {
+    signedUrlCache.delete(key);
+    persistSessionCache();
+    return null;
+  }
+  return entry.url;
+}
+
+function writeCache(key: string, url: string) {
+  signedUrlCache.set(key, { url, expires: Date.now() + CACHE_TTL });
+  persistSessionCache();
+}
 
 function cacheKey(path: string, transform?: TransformOptions): string {
   if (!transform) return path;
   const { width, height, quality, resize } = transform;
   return `${path}|w=${width ?? ""}|h=${height ?? ""}|q=${quality ?? ""}|r=${resize ?? ""}`;
+}
+
+/** Synchronously returns a cached signed URL, or null. */
+export function getCachedSignedPhotoUrl(urlOrPath: string, context: PhotoContext = "detail"): string | null {
+  if (isAlreadySigned(urlOrPath)) return urlOrPath;
+  return readCache(cacheKey(extractStoragePath(urlOrPath), transformFromContext(context)));
 }
 
 function isAlreadySigned(url: string): boolean {
@@ -80,9 +135,8 @@ export async function getSignedPhotoUrl(
   const transform = transformFromContext(context);
   const path = extractStoragePath(urlOrPath);
   const key = cacheKey(path, transform);
-  const now = Date.now();
-  const cached = signedUrlCache.get(key);
-  if (cached && cached.expires > now) return cached.url;
+  const cached = readCache(key);
+  if (cached) return cached;
 
   const { data, error } = await supabase.storage
     .from("profile-photos")
@@ -91,7 +145,7 @@ export async function getSignedPhotoUrl(
     console.error("Failed to create signed URL:", error);
     return urlOrPath; // fallback
   }
-  signedUrlCache.set(key, { url: data.signedUrl, expires: now + CACHE_TTL });
+  writeCache(key, data.signedUrl);
   return data.signedUrl;
 }
 
@@ -106,7 +160,6 @@ export async function getSignedPhotoUrls(
   if (!urlsOrPaths.length) return [];
 
   const transform = transformFromContext(context);
-  const now = Date.now();
   const results: string[] = new Array(urlsOrPaths.length).fill("");
   const toSign: string[] = [];
   const toSignIndices: number[] = [];
@@ -118,10 +171,9 @@ export async function getSignedPhotoUrls(
       continue;
     }
     const path = extractStoragePath(raw);
-    const key = cacheKey(path, transform);
-    const cached = signedUrlCache.get(key);
-    if (cached && cached.expires > now) {
-      results[i] = cached.url;
+    const cached = readCache(cacheKey(path, transform));
+    if (cached) {
+      results[i] = cached;
     } else {
       toSign.push(path);
       toSignIndices.push(i);
@@ -147,7 +199,7 @@ export async function getSignedPhotoUrls(
       const idx = toSignIndices[i];
       if (url) {
         results[idx] = url;
-        signedUrlCache.set(cacheKey(toSign[i], transform), { url, expires: now + CACHE_TTL });
+        writeCache(cacheKey(toSign[i], transform), url);
       } else {
         results[idx] = urlsOrPaths[idx];
       }
@@ -170,7 +222,7 @@ export async function getSignedPhotoUrls(
     const idx = toSignIndices[i];
     if (url) {
       results[idx] = url;
-      signedUrlCache.set(cacheKey(toSign[i], undefined), { url, expires: now + CACHE_TTL });
+      writeCache(cacheKey(toSign[i], undefined), url);
     } else {
       results[idx] = urlsOrPaths[idx];
     }
